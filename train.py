@@ -86,6 +86,7 @@ def train():
         else:
             batch_size = 32
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
+        print(len(lines[num_train:]))
         model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
                 steps_per_epoch=max(1, num_train//batch_size),
                 validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
@@ -252,7 +253,8 @@ def data_generator(annotation_lines, batch_size, input_shape, anchors, num_class
         for b in range(batch_size):
             if i==0:
                 np.random.shuffle(annotation_lines)
-            image, box = get_random_data(annotation_lines[i], input_shape, random=True)
+            print(annotation_lines[i])
+            image, box = get_random_data(annotation_lines[i], input_shape, random=TRAINING_RANDOM_MODIFY)
             image_data.append(image)
             box_data.append(box)
             i = (i+1) % n

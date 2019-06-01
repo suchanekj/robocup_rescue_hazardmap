@@ -34,16 +34,18 @@ def letterbox_image(image, size):
 def rand(a=0, b=1):
     return np.random.rand()*(b-a) + a
 
-def get_random_data(annotation_line, input_shape, random=True, max_boxes=20, jitter=.3, hue=.1, sat=1.5, val=1.5, proc_img=True):
+def get_random_data(annotation_line, input_shape, random=False, max_boxes=20, jitter=.3, hue=.02, sat=1.5, val=1.5, proc_img=True):
     '''random preprocessing for real-time data augmentation'''
     line = annotation_line.split()
     image = cv2.imread(line[0])
-    iw, ih = image.size
+    ih, iw = image.shape[:2]
+    # print(image.shape)
     h, w = input_shape
     box = np.array([np.array(list(map(int,box.split(',')))) for box in line[1:]])
 
     if not random:
         # resize image
+        # print(w, h, iw, ih)
         scale = min(w/iw, h/ih)
         nw = int(iw*scale)
         nh = int(ih*scale)
@@ -52,8 +54,14 @@ def get_random_data(annotation_line, input_shape, random=True, max_boxes=20, jit
         image_data=0
         if proc_img:
             image = cv2.resize(image, (nw, nh))
-            new_image = np.ones((w, h, 3)) * 128
-            new_image[dx:dx+nw, dy:dy+nh] = image
+            # cv2.imwrite("fgshd.png", image)
+            new_image = np.ones((h, w, 3)) * 128
+            # cv2.imwrite("juyhtgrfsd.png", new_image)
+            # print(new_image.shape)
+            # print(image.shape)
+            new_image[dy:dy+nh, dx:dx+nw] = image
+            # print(new_image.shape)
+            # cv2.imwrite("tfdfgshd.png", new_image)
             image_data = new_image/255.
 
         # correct boxes

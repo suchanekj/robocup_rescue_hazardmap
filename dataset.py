@@ -8,6 +8,7 @@ import copy
 import string
 import time
 import random
+import datetime
 from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
 
 from config import *
@@ -37,7 +38,7 @@ def newDownload(top_layer=True):
     validFiles = []
     for filename in os.listdir("downloads"):
         # print(filename[0:-6])
-        if filename[0:-6] in downloaded_list:
+        if filename[0:-7] in downloaded_list:
             validFiles.append(filename)
     toDelete = set(os.listdir("downloads")) - set(validFiles)
     # print(toDelete)
@@ -47,32 +48,40 @@ def newDownload(top_layer=True):
 
     response = google_images_download.googleimagesdownload()
     to_download = int(DATASET_NUM_IMAGES * 2) - len(os.listdir("downloads"))
-    num_per_key = int(to_download / max(1, len(dataset_keywords)))
+    num_per_key = int(to_download / max(1, len(dataset_keywords)) / DATASET_DOWNLOAD_TIME_MUL)
     num_extra_img = to_download - num_per_key * len(dataset_keywords)
     if not os.path.isfile("downloaded.txt"):
         downloaded = open("downloaded.txt", "w+")
         downloaded.close()
 
     for j, i in enumerate(dataset_keywords):
-        try:
-            response.download({"keywords": i, "limit": min(num_per_key + (1 if j < num_extra_img else 0), 100),
-                               "exact_size": "640,480", "image_directory": "."})
-        except:
-            pass
-        else:
-            if min(num_per_key + (1 if j < num_extra_img else 0), 100) == 100:
-                print("safsdgdsg")
-                downloaded = open("downloaded.txt", "a+")
-                downloaded.write(i + "\n")
-                downloaded.close()
+        for time_shift in range(DATASET_DOWNLOAD_TIME_MUL):
+            try:
+                start_date = (datetime.date.today() -
+                              datetime.timedelta(days=3650/DATASET_DOWNLOAD_TIME_MUL *
+                                                      (time_shift + 1))).strftime("%d/%m/%Y")
+                end_date = (datetime.date.today() -
+                            datetime.timedelta(days=3650/DATASET_DOWNLOAD_TIME_MUL *
+                                                    time_shift)).strftime("%d/%m/%Y")
+                response.download({"keywords": i, "limit": min(num_per_key + (1 if j < num_extra_img else 0), 100),
+                                   "exact_size": "640,480", "image_directory": ".",
+                                   "time_range":'{"time_min":"'+start_date+'","time_max":"'+end_date+'"}'})
+            except Exception as e:
+                print(e)
+            else:
+                if min(num_per_key + (1 if j < num_extra_img else 0), 100) == 100:
+                    print("keyword finished")
+                    downloaded = open("downloaded.txt", "a+")
+                    downloaded.write(i + "\n")
+                    downloaded.close()
         index = 0
         for filename in os.listdir("downloads"):
             try:
                 if filename[0].isdigit():
-                    os.rename("downloads/" + filename, "downloads/" + i + str(index).zfill(2) + ".jpg")
+                    os.rename("downloads/" + filename, "downloads/" + i + str(index).zfill(3) + ".jpg")
                     index += 1
-            except:
-                pass
+            except Exception as e:
+                print(e)
     if top_layer:
         newDownload(top_layer=False)
 
@@ -173,8 +182,8 @@ def labelFilter(srcA):
 
     if random.random() < 0.9 * DATASET_FILTERING_MODIFIER:
         noise = np.zeros((rows, cols, 4))
-        m = np.array([255 * random.random(), 255 * random.random(), 255 * random.random(), 130 * random.random()])
-        sigma = np.array([80 * random.random(), 80 * random.random(), 80 * random.random(), 40 * random.random()])
+        m = np.array([255 * random.random(), 255 * random.random(), 255 * random.random(), 10 * random.random()])
+        sigma = np.array([80 * random.random(), 80 * random.random(), 80 * random.random(), 1 * random.random()])
         cv2.randn(noise, m, sigma)
         noise = (noise > 0) * noise - (noise > 255) * (noise - 255)
         noise = noise.transpose((2, 0, 1))
@@ -425,7 +434,7 @@ def createLabels():
     os.mkdir(DATASET_LOCATION)
     labelsStraiten()
     makeLabelList()
-    for i in range(DATASET_NUM_IMAGES):
+    while len(os.listdir(DATASET_LOCATION)) - 3 < DATASET_NUM_IMAGES:
         pair = labelMake()
         pair[0] = labelFilter(pair[0])
         pair = labelPerspective(pair)
@@ -450,7 +459,7 @@ def createDataset():
     DATASET_NUM_IMAGES = DATASET_MAX_NUM_IMAGES
     bases = os.listdir("downloads")
     # while len(baseList) < DATASET_NUM_IMAGES + 100:
-    for i in range(int(np.ceil(DATASET_NUM_IMAGES / len(bases))) + 1):
+    for i in range(int(np.ceil(DATASET_NUM_IMAGES / len(bases))) + 2):
         baseList.extend(list(range(len(bases))))
         print(i)
     random.shuffle(baseList)
