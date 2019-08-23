@@ -537,8 +537,6 @@ def makeBase(base_num):
         for i in range(1, 5):
             name_pos[i] = int(scale * name_pos[i])
 
-    print(new_shape, base_img.shape, DATASET_DEFAULT_SHAPE)
-
     position = (random.randint(0, new_shape[0] - DATASET_DEFAULT_SHAPE[0]),
                 random.randint(0, new_shape[1] - DATASET_DEFAULT_SHAPE[1]))
     base_img = base_img[position[0]:position[0] + DATASET_DEFAULT_SHAPE[0],
@@ -819,6 +817,8 @@ def createDataset():
     print(DATASET_NUM_IMAGES)
     if not os.path.exists("openimages/test") or not os.path.exists("openimages/validation") or REDOWNLOAD_DATASET:
         newDownload()
+    if not os.path.exists("openimages/test") or FILTER_DATASET:
+        filterOpenImages()
     if not os.path.exists(DATASET_LOCATION) or len(os.listdir(DATASET_LOCATION)) < DATASET_NUM_IMAGES \
        or REBUILD_DATASET:
         threadedCreateLabels()

@@ -11,22 +11,21 @@ import numpy as np
 from keras import backend as K
 from keras.models import load_model
 from keras.layers import Input
-# from PIL import Image, ImageFont, ImageDraw
-import cv2
+from PIL import Image, ImageFont, ImageDraw
 
-from yolo3.model_yolo import yolo_eval, yolo_body, tiny_yolo_body
+from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from yolo3.utils import letterbox_image
 import os
 from keras.utils import multi_gpu_model
 
 class YOLO(object):
     _defaults = {
-        "model_path": 'model_data/yolo_original.h5',
-        "anchors_path": 'model_data/tiny_yolo_anchors.txt',
-        "classes_path": 'model_data/labelNames.txt',
-        "score" : 0.3, # 0.3
-        "iou" : 0.45, # 0.45
-        "model_image_size" : (None,None), #  (480, 640)(416, 416)
+        "model_path": 'model_data/yolo.h5',
+        "anchors_path": 'model_data/yolo_anchors.txt',
+        "classes_path": 'model_data/coco_classes.txt',
+        "score" : 0.3,
+        "iou" : 0.45,
+        "model_image_size" : (416, 416),
         "gpu_num" : 1,
     }
 
@@ -121,15 +120,15 @@ class YOLO(object):
             [self.boxes, self.scores, self.classes],
             feed_dict={
                 self.yolo_model.input: image_data,
-                self.input_image_shape: [image.shape[0], image.shape[1]],
+                self.input_image_shape: [image.size[1], image.size[0]],
                 K.learning_phase(): 0
             })
 
         print('Found {} boxes for {}'.format(len(out_boxes), 'img'))
 
-        # font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
-        #             size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-        thickness = (image.shape[0] + image.shape[1]) // 300
+        font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
+                    size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
+        thickness = (image.size[0] + image.size[1]) // 300
 
         for i, c in reversed(list(enumerate(out_classes))):
             predicted_class = self.class_names[c]
@@ -137,38 +136,31 @@ class YOLO(object):
             score = out_scores[i]
 
             label = '{} {:.2f}'.format(predicted_class, score)
-            # draw = ImageDraw.Draw(image)
-            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1, 1)[0]
-            scale = int((3e-2 * image.shape[0] + 0.5) / label_size[1])
-            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, scale, max(1, scale))[0]
+            draw = ImageDraw.Draw(image)
+            label_size = draw.textsize(label, font)
 
             top, left, bottom, right = box
             top = max(0, np.floor(top + 0.5).astype('int32'))
             left = max(0, np.floor(left + 0.5).astype('int32'))
-            bottom = min(image.shape[0], np.floor(bottom + 0.5).astype('int32'))
-            right = min(image.shape[1], np.floor(right + 0.5).astype('int32'))
+            bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
+            right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
             print(label, (left, top), (right, bottom))
 
             if top - label_size[1] >= 0:
-                text_origin = (top, left)
+                text_origin = np.array([left, top - label_size[1]])
             else:
-                text_origin = (top + 1, left)
+                text_origin = np.array([left, top + 1])
 
             # My kingdom for a good redistributable image drawing library.
-            cv2.rectangle(image, (top, left), (bottom, right), self.colors[c], thickness=thickness)
-            # for i in range(thickness):
-            #     draw.rectangle(
-            #         [left + i, top + i, right - i, bottom - i],
-            #         outline=self.colors[c])
-            print(text_origin, label_size)
-            cv2.rectangle(image, text_origin, (text_origin[0] + label_size[0], text_origin[1] - label_size[1]),
-                          self.colors[c], thickness=-1)
-            # cv2.rectangle(image,
-            #               tuple(text_origin),
-            #               tuple(text_origin) + label_size,
-            #               self.colors[c],
-            #               thickness=-1)
-            cv2.putText(image, label, text_origin, cv2.FONT_HERSHEY_PLAIN, scale, (0, 0, 0), thickness=max(1, scale))
+            for i in range(thickness):
+                draw.rectangle(
+                    [left + i, top + i, right - i, bottom - i],
+                    outline=self.colors[c])
+            draw.rectangle(
+                [tuple(text_origin), tuple(text_origin + label_size)],
+                fill=self.colors[c])
+            draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+            del draw
 
         end = timer()
         print(end - start)
@@ -177,8 +169,8 @@ class YOLO(object):
     def close_session(self):
         self.sess.close()
 
-
 def detect_video(yolo, video_path, output_path=""):
+    import cv2
     vid = cv2.VideoCapture(video_path)
     if not vid.isOpened():
         raise IOError("Couldn't open webcam or video")
@@ -196,7 +188,7 @@ def detect_video(yolo, video_path, output_path=""):
     prev_time = timer()
     while True:
         return_value, frame = vid.read()
-        image = frame
+        image = Image.fromarray(frame)
         image = yolo.detect_image(image)
         result = np.asarray(image)
         curr_time = timer()

@@ -4,85 +4,15 @@ import keras.backend as K
 from keras.layers import Input, Lambda
 from keras.models import Model
 from keras.optimizers import Adam
-from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
+from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from PIL import Image
 import shutil
 import time
-import sys
-import datetime
-import warnings
 
-from yolo3.model_yolo import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
+from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
 from yolo import YOLO
 from config import *
-
-
-class NBatchLoggerCheckpoint(Callback):
-    """
-    A Logger that log average performance per `display` steps.
-    """
-    def __init__(self, display_period, checkpoint_period, filepath, verbose=0, save_weights_only=False):
-        super(NBatchLoggerCheckpoint, self).__init__()
-        self.verbose = verbose
-        self.filepath = filepath
-        self.save_weights_only = save_weights_only
-
-        self.display_period = display_period
-        self.metric_cache = {}
-        self.display_time = time.time()
-        self.checkpoint_time = time.time()
-        self.epoch = 0
-        self.checkpoint_period = checkpoint_period
-        self.batch = 0
-        self.batch_last_log = 0
-
-    def on_epoch_begin(self, epoch, logs=None):
-        self.epoch = epoch
-
-    def on_batch_end(self, batch, logs={}):
-        self.batch += 1
-        for k in self.params['metrics']:
-            if k in logs:
-                self.metric_cache[k] = self.metric_cache.get(k, 0) + logs[k]
-        if time.time() - self.display_period > self.display_time:
-            self.display_time = time.time()
-            metrics_log = ''
-            for (k, v) in self.metric_cache.items():
-                val = v / (self.batch - self.batch_last_log)
-                if abs(val) > 1e-3:
-                    metrics_log += ' - %s: %.4f' % (k, val)
-                else:
-                    metrics_log += ' - %s: %.4e' % (k, val)
-            self.batch_last_log = self.batch
-
-            print()
-            print(datetime.datetime.now(), end="")
-            print(' step: {}/{} ['.format(self.batch,
-                                          self.params['steps']), end="")
-            progress = int(self.batch / self.params['steps'] * 25)
-            print('=' * progress, end="")
-            if progress == 0:
-                print('.', end="")
-            elif progress == 24:
-                print('=', end="")
-            else:
-                print('>', end="")
-            print('.' * (24 - progress), end="")
-            print(']{}'.format(metrics_log), end="")
-            sys.stdout.flush()
-            self.metric_cache.clear()
-        if time.time() - self.checkpoint_period > self.checkpoint_time:
-            self.checkpoint_time = time.time()
-            logs = logs or {}
-            filepath = self.filepath.format(epoch=self.epoch + 1, **logs)
-            if self.verbose > 0:
-                print('\nEpoch %05d: saving model to %s' % (self.epoch + 1, filepath))
-            if self.save_weights_only:
-                self.model.save_weights(filepath, overwrite=True)
-            else:
-                self.model.save(filepath, overwrite=True)
-
 
 
 def train():
@@ -120,15 +50,11 @@ def train():
             #     freeze_body=2, weights_path='model_data/yolo.h5') # make sure you know what you freeze
     else:
         current_epoch = int(latest[2:5])
-        if latest[6] == 'h':
-            current_epoch -= 1
         model = create_model(input_shape, anchors, num_classes, freeze_body=2,
                              weights_path=log_dir + latest)  # make sure you know what you freeze
         print(log_dir + latest)
 
-    logging = TensorBoard(log_dir=log_dir, write_images=True, update_freq='batch')
-    batch_callback = NBatchLoggerCheckpoint(TRAINING_LOG_PERIOD, TRAINING_CHECKPOINT_PERIOD,
-                                     log_dir + 'ep{epoch:03d}-hourly_checkpoint.h5', save_weights_only=True)
+    logging = TensorBoard(log_dir=log_dir, write_images=True)
     checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
         monitor='val_loss', save_weights_only=True, save_best_only=True, period=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
@@ -136,17 +62,14 @@ def train():
 
     with open(annotation_path) as f:
         lines = f.readlines()
-    np.random.seed(10101)
-    # np.random.shuffle(lines)
-    # np.random.seed(None)
+    # np.random.seed(10101)
+    np.random.shuffle(lines)
+    np.random.seed(None)
     test_lines = lines[0:int(len(lines) * DATASET_TEST_PART)]
     lines = lines[int(len(lines) * DATASET_TEST_PART):]
     val_split = DATASET_VALIDATION_PART / (DATASET_TRAINING_PART + DATASET_VALIDATION_PART)
     num_val = int(len(lines) * val_split)
     num_train = len(lines) - num_val
-    # np.random.shuffle(lines[:num_train])
-    for i, f in enumerate(lines):
-        print(i, f, end="")
 
     # Train with frozen layers first, to get a stable loss.
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
@@ -159,7 +82,7 @@ def train():
             if is_tiny_version:
                 batch_size = 2
             else:
-                batch_size = 1
+                batch_size = 1 # note that more GPU memory is required after unfreezing the body
         else:
             batch_size = 32
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
@@ -169,7 +92,6 @@ def train():
                 validation_steps=max(1, num_val//batch_size),
                 epochs=TRAINING_STAGE_1_EPOCHS,
                 initial_epoch=current_epoch,
-                # verbose=2,
                 callbacks=[logging, checkpoint, reduce_lr])
         model.save_weights(log_dir + 'trained_weights_stage_1.h5')
         current_epoch = TRAINING_STAGE_1_EPOCHS
@@ -330,7 +252,7 @@ def data_generator(annotation_lines, batch_size, input_shape, anchors, num_class
         for b in range(batch_size):
             if i==0:
                 np.random.shuffle(annotation_lines)
-            image, box = get_random_data(annotation_lines[i], input_shape, random=TRAINING_RANDOM_MODIFY)
+            image, box = get_random_data(annotation_lines[i], input_shape, random=True)
             image_data.append(image)
             box_data.append(box)
             i = (i+1) % n
