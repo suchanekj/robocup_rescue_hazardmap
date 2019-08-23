@@ -2,8 +2,7 @@
 
 from functools import reduce
 
-# from PIL import Image
-import cv2
+from PIL import Image
 import numpy as np
 from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
 
@@ -20,32 +19,30 @@ def compose(*funcs):
 
 def letterbox_image(image, size):
     '''resize image with unchanged aspect ratio using padding'''
-    ih, iw = image.shape[0:2]
+    iw, ih = image.size
     w, h = size
     scale = min(w/iw, h/ih)
     nw = int(iw*scale)
     nh = int(ih*scale)
 
-    image = cv2.resize(image, (nh,nw))
-    new_image = np.ones((*size, 3)) * 128
-    new_image[(w-nw)//2:(w+nw)//2, (h-nh)//2:(h+nh)//2] = image
+    image = image.resize((nw,nh), Image.BICUBIC)
+    new_image = Image.new('RGB', size, (128,128,128))
+    new_image.paste(image, ((w-nw)//2, (h-nh)//2))
     return new_image
 
 def rand(a=0, b=1):
     return np.random.rand()*(b-a) + a
 
-def get_random_data(annotation_line, input_shape, random=False, max_boxes=20, jitter=.3, hue=.02, sat=1.5, val=1.5, proc_img=True):
+def get_random_data(annotation_line, input_shape, random=True, max_boxes=20, jitter=.3, hue=.1, sat=1.5, val=1.5, proc_img=True):
     '''random preprocessing for real-time data augmentation'''
     line = annotation_line.split()
-    image = cv2.imread(line[0])
-    ih, iw = image.shape[:2]
-    # print(image.shape)
+    image = Image.open(line[0])
+    iw, ih = image.size
     h, w = input_shape
     box = np.array([np.array(list(map(int,box.split(',')))) for box in line[1:]])
 
     if not random:
         # resize image
-        # print(w, h, iw, ih)
         scale = min(w/iw, h/ih)
         nw = int(iw*scale)
         nh = int(ih*scale)
@@ -53,16 +50,10 @@ def get_random_data(annotation_line, input_shape, random=False, max_boxes=20, ji
         dy = (h-nh)//2
         image_data=0
         if proc_img:
-            image = cv2.resize(image, (nw, nh))
-            # cv2.imwrite("fgshd.png", image)
-            new_image = np.ones((h, w, 3)) * 128
-            # cv2.imwrite("juyhtgrfsd.png", new_image)
-            # print(new_image.shape)
-            # print(image.shape)
-            new_image[dy:dy+nh, dx:dx+nw] = image
-            # print(new_image.shape)
-            # cv2.imwrite("tfdfgshd.png", new_image)
-            image_data = new_image/255.
+            image = image.resize((nw,nh), Image.BICUBIC)
+            new_image = Image.new('RGB', (w,h), (128,128,128))
+            new_image.paste(image, (dx, dy))
+            image_data = np.array(new_image)/255.
 
         # correct boxes
         box_data = np.zeros((max_boxes,5))
@@ -84,19 +75,18 @@ def get_random_data(annotation_line, input_shape, random=False, max_boxes=20, ji
     else:
         nw = int(scale*w)
         nh = int(nw/new_ar)
-    image = cv2.resize(image, (nw, nh))
+    image = image.resize((nw,nh), Image.BICUBIC)
 
     # place image
     dx = int(rand(0, w-nw))
     dy = int(rand(0, h-nh))
-    new_image = np.ones((w, h, 3)) * 128
-    new_image[dx:dx + nw, dy:dy + nh] = image
+    new_image = Image.new('RGB', (w,h), (128,128,128))
+    new_image.paste(image, (dx, dy))
     image = new_image
 
     # flip image or not
     flip = rand()<.5
-    if flip:
-        image = np.fliplr(image)
+    if flip: image = image.transpose(Image.FLIP_LEFT_RIGHT)
 
     # distort image
     hue = rand(-hue, hue)
