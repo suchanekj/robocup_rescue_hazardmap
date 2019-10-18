@@ -29,7 +29,9 @@ objectIDs = {}
 baseList = []
 baseFiles = []
 baseDefaultNamesPositions = []
-
+doorBases = []
+personBases = []
+nothingBases = []
 
 # Door - /m/02dgv
 # Fire extinguisher - folder
@@ -73,7 +75,7 @@ def generate_qr_codes():
         qrcode.png(output_folder + str(i) + ".png", scale = 200 // size)
 
 
-def filterObjects():
+def filterObjects(size_step):
     object_fs = os.listdir("objects")
     shutil.rmtree("filtered_objects/", ignore_errors=True)
     time.sleep(0.5)
@@ -137,13 +139,13 @@ def filterObjects():
 
                 res[(a - x1 + x0) // 2: (a + x1 - x0) // 2, (a - y1 + y0) // 2: (a + y1 - y0) // 2] = img[x0:x1, y0:y1]
 
-                res = cv2.resize(res, (400, 400))
+                res = cv2.resize(res, (DATASET_TRAINING_OBJECT_SIZES[size_step], DATASET_TRAINING_OBJECT_SIZES[size_step]))
 
             else:
                 res = img[x0:x1, y0:y1]
 
-                scale_h = 400 / res.shape[0]
-                scale_w = 400 / res.shape[0]
+                scale_h = DATASET_TRAINING_OBJECT_SIZES[size_step] / res.shape[0]
+                scale_w = DATASET_TRAINING_OBJECT_SIZES[size_step] / res.shape[0]
                 scale = min(scale_h, scale_w)
                 new_shape = tuple(map(int, np.round([res.shape[1] * scale, res.shape[0] * scale])))
 
@@ -185,13 +187,14 @@ def filterOpenImages():
     print(num)
 
 
-def makeObjectList():
+def makeObjectList(size_step):
     global objectImgs
     global objectList
     global objectNames
     global objectIDs
     object_fs = os.listdir("filtered_objects")
-    names_f = open(DATASET_LOCATION + "/labelNames.txt", "w")
+    dataset_f = DATASET_LOCATION + str(size_step)
+    names_f = open(dataset_f + "/labelNames.txt", "w")
     from_bases_num = len(objectNames)
     for obj in object_fs:
         objectImgs.append([])
@@ -225,14 +228,14 @@ def makeObjectList():
     names_f.close()
 
 
-def makeBaseList():
+def makeBaseList(size_step):
     global baseList
     global baseFiles
     global baseDefaultNamesPositions
-    names_f = open(DATASET_LOCATION + "/labelNames.txt", "a")
-    doorBases = []
-    personBases = []
-    nothingBases = []
+    global doorBases, personBases, nothingBases
+    dataset_f = DATASET_LOCATION + str(size_step)
+    names_f = open(dataset_f + "/labelNames.txt", "a")
+
     parts = ["validation", "test"]
     all_df = pd.read_csv("openimages/all-annotations-bbox.csv", index_col=0)
     doors = 0
@@ -247,40 +250,43 @@ def makeBaseList():
         names_f.write(str(objectIDs[objName]) + " " + objName + "\n")
 
     id = 0
-    for part in parts:
-        files = os.listdir("openimages/" + part)
-        for f in files:
-            if len(doorBases) >= DATASET_NUM_IMAGES // 20:
-                continue
-            name = f[:-4]
-            objects_df = all_df[all_df["ImageID"] == name]
-            if len(objects_df) > 3:
-                continue
-            print(".", end="")
-            sys.stdout.flush()
-            if (id + 1) % 100 == 0:
-                print(id)
-            if len(objects_df) == 0:
-                nothingBases.append(id)
-            elif DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"].values[0]] == "door":
-                doorBases.append(id)
-            else:
-                personBases.append(id)
+    if len(baseDefaultNamesPositions) == 0:
+        for part in parts:
+            files = os.listdir("openimages/" + part)
+            for f in files:
+                if DEBUG and len(doorBases) >= 1 and len(nothingBases) >= 1 and len(personBases) >= 1:
+                    continue
+                if len(doorBases) >= DATASET_NUM_IMAGES // 10:
+                    continue
+                name = f[:-4]
+                objects_df = all_df[all_df["ImageID"] == name]
+                if len(objects_df) > 3:
+                    continue
+                print(".", end="")
+                sys.stdout.flush()
+                if (id + 1) % 100 == 0:
+                    print(id)
+                if len(objects_df) == 0:
+                    nothingBases.append(id)
+                elif DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"].values[0]] == "door":
+                    doorBases.append(id)
+                else:
+                    personBases.append(id)
 
-            rows, cols, ch = cv2.imread("openimages/" + part + "/" + f, cv2.IMREAD_COLOR).shape
-            namesPositions = []
-            for i in objects_df.index:
-                object_name = DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"][i]]
-                x0 = int(cols * objects_df["XMin"][i])
-                x1 = int(cols * objects_df["XMax"][i])
-                y0 = int(rows * objects_df["YMin"][i])
-                y1 = int(rows * objects_df["YMax"][i])
-                namesPositions.append([object_name, x0, y0, x1, y1])
+                rows, cols, ch = cv2.imread("openimages/" + part + "/" + f, cv2.IMREAD_COLOR).shape
+                namesPositions = []
+                for i in objects_df.index:
+                    object_name = DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"][i]]
+                    x0 = int(cols * objects_df["XMin"][i])
+                    x1 = int(cols * objects_df["XMax"][i])
+                    y0 = int(rows * objects_df["YMin"][i])
+                    y1 = int(rows * objects_df["YMax"][i])
+                    namesPositions.append([object_name, x0, y0, x1, y1])
 
-            baseFiles.append("openimages/" + part + "/" + f)
-            baseDefaultNamesPositions.append(namesPositions)
+                baseFiles.append("openimages/" + part + "/" + f)
+                baseDefaultNamesPositions.append(namesPositions)
 
-            id += 1
+                id += 1
 
     print("loaded, making list", objectSplit)
     for i in range(DATASET_NUM_IMAGES * 2):
@@ -318,10 +324,11 @@ def name_to_config_key(name):
             return key
 
 
-def objectMake(obj):
+def objectMake(obj, size_step):
+    strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     out = [None, None]
     if isinstance(obj, Iterable):
-        crop_strength = DATASET_OBJECT_CROP_STRENGTH["hazmat"]
+        crop_strength = strength_mod * DATASET_OBJECT_CROP_STRENGTH["hazmat"]
         x = []
         crop_1 = rand(0, crop_strength) if rand() < 0.34 * (0.5 + crop_strength) else 0
         crop_2 = rand(0, crop_strength) if rand() < 0.34 * (0.5 + crop_strength) else 0
@@ -354,7 +361,7 @@ def objectMake(obj):
         out[1] = name
     else:
         out[1] = objectNames[obj]
-        crop_strength = DATASET_OBJECT_CROP_STRENGTH[name_to_config_key(out[1])]
+        crop_strength = strength_mod * DATASET_OBJECT_CROP_STRENGTH[name_to_config_key(out[1])]
         crop_x = rand(0, crop_strength) if rand() < (0.5 + crop_strength) else 0
         img = random.choice(objectImgs[obj])
         img = copy.deepcopy(img)
@@ -363,14 +370,15 @@ def objectMake(obj):
     return out
 
 
-def objectFilter(srcA, name):
+def objectFilter(srcA, name, size_step):
+    strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     rows, cols, colors = srcA.shape
     srcA = np.asarray(srcA, np.uint8)
 
     config_key = name_to_config_key(name)
 
-    if rand() < 0.9 * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]
+    if rand() < 0.9 * strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]
         noise = np.zeros((rows, cols, 4))
         m = np.array([255 * rand(), 255 * rand(), 255 * rand(), 40 * strength * rand()])
         sigma = np.array([80 * rand(), 80 * rand(), 80 * rand(), 4 * strength * rand()])
@@ -382,21 +390,21 @@ def objectFilter(srcA, name):
         srcA[3] = np.multiply(srcA[3], (1 - noise[3] / 255)) + noise[3]
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.6 * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.6 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
         rad = (rows + cols) / 4 * (0.25 + 0.75 * rand())
         thickness = (rows + cols) / 4 * strength * rand()
         cv2.circle(srcA, (int(rows * rand()), int(cols * rand())), int(rad + thickness/2),
                    (0, 0, 0, 0), int(thickness))
 
-    if rand() < 0.6 * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.6 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
         for j in range(int(rand() * rand() * 5 * strength) + 1):
             x = [(int(rows * (-0.5 + 2 * rand())), int(cols * (-0.5 + 2 * rand()))) for i in range(2)]
             cv2.line(srcA, x[0], x[1], (0, 0, 0, 0), int(1 + rand() * (rows + cols) / 10 * strength))
 
-    if rand() < 0.6 * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.6 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
         text = np.zeros((rows, cols, 4))
         for j in range(int(1 + 5 * rand() * strength)):
             txt = "".join([random.choice(string.ascii_letters) for i in range(int(15 * rand(0.1, strength)))])
@@ -412,18 +420,18 @@ def objectFilter(srcA, name):
         srcA[3] = np.multiply(srcA[3], (1 - text[3] / 255)) + text[3]
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.25 * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.25 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
         srcA = cv2.medianBlur(srcA, 1 + 2 * int(rand(0, strength)**3 * rand(0, strength) * (rows + cols) / 40))
 
-    if rand() < 0.25 * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.25 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
         size_1 = 1 + 2 * int(rand(0, strength)**3 * rand(0, strength) * (rows + cols) / 200)
         size_2 = 1 + 2 * int(rand(0, strength)**3 * rand(0, strength) * (rows + cols) / 200)
         srcA = cv2.blur(srcA, (size_1, size_2))
 
-    if rand() < 0.3 * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.3 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
         srcA = srcA.transpose((2, 0, 1))
         c = 1. - 0.6 * rand(0, strength)
         a = np.linspace(c + rand(0, strength) * (1 - c), c + rand(0, strength) * (1 - c), rows)[:, None]
@@ -432,8 +440,8 @@ def objectFilter(srcA, name):
         srcA[0:3] = 255 - np.multiply(255 - srcA[0:3], gradient)
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.5 * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.5 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
         srcA = srcA.transpose((2, 0, 1))
         c = 1. - 0.6 * rand(0, strength)
         a = np.linspace(c + rand(0, strength) * (1 - c), c + rand(0, strength) * (1 - c), rows)[:, None]
@@ -442,8 +450,8 @@ def objectFilter(srcA, name):
         srcA[0:3] = np.multiply(srcA[0:3], gradient)
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.95 * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]:
-        strength = DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]
+    if rand() < 0.95 * strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]:
+        strength = strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]
         hue = 0.3 * strength
         sat = 1 + 1. * strength
         val = 1 + 1. * strength
@@ -465,7 +473,8 @@ def objectFilter(srcA, name):
     return srcA, name
 
 
-def objectPerspective(srcA, name):
+def objectPerspective(srcA, name, size_step):
+    strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     config_key = name_to_config_key(name)
     names = name.split(';')
     rows, cols, colors = srcA.shape
@@ -488,7 +497,10 @@ def objectPerspective(srcA, name):
     img = np.zeros((rows * 2, cols * 2, 4))
     img[rows // 2:rows // 2 + rows,cols // 2:cols // 2 + cols] = srcA
 
-    a = 1/2 - 0.3 * DATASET_OBJECT_PERSPECTIVE_STRENGTH[config_key]
+    # Warp
+
+    # Perspective
+    a = 1/2 - 0.3 * strength_mod * DATASET_OBJECT_PERSPECTIVE_STRENGTH[config_key]
     pts1 = np.float32([[rows // 2, cols // 2], [rows // 2 + rows, cols // 2],
                        [rows // 2, cols // 2 + cols], [rows // 2 + rows, cols // 2 + cols]])
     pts2 = np.float32([[int(rows * (a + random.random() * (1 - 2 * a))),
@@ -504,12 +516,53 @@ def objectPerspective(srcA, name):
     for a in range(len(points)):
         points[a] = np.float32( cv2.perspectiveTransform(points[a].reshape(1, -1, 2), M).reshape(-1, 2))
 
-    M = cv2.getRotationMatrix2D((cols, rows), rand(), 1)
+    # Rotation 1 / 2
+    M = cv2.getRotationMatrix2D((cols, rows), (1 - 2 * rand()) * 180 * DATASET_OBJECT_ROTATION_STRENGTH[config_key] / 2, 1)
     img = cv2.warpAffine(img, M, (rows * 2, cols * 2))
     for a in range(len(points)):
         points[a] = np.int32( cv2.transform(points[a].reshape(1, -1, 2), M).reshape(-1, 2))
+
+    # Camera distortion
+    DIM = img.shape[:2]
+    K = np.array([[img.shape[0] * rand(0.4, 0.6), 0.0, img.shape[0] * rand(0.4, 0.6)],
+                  [0.0, img.shape[0] * rand(0.4, 0.6), img.shape[0] * rand(0.4, 0.6)],
+                  [0.0, 0.0, 1.0]])
+    if rand(-1, 1) > 0:
+        center = 3 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
+        scale = 4 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
+    else:
+        center = -0.2 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
+        scale = 0.5 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
+    D = np.array([[0.707107 + center + scale * rand(-1,1)], [center + scale * rand(-1,1)],
+                  [0.707107 + center + scale * rand(-1,1)], [center + scale * rand(-1,1)]])
+
+    map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), K, DIM, cv2.CV_16SC2)
+    img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+
+    # Rotation 2 / 2
+    M = cv2.getRotationMatrix2D((cols, rows), (1 - 2 * rand()) * 180 * DATASET_OBJECT_ROTATION_STRENGTH[config_key] / 2, 1)
+    img = cv2.warpAffine(img, M, (rows * 2, cols * 2))
+    for a in range(len(points)):
+        points[a] = np.int32( cv2.transform(points[a].reshape(1, -1, 2), M).reshape(-1, 2))
+
+    for a in range(len(points)):
         corners.append([(np.min(points[a].transpose()[0]), np.min(points[a].transpose()[1])),
                         (np.max(points[a].transpose()[0]), np.max(points[a].transpose()[1]))])
+
+    # Erode alpha
+    img[:,:,3] = np.round(img[:,:,3] / 255).astype(img.dtype) * 255
+    erosion_size = int(rand(1, DATASET_EROSION_MAX_SIZE[size_step]))
+    erosion_type = cv2.MORPH_ELLIPSE
+    element = cv2.getStructuringElement(erosion_type, (2 * erosion_size + 1, 2 * erosion_size + 1),
+                                       (erosion_size, erosion_size))
+    img[:,:,3] = cv2.erode(img[:,:,3], element)
+    # diff_alpha = img[:,:,3] - new_alpha
+    # print(np.sum(diff_alpha), np.sum(diff_alpha) / np.sum(img[:,:,3]))
+    # img = img.astype(np.int16)
+    # img = img.transpose((2, 0, 1))
+    # img += diff_alpha.astype(np.int16)
+    # img = np.clip(img, 0, 255).astype(np.uint8)
+    # img = img.transpose((1, 2, 0))
 
     namesPositions = []
     for i in range(len(names)):
@@ -522,12 +575,12 @@ def objectPerspective(srcA, name):
     return img, namesPositions
 
 
-def makeBase(base_num):
+def makeBase(base_num, size_step):
     base_img = cv2.imread(baseFiles[base_num], cv2.IMREAD_COLOR)
     base_name_pos = copy.deepcopy(baseDefaultNamesPositions[base_num])
 
-    scale_h = DATASET_DEFAULT_SHAPE[0] / base_img.shape[0]
-    scale_w = DATASET_DEFAULT_SHAPE[1] / base_img.shape[1]
+    scale_h = DATASET_TRAINING_SHAPES[size_step][0] / base_img.shape[0]
+    scale_w = DATASET_TRAINING_SHAPES[size_step][1] / base_img.shape[1]
     scale = max(scale_h, scale_w)
     new_shape = tuple(map(int, np.round([base_img.shape[0] * scale, base_img.shape[1] * scale])))
 
@@ -537,27 +590,28 @@ def makeBase(base_num):
         for i in range(1, 5):
             name_pos[i] = int(scale * name_pos[i])
 
-    position = (random.randint(0, new_shape[0] - DATASET_DEFAULT_SHAPE[0]),
-                random.randint(0, new_shape[1] - DATASET_DEFAULT_SHAPE[1]))
-    base_img = base_img[position[0]:position[0] + DATASET_DEFAULT_SHAPE[0],
-                        position[1]:position[1] + DATASET_DEFAULT_SHAPE[1]]
+    position = (random.randint(0, new_shape[0] - DATASET_TRAINING_SHAPES[size_step][0]),
+                random.randint(0, new_shape[1] - DATASET_TRAINING_SHAPES[size_step][1]))
+    base_img = base_img[position[0]:position[0] + DATASET_TRAINING_SHAPES[size_step][0],
+                        position[1]:position[1] + DATASET_TRAINING_SHAPES[size_step][1]]
 
     final_name_pos = []
     for name_pos in base_name_pos:
         for i in range(1, 5):
-            name_pos[i] = min(max(name_pos[i] - position[i % 2], 0), DATASET_DEFAULT_SHAPE[i % 2])
+            name_pos[i] = min(max(name_pos[i] - position[i % 2], 0), DATASET_TRAINING_SHAPES[size_step][i % 2])
         if (name_pos[3] - name_pos[1]) * (name_pos[4] - name_pos[2]) > 0:
             final_name_pos.append(name_pos)
 
     return base_img, final_name_pos
 
 
-def placeObject(obj, objectNamesPositions, base, baseNamesPositions):
+def placeObject(obj, objectNamesPositions, base, baseNamesPositions, size_step):
+    strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     for _ in range(10):
         config_key = name_to_config_key(objectNamesPositions[0][0])
         size_max = 0.3 + 2 / (len(objectNamesPositions) + len(baseNamesPositions))
-        size = 0.02 + size_max * (1 - DATASET_OBJECT_ZOOM_STRENGTH[config_key]) + \
-               size_max * rand() * rand() * DATASET_OBJECT_ZOOM_STRENGTH[config_key]
+        size = 0.02 + size_max * (1 - strength_mod * DATASET_OBJECT_ZOOM_STRENGTH[config_key]) + \
+               size_max * rand() * rand() * strength_mod * DATASET_OBJECT_ZOOM_STRENGTH[config_key]
         label = cv2.resize(obj, None, fx=size, fy=size, interpolation=cv2.INTER_AREA)
         lrows, lcols, lcolors = label.shape
         brows, bcols, bcolors = base.shape
@@ -565,10 +619,10 @@ def placeObject(obj, objectNamesPositions, base, baseNamesPositions):
         if len(objectNamesPositions) == 4:
             position = (int(random.random() * (brows - lrows)), int(random.random() * (bcols - lcols)))
         else:
-            position = (int(random.random() * (brows - lrows * (1 - DATASET_OBJECT_CROP_STRENGTH[config_key]))
-                            - lrows / 2 * DATASET_OBJECT_CROP_STRENGTH[config_key]),
-                        int(random.random() * (bcols - lcols * (1 - DATASET_OBJECT_CROP_STRENGTH[config_key]))
-                            - lcols / 2 * DATASET_OBJECT_CROP_STRENGTH[config_key]))
+            position = (int(random.random() * (brows - lrows * (1 - strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]))
+                            - lrows / 2 * strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]),
+                        int(random.random() * (bcols - lcols * (1 - strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]))
+                            - lcols / 2 * strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]))
 
         overlapped = False
         for base_name_pos in baseNamesPositions:
@@ -606,9 +660,10 @@ def placeObject(obj, objectNamesPositions, base, baseNamesPositions):
     return base, baseNamesPositions
 
 
-def filterImages(base, namesPositions):
+def filterImages(base, namesPositions, size_step):
     rows, cols, channels = base.shape[:3]
     base = np.asarray(base, np.uint8)
+    strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
 
     keys = []
     for key in DATASET_OBJECT_CROP_STRENGTH.keys():
@@ -619,19 +674,19 @@ def filterImages(base, namesPositions):
     keys = list(set(keys))
 
     if len(keys) > 0:
-        blur_strength = np.min([DATASET_OBJECT_BLUR_CUT_STRENGTH[key] for key in keys])
-        colour_strength = np.min([DATASET_OBJECT_COLOUR_FILTER_STRENGTH[key] for key in keys])
+        blur_strength = np.min([strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[key] for key in keys])
+        colour_strength = np.min([strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[key] for key in keys])
     else:
         blur_strength = 1.
         colour_strength = 1.
 
-    if random.random() < 0.5 * blur_strength:
+    if random.random() < 0.5 * strength_mod:
         angle = 2 * np.pi * rand()
         x = np.sin(angle)
         y = np.cos(angle)
         src = base
-        reps = int(rand() * rand() * 50 * blur_strength)
-        step = (rand(0.02, 0.3) + rand(0, 0.3)) * blur_strength
+        reps = int(rand() * rand() * 100 * strength_mod)
+        step = (rand(0.02, 0.3) + rand(0, 0.3)) * strength_mod
         base = base / (2 * reps + 1)
 
         for i in range(reps):
@@ -669,14 +724,25 @@ def filterImages(base, namesPositions):
     return base, namesPositions
 
 
-def writeImages(base, namesPositions):
-    f = open(DATASET_LOCATION + "/labels.txt", "a+")
+# lastIndex = 4
 
-    for a in range(len(namesPositions)):
-        cv2.rectangle(base, tuple(namesPositions[a][1:3]), tuple(namesPositions[a][3:]), (255, 0, 255, 255), 1)
+def writeImages(base, namesPositions, size_step):
+    strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
+    dataset_f = DATASET_LOCATION + str(size_step)
+    f = open(dataset_f + "/labels.txt", "a+")
 
-    index = len(os.listdir(DATASET_LOCATION)) - 2
-    f.write(os.getcwd() + "\\" + DATASET_LOCATION + "\\" + str(index).zfill(7) + ".png ")
+    is_jpg = rand() < 0.5 * strength_mod
+
+    if DEBUG:
+        for a in range(len(namesPositions)):
+            print("DRAWING RECTANGLE!!!")
+            cv2.rectangle(base, tuple(namesPositions[a][1:3]), tuple(namesPositions[a][3:]), (255, 0, 255, 255), 1)
+
+    index = len(os.listdir(dataset_f)) - 2
+    # if index > 5:
+    #     lastIndex += 1
+    #     index = lastIndex
+    f.write(os.getcwd() + "/" + dataset_f + "/" + str(index).zfill(7) + (".jpg " if is_jpg else ".png "))
     for a in range(len(namesPositions)):
         if (namesPositions[a][1] - namesPositions[a][3]) * (namesPositions[a][2] - namesPositions[a][3]) == 0:
             continue
@@ -686,139 +752,100 @@ def writeImages(base, namesPositions):
         if a != len(namesPositions) - 1:
             f.write(' ')
     f.write('\n')
-    cv2.imwrite(DATASET_LOCATION + "\\" + str(index).zfill(7) + ".png", base)
+    # print("saving as", dataset_f + "/" + str(index).zfill(7) + ".png")
+    if is_jpg:
+        cv2.imwrite(dataset_f + "/" + str(index).zfill(7) + ".jpg", base, [cv2.IMWRITE_JPEG_QUALITY, int(rand(85,10))])
+    else:
+        cv2.imwrite(dataset_f + "/" + str(index).zfill(7) + ".png", base)
     f.close()
 
 
-def createLabels():
-    if os.path.exists(DATASET_LOCATION):
-        shutil.rmtree(DATASET_LOCATION)
-        time.sleep(0.2)
-    os.makedirs(DATASET_LOCATION)
-    print("make object list")
-    filterObjects()
-    makeObjectList()
-    print("make_base_list")
-    makeBaseList()
-    print("make dataset")
-    time_makeBase = 0
-    time_objectMake = 0
-    time_objectFilter = 0
-    time_objectPerspective = 0
-    time_placeObject = 0
-    time_filterImages = 0
-    time_writeImages = 0
-    while len(os.listdir(DATASET_LOCATION)) - 2 < DATASET_NUM_IMAGES:
-        print(".", end="")
-        sys.stdout.flush()
-        if len(os.listdir(DATASET_LOCATION)) % 100 == 0:
-            print(len(os.listdir(DATASET_LOCATION)) - 2)
-        num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))), p=DATASET_OBJECT_PLACE_CHANCE)
-
-        t = time.time()
-
-        base_num = baseList.pop(0)
-        base_img, base_name_pos = makeBase(base_num)
-        time_makeBase += time.time() - t
-        t = time.time()
-
-        for i in range(num_labels):
-            obj_num = objectList.pop(0)
-            obj_img, obj_name_pos = objectMake(obj_num)
-            time_objectMake += time.time() - t
-            t = time.time()
-            obj_img, obj_name_pos = objectFilter(obj_img, obj_name_pos)
-            time_objectFilter += time.time() - t
-            t = time.time()
-            obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos)
-            time_objectPerspective += time.time() - t
-            t = time.time()
-            base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos)
-            time_placeObject += time.time() - t
-            t = time.time()
-        base_img, base_name_pos = filterImages(base_img, base_name_pos)
-        time_filterImages += time.time() - t
-        t = time.time()
-        writeImages(base_img, base_name_pos)
-        time_writeImages += time.time() - t
-    print("time_makeBase", time_makeBase)
-    print("time_objectMake", time_objectMake)
-    print("time_objectFilter", time_objectFilter)
-    print("time_objectPerspective", time_objectPerspective)
-    print("time_placeObject", time_placeObject)
-    print("time_filterImages", time_filterImages)
-    print("time_writeImages", time_writeImages)
-
-
-def threadedCreateLabel(base_num, obj_nums, output):
-    base_img, base_name_pos = makeBase(base_num)
+def threadedCreateLabel(base_num, obj_nums, output, size_step):
+    base_img, base_name_pos = makeBase(base_num, size_step)
     for obj_num in obj_nums:
-        obj_img, obj_name_pos = objectMake(obj_num)
-        obj_img, obj_name_pos = objectFilter(obj_img, obj_name_pos)
-        obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos)
-        base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos)
-    base_img, base_name_pos = filterImages(base_img, base_name_pos)
+        obj_img, obj_name_pos = objectMake(obj_num, size_step)
+        obj_img, obj_name_pos = objectFilter(obj_img, obj_name_pos, size_step)
+        obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos, size_step)
+        base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos, size_step)
+    base_img, base_name_pos = filterImages(base_img, base_name_pos, size_step)
     output[0] = base_img
     output[1] = base_name_pos
 
 
 def threadedCreateLabels():
-    if os.path.exists(DATASET_LOCATION):
-        shutil.rmtree(DATASET_LOCATION)
-        time.sleep(0.2)
-    os.makedirs(DATASET_LOCATION)
+    global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions
     time_makeImage = 0
     time_writeImages = 0
     time_loadBases = 0
     time_loadObjects = 0
     num_threads = DATASET_CREATION_TREADS
-    t = time.time()
-    print("make object list")
-    # filterObjects()
-    makeObjectList()
-    time_loadBases += time.time() - t
-    t = time.time()
-    print("make_base_list")
-    makeBaseList()
-    time_loadObjects += time.time() - t
-    t = time.time()
-    print("make dataset")
-    while len(os.listdir(DATASET_LOCATION)) - 2 < DATASET_NUM_IMAGES:
-        num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))), p=DATASET_OBJECT_PLACE_CHANCE)
+    for size_step in range(DATASET_SIZE_STEPS):
+        dataset_f = DATASET_LOCATION + str(size_step)
+        if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
+                or REBUILD_DATASET:
 
-        base_num = [baseList.pop(0) for i in range(num_threads)]
-        obj_nums = [[objectList.pop(0) for i in range(num_labels)] for i in range(num_threads)]
+            if os.path.exists(dataset_f):
+                shutil.rmtree(dataset_f)
+                time.sleep(0.2)
+            os.makedirs(dataset_f)
 
-        threads = [None for i in range(num_threads)]
-        results = [[None, None] for i in range(num_threads)]
-        for i in range(num_threads):
-            threads[i] = threading.Thread(target=threadedCreateLabel, args=(base_num[i], obj_nums[i], results[i]))
-            threads[i].start()
+            objectList = []
+            objectImgs = []
+            objectNames = []
+            objectIDs = {}
+            baseList = []
 
-        for i in range(num_threads):
-            print(".", end="")
-            sys.stdout.flush()
-            if len(os.listdir(DATASET_LOCATION)) % 100 == 0:
-                print(len(os.listdir(DATASET_LOCATION)) - 2)
-            threads[i].join()
-            base_img, base_name_pos = results[i]
-            time_makeImage += time.time() - t
             t = time.time()
-            writeImages(base_img, base_name_pos)
-            time_writeImages += time.time() - t
+            print("make object list")
+            filterObjects(size_step)
+            makeObjectList(size_step)
+            time_loadBases += time.time() - t
             t = time.time()
+            print("make_base_list")
+            makeBaseList(size_step)
+            time_loadObjects += time.time() - t
+            t = time.time()
+            print("make dataset")
+            while len(os.listdir(dataset_f)) - 2 < DATASET_NUM_IMAGES:
+                num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
+                                              p=DATASET_OBJECT_PLACE_CHANCE)
+
+                base_num = [baseList.pop(0) for i in range(num_threads)]
+                obj_nums = [[objectList.pop(0) for i in range(num_labels)] for i in range(num_threads)]
+
+                threads = [None for i in range(num_threads)]
+                results = [[None, None] for i in range(num_threads)]
+                for i in range(num_threads):
+                    threads[i] = threading.Thread(target=threadedCreateLabel,
+                                                  args=(base_num[i], obj_nums[i], results[i], size_step))
+                    threads[i].start()
+
+                for i in range(num_threads):
+                    print(".", end="")
+                    sys.stdout.flush()
+                    if len(os.listdir(dataset_f)) % 100 == 0:
+                        print(len(os.listdir(dataset_f)) - 2)
+                    threads[i].join()
+                    base_img, base_name_pos = results[i]
+                    time_makeImage += time.time() - t
+                    t = time.time()
+                    writeImages(base_img, base_name_pos, size_step)
+                    time_writeImages += time.time() - t
+                    t = time.time()
     print("time_loadBases", time_loadBases)
     print("time_loadObjects", time_loadObjects)
     print("time_makeImage", time_makeImage)
     print("time_writeImages", time_writeImages)
 
 
-def createDataset():
+def createDataset(debug=False):
+    global DEBUG, DATASET_NUM_IMAGES
+    if debug:
+        DEBUG = True
+        DATASET_NUM_IMAGES = 50
     print(DATASET_NUM_IMAGES)
     if not os.path.exists("openimages/test") or not os.path.exists("openimages/validation") or REDOWNLOAD_DATASET:
         newDownload()
-    if not os.path.exists("openimages/test") or FILTER_DATASET:
+    if not os.path.exists("openimages/all-annotations-bbox.csv") or FILTER_DATASET:
         filterOpenImages()
-    if not os.path.exists(DATASET_LOCATION) or len(os.listdir(DATASET_LOCATION)) < DATASET_NUM_IMAGES \
-       or REBUILD_DATASET:
-        threadedCreateLabels()
+    threadedCreateLabels()

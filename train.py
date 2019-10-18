@@ -2,41 +2,110 @@ import os
 import numpy as np
 import keras.backend as K
 from keras.layers import Input, Lambda
+from keras.layers.normalization import BatchNormalization
 from keras.models import Model
 from keras.optimizers import Adam
-from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
+from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
 from PIL import Image
 import shutil
 import time
 
 from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
-from yolo import YOLO
+from yolo import YOLO, detect_video
 from config import *
 
 
-def train():
-    annotation_path = DATASET_LOCATION + '\\labels.txt'
+def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
+                callbacks, skip=0):
+    yolo_splits = (249, 185, 65, 0)
+    model.compile(optimizer=Adam(lr=1e-3), loss={
+        # use custom yolo_loss Lambda layer.
+        'yolo_loss': lambda y_true, y_pred: y_pred})
+
+    if AVAILABLE_MEMORY_GB == 2:
+        batch_size = 1
+    else:
+        batch_size = 16
+    if input_shape[0] * input_shape[1] <= 360 * 480:
+        batch_size *= 2
+    if input_shape[0] * input_shape[1] <= 240 * 320:
+        batch_size *= 4
+    if input_shape[0] * input_shape[1] <= 120 * 160:
+        batch_size *= 4
+    print('Train on {} samples, val on {} samples, with batch size {} for {} epochs.'
+          .format(num_train, num_val, batch_size, epochs))
+    for lr, epoch, split in zip(lrs, epochs, yolo_splits):
+        if skip >= epoch:
+            skip -= epoch
+            continue
+        if split == 65 and 120 * 160 <= input_shape[0] * input_shape[1] <= 240 * 320:
+            batch_size = batch_size // 2
+        if split == 0:
+            batch_size = batch_size // 2
+        print("batch_size", batch_size, "lr", lr)
+        model.save_weights('model_data/temp.h5')
+        model = create_model(input_shape, anchors, num_classes,
+                             freeze_body=0, weights_path='model_data/temp.h5')
+        for i in range(len(model.layers)):
+            if isinstance(model.layers[i], BatchNormalization) or i >= split:
+                model.layers[i].trainable = True
+                continue
+            model.layers[i].trainable = False
+
+        model.compile(optimizer=Adam(lr=lr/10), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+
+        print("warmup with lr", lr/10)
+        model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes),
+                            steps_per_epoch=max(1, num_train // batch_size // 10),
+                            epochs=1,
+                            initial_epoch=0)
+
+        model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+
+        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
+                            steps_per_epoch=max(1, num_train // batch_size),
+                            validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors,
+                                                                   num_classes),
+                            validation_steps=max(1, num_val // batch_size),
+                            epochs=current_epoch + epoch - skip,
+                            initial_epoch=current_epoch,
+                            callbacks=callbacks)
+        current_epoch += epoch
+    return model, current_epoch
+
+
+def train(specific=None):
     log_dir = 'logs/' + str(TRAINING_CYCLE).zfill(3) + '/'
-    classes_path = DATASET_LOCATION + '\\labelNames.txt'
+    classes_path = DATASET_LOCATION + str(0) + '/labelNames.txt'
     anchors_path = 'model_data/yolo_anchors_custom.txt'
     class_names = get_classes(classes_path)
     num_classes = len(class_names)
     anchors = get_anchors(anchors_path)
 
-    input_shape = (480, 640) # multiple of 32, hw
+    input_shape = DATASET_DEFAULT_SHAPE # multiple of 32, hw
 
     is_tiny_version = len(anchors) == 6  # default setting
-    latest = None
-    try:
-        logged_files = os.listdir(log_dir)
-        for i in range(len(logged_files)):
-            if logged_files[i][-3:] == ".h5" and logged_files[i][0:2] == "ep":
-                latest = logged_files[i]
-    except:
-        pass
+    latest_part = -1
+    if specific is None:
+        latest = None
+        try:
+            logged_files = os.listdir(log_dir)
+            for part in range(len(DATASET_TRAINING_SHAPES)):
+                for file in logged_files:
+                    if ("trained_weights_" + str(part)) in file:
+                        latest = file
+                        latest_part = part
+            # for i in range(len(logged_files)):
+            #     if logged_files[i][-3:] == ".h5" and logged_files[i][0:2] == "ep":
+            #         latest = logged_files[i]
+        except:
+            pass
+    else:
+        latest = specific
 
     if latest is None:
+        skip_epochs = 0
         current_epoch = 0
         if is_tiny_version:
             model = create_tiny_model(input_shape, anchors, num_classes,
@@ -49,119 +118,125 @@ def train():
             # model = create_model(input_shape, anchors, num_classes,
             #     freeze_body=2, weights_path='model_data/yolo.h5') # make sure you know what you freeze
     else:
-        current_epoch = int(latest[2:5])
+        if specific is None:
+            current_epoch = 0
+            skip_epochs = 0
+        else:
+            current_epoch = int(latest[2:5])
+            skip_epochs = current_epoch
         model = create_model(input_shape, anchors, num_classes, freeze_body=2,
                              weights_path=log_dir + latest)  # make sure you know what you freeze
         print(log_dir + latest)
 
     logging = TensorBoard(log_dir=log_dir, write_images=True)
     checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
-        monitor='val_loss', save_weights_only=True, save_best_only=True, period=1)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
-    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=TRAINING_STOPPING_PATIENCE, verbose=1)
+                                 monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                  patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                   patience=TRAINING_STOPPING_PATIENCE, verbose=1)
 
+    sizes = DATASET_TRAINING_SHAPES
+    epochs = TRAINING_EPOCHS
+    lrs = TRAINING_LRS
+
+    for i in range(len(sizes)):
+        if i <= latest_part:
+            current_epoch += np.sum(epochs[i])
+            continue
+        skip = 0
+        for epoch in epochs[i]:
+            if skip_epochs >= epoch:
+                skip_epochs -= epoch
+                skip += epoch
+        if skip >= np.sum(epochs[i]):
+            continue
+        skip += skip_epochs
+        skip_epochs = 0
+        annotation_path = DATASET_LOCATION + str(i) + '/labels.txt'
+        with open(annotation_path) as f:
+            lines = f.readlines()
+        np.random.seed(10101)
+        np.random.shuffle(lines)
+        np.random.seed(None)
+        lines = lines[int(len(lines) * DATASET_TEST_PART):]
+        val_split = DATASET_VALIDATION_PART / (DATASET_TRAINING_PART + DATASET_VALIDATION_PART)
+        num_val = int(len(lines) * val_split)
+        num_train = len(lines) - num_val
+
+        model, current_epoch = train_cycle(model, lrs[i], epochs[i], current_epoch, lines, num_train, num_val,
+                                           sizes[i], anchors, num_classes,
+                                           [logging, checkpoint, reduce_lr, early_stopping], skip)
+
+        model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
+
+    annotation_path = DATASET_LOCATION + str(len(sizes) - 1) + '/labels.txt'
     with open(annotation_path) as f:
         lines = f.readlines()
-    # np.random.seed(10101)
+    np.random.seed(10101)
     np.random.shuffle(lines)
     np.random.seed(None)
     test_lines = lines[0:int(len(lines) * DATASET_TEST_PART)]
-    lines = lines[int(len(lines) * DATASET_TEST_PART):]
-    val_split = DATASET_VALIDATION_PART / (DATASET_TRAINING_PART + DATASET_VALIDATION_PART)
-    num_val = int(len(lines) * val_split)
-    num_train = len(lines) - num_val
 
-    # Train with frozen layers first, to get a stable loss.
-    # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
-    if current_epoch < TRAINING_STAGE_1_EPOCHS:
-        model.compile(optimizer=Adam(lr=1e-3), loss={
-            # use custom yolo_loss Lambda layer.
-            'yolo_loss': lambda y_true, y_pred: y_pred})
+    epoch = 0
+    for i in range(len(sizes)):
+        if sizes[i] != sizes[-1]:
+            epoch += sum(epochs[i])
+            continue
+        for j in range(len(epochs[i])):
+            if epochs[i][j] == 0:
+                continue
+            epoch += epochs[i][j]
+            files = os.listdir(log_dir)
+            if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
+                print("Missing checkpoint for ep" + str(epoch).zfill(3))
+                continue
+            model_file = [f for f in files if ("ep" + str(epoch).zfill(3)) in f][0]
 
-        if AVAILABLE_MEMORY_GB == 2:
-            if is_tiny_version:
-                batch_size = 2
-            else:
-                batch_size = 1 # note that more GPU memory is required after unfreezing the body
-        else:
-            batch_size = 32
-        print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
-        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
-                steps_per_epoch=max(1, num_train//batch_size),
-                validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
-                validation_steps=max(1, num_val//batch_size),
-                epochs=TRAINING_STAGE_1_EPOCHS,
-                initial_epoch=current_epoch,
-                callbacks=[logging, checkpoint, reduce_lr])
-        model.save_weights(log_dir + 'trained_weights_stage_1.h5')
-        current_epoch = TRAINING_STAGE_1_EPOCHS
+            if TEST_EVALUATE:
+                model = create_model(input_shape, anchors, num_classes, freeze_body=2,
+                                     weights_path=log_dir + model_file)
+                batch_size = 16
+                model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+                result = model.evaluate_generator(
+                    data_generator_wrapper(test_lines, batch_size, input_shape, anchors, num_classes),
+                    steps=max(1, len(test_lines) // batch_size))
+                print(result)
 
-    # Unfreeze and continue training, to fine-tune.
-    # Train longer if the result is not good.
-    if current_epoch < TRAINING_STAGE_1_EPOCHS + TRAINING_STAGE_2_EPOCHS:
-        if is_tiny_version:
-            for i in range(len(model.layers)):
-                model.layers[i].trainable = True
-            print('Unfreeze all of the layers.')
-        else:
-            for i in range(185, len(model.layers)):
-                model.layers[i].trainable = True
-            print('Unfreeze layers 185-' + str(len(model.layers)))
+            if TEST_VISUALIZE_IMAGES or TEST_VISUALIZE_VIDEO:
+                folder = log_dir + "test" + str(epoch).zfill(3) + "/"
+                if os.path.exists(folder):
+                    shutil.rmtree(folder)
+                    time.sleep(0.2)
+                os.mkdir(folder)
+                os.mkdir(folder + "imgs/")
 
-        model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred}) # recompile to apply the change
+                settings = {
+                    "model_path": log_dir + model_file,
+                    "anchors_path": anchors_path,
+                    "classes_path": classes_path,
+                    "score": 0.05,  # 0.3
+                    "iou": 0.45,  # 0.45
+                }
+                K.clear_session()
 
-        if AVAILABLE_MEMORY_GB == 2:
-            if is_tiny_version:
-                batch_size = 2
-            else:
-                batch_size = 1 # note that more GPU memory is required after unfreezing the body
-        else:
-            batch_size = 32
-        print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
-        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
-            steps_per_epoch=max(1, num_train//batch_size),
-            validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
-            validation_steps=max(1, num_val//batch_size),
-            epochs=TRAINING_STAGE_1_EPOCHS + TRAINING_STAGE_2_EPOCHS,
-            initial_epoch=current_epoch,
-            callbacks=[logging, checkpoint, reduce_lr, early_stopping])
-        model.save_weights(log_dir + 'trained_weights_final.h5')
+                if TEST_VISUALIZE_VIDEO:
+                    yolo = YOLO(**settings)
+                    detect_video(yolo, "test.mp4", folder[:-1] + ".avi")
+                    K.clear_session()
 
-    if TEST_EVALUATE:
-        if is_tiny_version:
-            batch_size = 8
-        else:
-            batch_size = 2
-        model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
-        result = model.evaluate_generator(
-            data_generator_wrapper(test_lines, batch_size, input_shape, anchors, num_classes),
-            steps=max(1, len(test_lines) // batch_size))
-        print(result)
+                if TEST_VISUALIZE_IMAGES:
+                    yolo = YOLO(**settings)
+                    for line in test_lines:
+                        line = line.split(" ")[0]
+                        # print(line)
+                        r_image = Image.open(line)
+                        r_image = yolo.detect_image(r_image)
+                        name = line.split("/")[-1]
+                        r_image.save(folder + "imgs/" + name)
+                    yolo.close_session()
+                    K.clear_session()
 
-    if TEST_VISUALIZE:
-        if os.path.exists(log_dir + "test/"):
-            shutil.rmtree(log_dir + "test/")
-            time.sleep(0.2)
-        os.mkdir(log_dir + "test/")
-
-        settings = {
-            "model_path": log_dir + 'trained_weights_final.h5',
-            "anchors_path": anchors_path,
-            "classes_path": classes_path,
-            "score": 0.1,  # 0.3
-            "iou": 0.45,  # 0.45
-        }
-
-        yolo = YOLO(**settings)
-        for line in test_lines:
-            line = line.split(" ")[0]
-            # print(line)
-            r_image = Image.open(line)
-            r_image = yolo.detect_image(r_image)
-            name = line.split("\\")[-1]
-            r_image.save(log_dir + "\\test\\" + name)
-
-        yolo.close_session()
 
 
 def get_classes(classes_path):
@@ -200,7 +275,10 @@ def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze
         if freeze_body in [1, 2]:
             # Freeze darknet53 body or freeze all but 3 output layers.
             num = (185, len(model_body.layers)-3)[freeze_body-1]
-            for i in range(num): model_body.layers[i].trainable = False
+            for i in range(num):
+                if isinstance(model_body.layers[i], BatchNormalization):
+                    continue
+                model_body.layers[i].trainable = False
             print('Freeze the first {} layers of total {} layers.'.format(num, len(model_body.layers)))
 
     model_loss = Lambda(yolo_loss, output_shape=(1,), name='yolo_loss',

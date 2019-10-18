@@ -110,10 +110,6 @@ DATASET_DOWNLOAD_KEYWORDS = ["robotics competition", "indoors", "wood", "buildin
                              "zboreny dum",
                              "prumyslovy hazard", "keyboard", "kostkovany ubrus", "dreveny nabytek"]
 
-DATASET_DOWNLOAD_KEYWORDS = list(set(DATASET_DOWNLOAD_KEYWORDS))
-DATASET_MAX_NUM_IMAGES = 50000
-DATASET_DOWNLOAD_TIME_MUL = 1
-DATASET_NUM_IMAGES = DATASET_MAX_NUM_IMAGES
 
 # Door - /m/02dgv
 # Fire extinguisher - folder
@@ -174,15 +170,24 @@ DATASET_OBJECT_COLOUR_FILTER_STRENGTH = {"hazmat": 0.3,
                                          "fire_extinguisher_sign": 0.5,
                                          "qr_code": 0.7
                                          }
-DATASET_OBJECT_PERSPECTIVE_STRENGTH = {"hazmat": 1,
+DATASET_OBJECT_PERSPECTIVE_STRENGTH = {"hazmat": 2,
                                        "baby_doll": 0.3,
                                        "valve": 0.3,
                                        "fire_extinguisher": 0.3,
                                        "door": 0.3,
                                        "fire_exit": 0.7,
-                                       "fire_extinguisher_sign": 1,
-                                       "qr_code": 1
+                                       "fire_extinguisher_sign": 2,
+                                       "qr_code": 2
                                        }
+DATASET_OBJECT_DISTORT_STRENGTH = {"hazmat": 1,
+                                   "baby_doll": 0.1,
+                                   "valve": 0.1,
+                                   "fire_extinguisher": 0.1,
+                                   "door": 0.3,
+                                   "fire_exit": 0.3,
+                                   "fire_extinguisher_sign": 0.4,
+                                   "qr_code": 1
+                                   }
 DATASET_OPENIMAGES_LABEL_TO_OBJECT = {"/m/02dgv": "door",
                                       "/m/03bt1vf": "person",
                                       "/m/04yx4": "person",
@@ -193,35 +198,50 @@ DATASET_OPENIMAGES_FORBIDDEN_LABELS = ["/m/0167gd",  # doll
                                        "/m/0167gd"   # girl
                                        ]
 
+DATASET_DOWNLOAD_KEYWORDS = list(set(DATASET_DOWNLOAD_KEYWORDS))
+DATASET_MAX_NUM_IMAGES = 100000
+DATASET_DOWNLOAD_TIME_MUL = 1
+DATASET_NUM_IMAGES = DATASET_MAX_NUM_IMAGES
+
 DATASET_OBJECT_PLACE_CHANCE = (0.03, 0.6, 0.3, 0.07)
 DATASET_FOURS_PART = 1 / 4
 DATASET_MAX_OBJECTS_PER_IMG = len(DATASET_OBJECT_PLACE_CHANCE) - 1
 DATASET_FOUR_MEMBER_WIGGLE = 2
 DATASET_DEFAULT_SHAPE = (480, 640)
+DATASET_TRAINING_SHAPES = ((96, 128), (192, 256), (288, 384), (480, 640), (480, 640))
+DATASET_TRAINING_OBJECT_SIZES = (40, 70, 150, 200, 200)
+DATASET_FILTERING_STRENGTHS = (0.1, 0.4, 1., 1., 0.9)
+DATASET_EROSION_MAX_SIZE = (3, 5, 10, 15, 10)
+DATASET_SIZE_STEPS = len(DATASET_FILTERING_STRENGTHS)
 
-DATASET_LOCATION = "datasets/dataset_open"
+DATASET_LOCATION = "datasets/dataset_open_"
 
 DATASET_TRAINING_PART = 0.9
 DATASET_VALIDATION_PART = 0.05
 DATASET_TEST_PART = 1 - DATASET_TRAINING_PART - DATASET_VALIDATION_PART
-DATASET_CREATION_TREADS = 3
+DATASET_CREATION_TREADS = 64
 
-TRAINING_STAGE_1_EPOCHS = 10
-TRAINING_STAGE_2_EPOCHS = 100
-TRAINING_REDUCE_LR_PATIENCE = 5
+# TRAINING_EPOCHS = ((3, 3, 0, 0), (5, 5, 10, 0), (5, 5, 5, 5), (3, 3, 3, 3), (0, 3, 5, 10))
+TRAINING_EPOCHS = ((0, 0, 0, 0), (5, 5, 10, 0), (5, 5, 5, 5), (5, 5, 5, 5), (5, 5, 5, 5))
+TRAINING_LRS = ((4e-3, 4e-4, 4e-5, 4e-6), (3e-3, 3e-4, 3e-5, 3e-6), (2e-3, 2e-4, 2e-5, 2e-6), (1e-3, 1e-4, 1e-5, 1e-6), (1e-4, 1e-5, 1e-6, 1e-7))
+TRAINING_REDUCE_LR_PATIENCE = 3
 TRAINING_STOPPING_PATIENCE = 10
+TRAINING_PATIENCE_LOSS_MARGIN = 0.03
 TRAINING_RANDOM_MODIFY = False
 TRAINING_LOG_PERIOD = 100
 TRAINING_CHECKPOINT_PERIOD = 1800
-TEST_EVALUATE = True
-TEST_VISUALIZE = True
+TEST_EVALUATE = False
+TEST_VISUALIZE_IMAGES = False
+TEST_VISUALIZE_VIDEO = True
 
-MAKE_DATASET = True
+MAKE_DATASET = False
 REDOWNLOAD_DATASET = False
 FILTER_DATASET = False
-REBUILD_DATASET = False
+REBUILD_DATASET = True
 TRAIN = True
-TRAINING_CYCLE = 9
+TRAINING_CYCLE = 14
 
 MODEL_LOCATION = "model_data/yolo_original.h5"
 AVAILABLE_MEMORY_GB = 2
+
+DEBUG = False
