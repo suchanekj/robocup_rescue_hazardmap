@@ -229,7 +229,7 @@ def yolo_eval(yolo_outputs,
     return boxes_, scores_, classes_
 
 
-def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
+def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes, class_tree):
     '''Preprocess true boxes to training input format
 
     Parameters
@@ -297,6 +297,8 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
                     y_true[l][b, j, i, k, 0:4] = true_boxes[b,t, 0:4]
                     y_true[l][b, j, i, k, 4] = 1
                     y_true[l][b, j, i, k, 5+c] = 1
+                    for cl in class_tree[c]:
+                        y_true[l][b, j, i, k, 5+cl] = 1
 
     return y_true
 

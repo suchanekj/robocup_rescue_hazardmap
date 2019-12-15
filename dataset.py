@@ -32,6 +32,8 @@ baseDefaultNamesPositions = []
 doorBases = []
 personBases = []
 nothingBases = []
+objectNums = {}
+objectTree = None
 
 # Door - /m/02dgv
 # Fire extinguisher - folder
@@ -76,7 +78,11 @@ def generate_qr_codes():
 
 
 def filterObjects(size_step):
-    object_fs = os.listdir("objects")
+    object_fs = []
+    for root, dirs, files in os.walk("objects", topdown=False):
+        for name in files:
+            file = os.path.join(root, name).replace('\\', '/')
+            object_fs.append(file)
     shutil.rmtree("filtered_objects/", ignore_errors=True)
     time.sleep(0.5)
     os.makedirs("filtered_objects/")
@@ -85,73 +91,78 @@ def filterObjects(size_step):
         for key in DATASET_OBJECT_BACKGROUND_REMOVAL.keys():
             if key in obj:
                 filtering = DATASET_OBJECT_BACKGROUND_REMOVAL[key]
-        if os.path.isdir("objects/" + obj):
-            os.makedirs("filtered_objects/" + obj)
-            objs = ["objects/" + obj + "/" + f for f in os.listdir("objects/" + obj)]
+        f = obj
+        img = cv2.imread(f, cv2.IMREAD_UNCHANGED)
+        if img is None or not hasattr(img, "shape"):
+            print("Failed on", f)
+            continue
+        if len(img.shape) == 2:
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGBA)
+        h, w, ch = img.shape
+        if ch == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
+            img[:, :, 3] = 255
+        if "hazmat" in obj and "hazmat_other" not in obj:
+            M = cv2.getRotationMatrix2D((w / 2, h / 2), 45, 1)
+            img = cv2.warpAffine(img, M, (w, h))
+            img[:,:,0] *= np.clip(img[:,:,3], 0, 1)
+            img[:,:,1] *= np.clip(img[:,:,3], 0, 1)
+            img[:,:,2] *= np.clip(img[:,:,3], 0, 1)
+
+        if filtering[0]:
+            if np.average(img[0, 0, :3]) > 230:
+                img_rgb = img[:, :, :3].copy()
+                cv2.floodFill(img_rgb, np.zeros((h + 2, w + 2), np.uint8), (0, 0), (255, 255, 255),
+                              loDiff=(DATASET_OBJECT_BACKGROUND_STEP,)*3, upDiff=(DATASET_OBJECT_BACKGROUND_STEP,)*3,
+                              flags=8)
+                img[:, :, :3] = img_rgb
+            background = np.logical_or(np.logical_and(np.logical_and(img[:, :, 0] >= 254, img[:, :, 1] >= 254),
+                                                      img[:, :, 2] >= 254), img[:, :, 3] <= 250)
+            background = 255 - 255 * background
+            mask = np.zeros((h + 2, w + 2), np.uint8)
+            mask[1:-1, 1:-1] = background
+
+            background = np.zeros((h, w), np.uint8)
+            cv2.floodFill(background, mask, (0, 0), 1)
+            img[:, :, 3] = (1 - background) * img[:, :, 3]
+        if filtering[1]:
+            background = np.logical_or(np.logical_and(np.logical_and(img[:, :, 0] >= 254, img[:, :, 1] >= 254),
+                                                      img[:, :, 2] >= 254), img[:, :, 3] <= 250)
+            img[:, :, 3] = 255 - 255 * np.asarray(background, np.uint8)
+
+        x0, x1 = h + w, 0
+        y0, y1 = h + w, 0
+        props = regionprops(img)
+        for p in props:
+            # print(p.bbox)
+            x0 = min(p.bbox[0], x0)
+            x1 = max(p.bbox[3], x1)
+            y0 = min(p.bbox[1], y0)
+            y1 = max(p.bbox[4], y1)
+
+        if "hazmat" in f:
+            a = max(x1 - x0, y1 - y0)
+            res = np.ones((a, a, 4), np.uint8) * 255
+            res[:, :, 3] = 0
+
+            res[(a - x1 + x0) // 2: (a + x1 - x0) // 2, (a - y1 + y0) // 2: (a + y1 - y0) // 2] = img[x0:x1, y0:y1]
+
+            res = cv2.resize(res, (DATASET_TRAINING_OBJECT_SIZES[size_step], DATASET_TRAINING_OBJECT_SIZES[size_step]))
+
         else:
-            objs = ["objects/" + obj]
-        for f in objs:
-            img = cv2.imread(f, cv2.IMREAD_UNCHANGED)
-            if img is None or not hasattr(img, "shape"):
-                print("Failed on", f)
-                continue
-            if len(img.shape) == 2:
-                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGBA)
-            h, w, ch = img.shape
-            if ch == 3:
-                img = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
-                img[:, :, 3] = 255
-            if filtering[0]:
-                if np.average(img[0, 0, :3]) > 230:
-                    img_rgb = img[:, :, :3].copy()
-                    cv2.floodFill(img_rgb, np.zeros((h + 2, w + 2), np.uint8), (0, 0), (255, 255, 255),
-                                  loDiff=(DATASET_OBJECT_BACKGROUND_STEP,)*3, upDiff=(DATASET_OBJECT_BACKGROUND_STEP,)*3,
-                                  flags=8)
-                    img[:, :, :3] = img_rgb
-                background = np.logical_or(np.logical_and(np.logical_and(img[:, :, 0] >= 254, img[:, :, 1] >= 254),
-                                                          img[:, :, 2] >= 254), img[:, :, 3] <= 250)
-                background = 255 - 255 * background
-                mask = np.zeros((h + 2, w + 2), np.uint8)
-                mask[1:-1, 1:-1] = background
+            res = img[x0:x1, y0:y1]
 
-                background = np.zeros((h, w), np.uint8)
-                cv2.floodFill(background, mask, (0, 0), 1)
-                img[:, :, 3] = (1 - background) * img[:, :, 3]
-            if filtering[1]:
-                background = np.logical_or(np.logical_and(np.logical_and(img[:, :, 0] >= 254, img[:, :, 1] >= 254),
-                                                          img[:, :, 2] >= 254), img[:, :, 3] <= 250)
-                img[:, :, 3] = 255 - 255 * np.asarray(background, np.uint8)
+            scale_h = DATASET_TRAINING_OBJECT_SIZES[size_step] / res.shape[0]
+            scale_w = DATASET_TRAINING_OBJECT_SIZES[size_step] / res.shape[0]
+            scale = min(scale_h, scale_w)
+            new_shape = tuple(map(int, np.round([res.shape[1] * scale, res.shape[0] * scale])))
 
-            x0, x1 = h + w, 0
-            y0, y1 = h + w, 0
-            props = regionprops(img)
-            for p in props:
-                # print(p.bbox)
-                x0 = min(p.bbox[0], x0)
-                x1 = max(p.bbox[3], x1)
-                y0 = min(p.bbox[1], y0)
-                y1 = max(p.bbox[4], y1)
+            res = cv2.resize(res, new_shape)
 
-            if "hazmat" in f:
-                a = max(x1 - x0, y1 - y0)
-                res = np.ones((a, a, 4), np.uint8) * 255
-                res[:, :, 3] = 0
-
-                res[(a - x1 + x0) // 2: (a + x1 - x0) // 2, (a - y1 + y0) // 2: (a + y1 - y0) // 2] = img[x0:x1, y0:y1]
-
-                res = cv2.resize(res, (DATASET_TRAINING_OBJECT_SIZES[size_step], DATASET_TRAINING_OBJECT_SIZES[size_step]))
-
-            else:
-                res = img[x0:x1, y0:y1]
-
-                scale_h = DATASET_TRAINING_OBJECT_SIZES[size_step] / res.shape[0]
-                scale_w = DATASET_TRAINING_OBJECT_SIZES[size_step] / res.shape[0]
-                scale = min(scale_h, scale_w)
-                new_shape = tuple(map(int, np.round([res.shape[1] * scale, res.shape[0] * scale])))
-
-                res = cv2.resize(res, new_shape)
-
-            cv2.imwrite("filtered_" + ".".join(f.split(".")[:-1]) + ".png", res)
+        dir = "filtered_" + "/".join(f.split("/")[:-1])
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        cv2.imwrite("filtered_" + ".".join(f.split(".")[:-1]) + ".png", res)
 
 
 def filterOpenImages():
@@ -187,18 +198,66 @@ def filterOpenImages():
     print(num)
 
 
+class ClassTree(object):
+    def __init__(self, pth):
+        while len(pth) > 0 and pth[-1] == "/":
+            pth = pth[:-1]
+        self.pth = pth
+        self.pth_l = pth.split("/")
+        if len(pth) == 0:
+            self.pth_l = []
+        self.children = []
+
+    def insert(self, pth):
+        while pth[-1] == "/":
+            pth = pth[:-1]
+        if self.pth not in pth:
+            return False
+        if self.pth == pth:
+            return True
+        for c in self.children:
+            if c.insert(pth):
+                return True
+        one_further = "/".join(pth.split("/")[:len(self.pth_l)+1])
+        self.children.append(ClassTree(one_further))
+        self.children[-1].insert(pth)
+        return True
+
+    def get(self):
+        if len(self.children) == 0:
+            return self.pth
+        else:
+            return random.choice(self.children).get()
+
+
 def makeObjectList(size_step):
     global objectImgs
     global objectList
     global objectNames
     global objectIDs
-    object_fs = os.listdir("filtered_objects")
+    global objectTree
+    object_fs = []
+    super_object_fs = []
+    objectTree = ClassTree("")
+    for root, dirs, files in os.walk("filtered_objects", topdown=False):
+        for name in files:
+            file = "/".join(os.path.join(root, name).replace('\\', '/').split("/")[1:])
+            if "!" not in file:
+                object_fs.append(file)
+        for name in dirs:
+            file = "/".join(os.path.join(root, name).replace('\\', '/').split("/")[1:])
+            if "!" in file:
+                object_fs.append(file)
+            else:
+                super_object_fs.append(file)
     dataset_f = DATASET_LOCATION + str(size_step)
     names_f = open(dataset_f + "/labelNames.txt", "w")
-    from_bases_num = len(objectNames)
+    for obj in list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values())):
+        objectTree.insert(obj)
     for obj in object_fs:
         objectImgs.append([])
         name = obj.split(".")[0]
+        objectTree.insert(name)
         objectNames.append(name)
         objectIDs[name] = len(objectNames) - 1
         names_f.write(str(len(objectNames) - 1) + " " + name + "\n")
@@ -209,22 +268,32 @@ def makeObjectList(size_step):
         for obj_f in obj_fs:
             img = cv2.imread(obj_f, cv2.IMREAD_UNCHANGED)
             objectImgs[-1].append(img)
-    for i in range(int(DATASET_MAX_OBJECTS_PER_IMG * DATASET_NUM_IMAGES / len(objectImgs) *
-                       (DATASET_FOURS_PART * 3 + 1)) * 2):
-        all_objs = list(range(from_bases_num, len(objectNames)))
-        hazard_labels = [obj for obj in all_objs if "hazmat" in objectNames[obj]]
-        all_objs = [obj for obj in all_objs if "hazmat" not in objectNames[obj]]
-        random.shuffle(hazard_labels)
-        while len(hazard_labels) >= 4:
-            if rand() < DATASET_FOURS_PART * ((len(hazard_labels) / 4) / (len(hazard_labels) // 4)):
-                all_objs.append(hazard_labels[:4])
-                hazard_labels = hazard_labels[4:]
+    num_id = len(objectNames) + len(list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values())))
+    for obj in super_object_fs:
+        name = obj.split(".")[0]
+        names_f.write(str(num_id) + " " + name + "\n")
+        num_id += 1
+    hazmat_skip = 0
+    for i in range(int(DATASET_MAX_OBJECTS_PER_IMG * DATASET_NUM_IMAGES * 4) + 100):
+        obj = None
+        while objectIDs.get(obj) is None:
+            obj = objectTree.get()
+        if "hazmat" in obj and "hazmat_other" not in obj:
+            if hazmat_skip > 0:
+                hazmat_skip -= 1
+                continue
+            if rand() < DATASET_FOURS_PART:
+                hazmat_skip = 3
+                obj = [objectIDs[obj]]
+                while len(obj) != 4:
+                    new_obj = objectTree.get()
+                    if objectIDs.get(new_obj) is not None and "hazmat" in new_obj:
+                        obj.append(objectIDs[new_obj])
             else:
-                all_objs.append(hazard_labels[0])
-                hazard_labels = hazard_labels[1:]
-        all_objs.extend(hazard_labels)
-        random.shuffle(all_objs)
-        objectList.extend(all_objs)
+                obj = objectIDs[obj]
+        else:
+            obj = objectIDs[obj]
+        objectList.append(obj)
     names_f.close()
 
 
@@ -240,8 +309,6 @@ def makeBaseList(size_step):
     all_df = pd.read_csv("openimages/all-annotations-bbox.csv", index_col=0)
     doors = 0
     persons = 0
-    objectSplit = np.sum(np.multiply(DATASET_OBJECT_PLACE_CHANCE, range(DATASET_MAX_OBJECTS_PER_IMG + 1))) / \
-                  len(objectNames) * 1.2
 
     objectFromBaseNames = list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values()))
     objectNames.extend(objectFromBaseNames)
@@ -254,9 +321,9 @@ def makeBaseList(size_step):
         for part in parts:
             files = os.listdir("openimages/" + part)
             for f in files:
-                if DEBUG and len(doorBases) >= 1 and len(nothingBases) >= 1 and len(personBases) >= 1:
+                if DEBUG and min(len(doorBases), len(nothingBases), len(personBases)) >= 1:
                     continue
-                if len(doorBases) >= DATASET_NUM_IMAGES // 10:
+                if min(len(doorBases), len(nothingBases), len(personBases)) >= DATASET_NUM_IMAGES // 10:
                     continue
                 name = f[:-4]
                 objects_df = all_df[all_df["ImageID"] == name]
@@ -268,7 +335,7 @@ def makeBaseList(size_step):
                     print(id)
                 if len(objects_df) == 0:
                     nothingBases.append(id)
-                elif DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"].values[0]] == "door":
+                elif DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"].values[0]] == "physical/door":
                     doorBases.append(id)
                 else:
                     personBases.append(id)
@@ -288,22 +355,42 @@ def makeBaseList(size_step):
 
                 id += 1
 
-    print("loaded, making list", objectSplit)
+    print("loaded, making list")
+    object_num = 0
+    door_skip = 0
+    person_skip = 0
+    objects_per_img = np.sum(np.multiply(DATASET_OBJECT_PLACE_CHANCE, range(DATASET_MAX_OBJECTS_PER_IMG + 1)))
     for i in range(DATASET_NUM_IMAGES * 2):
         print(".", end="")
         if (i + 1) % 100 == 0:
             print(i)
-        if doors < i * objectSplit:
-            chosen_base = random.choice(doorBases)
-        elif persons < i * objectSplit:
-            chosen_base = random.choice(personBases)
-        else:
+        object_num += objects_per_img
+        chosen_base = None
+        while object_num >= 1:
+            object_num -= 1
+            obj = objectTree.get()
+            if "person" in obj:
+                person_skip -= 1
+                if person_skip > 0:
+                    continue
+                chosen_base = random.choice(doorBases)
+                break
+            if "door" in obj:
+                door_skip -= 1
+                if door_skip > 0:
+                    continue
+                chosen_base = random.choice(personBases)
+                break
+        if chosen_base is None:
             chosen_base = random.choice(nothingBases)
+
         for namePosition in baseDefaultNamesPositions[chosen_base]:
-            if namePosition[0] == "door":
+            if namePosition[0] == "physical/door":
                 doors += 1
-            if namePosition[0] == "person":
+                door_skip += 1
+            if namePosition[0] == "physical/person":
                 persons += 1
+                person_skip += 1
         baseList.append(chosen_base)
     print("doors:", doors, "people:", persons)
     names_f.close()
@@ -322,6 +409,7 @@ def name_to_config_key(name):
     for key in DATASET_OBJECT_CROP_STRENGTH.keys():
         if key in name:
             return key
+    print(name, DATASET_OBJECT_CROP_STRENGTH.keys(), "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 def objectMake(obj, size_step):
@@ -705,7 +793,7 @@ def filterImages(base, namesPositions, size_step):
         base = cv2.blur(base, (size_1, size_2))
 
     if random.random() < 0.5 * colour_strength:
-        hue = 0.3 * colour_strength
+        hue = 0.05 * colour_strength
         sat = 1 + 1. * colour_strength
         val = 1 + 1. * colour_strength
         hue = rand(-hue, hue)
@@ -734,6 +822,9 @@ def writeImages(base, namesPositions, size_step):
     is_jpg = rand() < 0.5 * strength_mod
 
     if DEBUG:
+        print(namesPositions)
+        if(len(namesPositions) == 0):
+            print("!!!!!!!!!!!!!!!!!!!!!!!!")
         for a in range(len(namesPositions)):
             print("DRAWING RECTANGLE!!!")
             cv2.rectangle(base, tuple(namesPositions[a][1:3]), tuple(namesPositions[a][3:]), (255, 0, 255, 255), 1)
@@ -744,7 +835,11 @@ def writeImages(base, namesPositions, size_step):
     #     index = lastIndex
     f.write(os.getcwd() + "/" + dataset_f + "/" + str(index).zfill(7) + (".jpg " if is_jpg else ".png "))
     for a in range(len(namesPositions)):
-        if (namesPositions[a][1] - namesPositions[a][3]) * (namesPositions[a][2] - namesPositions[a][3]) == 0:
+        if objectNums.get(namesPositions[a][0]) is None:
+            objectNums[namesPositions[a][0]] = 1
+        else:
+            objectNums[namesPositions[a][0]] += 1
+        if (namesPositions[a][1] - namesPositions[a][3]) * (namesPositions[a][2] - namesPositions[a][4]) == 0:
             continue
         f.write(','.join(map(str, namesPositions[a][1:])))
         f.write(',')
@@ -773,7 +868,8 @@ def threadedCreateLabel(base_num, obj_nums, output, size_step):
 
 
 def threadedCreateLabels():
-    global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions
+    global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
+        objectTree
     time_makeImage = 0
     time_writeImages = 0
     time_loadBases = 0
@@ -794,11 +890,14 @@ def threadedCreateLabels():
             objectNames = []
             objectIDs = {}
             baseList = []
+            objectNums = {}
+            objectTree = None
 
             t = time.time()
             print("make object list")
             filterObjects(size_step)
             makeObjectList(size_step)
+            print("object list length", len(objectList))
             time_loadBases += time.time() - t
             t = time.time()
             print("make_base_list")
@@ -832,6 +931,8 @@ def threadedCreateLabels():
                     writeImages(base_img, base_name_pos, size_step)
                     time_writeImages += time.time() - t
                     t = time.time()
+            print("object numbers")
+            print(objectNums)
     print("time_loadBases", time_loadBases)
     print("time_loadObjects", time_loadObjects)
     print("time_makeImage", time_makeImage)
@@ -846,6 +947,6 @@ def createDataset(debug=False):
     print(DATASET_NUM_IMAGES)
     if not os.path.exists("openimages/test") or not os.path.exists("openimages/validation") or REDOWNLOAD_DATASET:
         newDownload()
-    if not os.path.exists("openimages/all-annotations-bbox.csv") or FILTER_DATASET:
+    if not os.path.exists("openimages/all-annotations-bbox.csv") or REFILTER_DATASET:
         filterOpenImages()
     threadedCreateLabels()

@@ -17,7 +17,7 @@ from config import *
 
 
 def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
-                callbacks, skip=0):
+                callbacks, class_tree, skip=0):
     yolo_splits = (249, 185, 65, 0)
     model.compile(optimizer=Adam(lr=1e-3), loss={
         # use custom yolo_loss Lambda layer.
@@ -27,12 +27,12 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         batch_size = 1
     else:
         batch_size = 16
-    if input_shape[0] * input_shape[1] <= 360 * 480:
-        batch_size *= 2
-    if input_shape[0] * input_shape[1] <= 240 * 320:
-        batch_size *= 4
-    if input_shape[0] * input_shape[1] <= 120 * 160:
-        batch_size *= 4
+        if input_shape[0] * input_shape[1] <= 360 * 480:
+            batch_size *= 2
+        if input_shape[0] * input_shape[1] <= 240 * 320:
+            batch_size *= 4
+        if input_shape[0] * input_shape[1] <= 120 * 160:
+            batch_size *= 4
     print('Train on {} samples, val on {} samples, with batch size {} for {} epochs.'
           .format(num_train, num_val, batch_size, epochs))
     for lr, epoch, split in zip(lrs, epochs, yolo_splits):
@@ -56,17 +56,17 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         model.compile(optimizer=Adam(lr=lr/10), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         print("warmup with lr", lr/10)
-        model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes),
+        model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
                             steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
                             initial_epoch=0)
 
         model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
+        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
                             steps_per_epoch=max(1, num_train // batch_size),
                             validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors,
-                                                                   num_classes),
+                                                                   num_classes, class_tree),
                             validation_steps=max(1, num_val // batch_size),
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
@@ -80,10 +80,11 @@ def train(specific=None):
     classes_path = DATASET_LOCATION + str(0) + '/labelNames.txt'
     anchors_path = 'model_data/yolo_anchors_custom.txt'
     class_names = get_classes(classes_path)
+    class_tree = get_class_tree(class_names)
     num_classes = len(class_names)
     anchors = get_anchors(anchors_path)
 
-    input_shape = DATASET_DEFAULT_SHAPE # multiple of 32, hw
+    input_shape = DATASET_DEFAULT_SHAPE  # multiple of 32, hw
 
     is_tiny_version = len(anchors) == 6  # default setting
     latest_part = -1
@@ -166,7 +167,7 @@ def train(specific=None):
 
         model, current_epoch = train_cycle(model, lrs[i], epochs[i], current_epoch, lines, num_train, num_val,
                                            sizes[i], anchors, num_classes,
-                                           [logging, checkpoint, reduce_lr, early_stopping], skip)
+                                           [logging, checkpoint, reduce_lr, early_stopping], class_tree, skip)
 
         model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
 
@@ -199,7 +200,7 @@ def train(specific=None):
                 batch_size = 16
                 model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
                 result = model.evaluate_generator(
-                    data_generator_wrapper(test_lines, batch_size, input_shape, anchors, num_classes),
+                    data_generator_wrapper(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
                     steps=max(1, len(test_lines) // batch_size))
                 print(result)
 
@@ -227,7 +228,7 @@ def train(specific=None):
 
                 if TEST_VISUALIZE_IMAGES:
                     yolo = YOLO(**settings)
-                    for line in test_lines:
+                    for line in test_lines[:100]:
                         line = line.split(" ")[0]
                         # print(line)
                         r_image = Image.open(line)
@@ -238,13 +239,29 @@ def train(specific=None):
                     K.clear_session()
 
 
-
 def get_classes(classes_path):
     '''loads the classes'''
     with open(classes_path) as f:
         class_names = f.readlines()
     class_names = [c.strip() for c in class_names]
+    for i in range(len(class_names)):
+        class_names[i] = class_names[i].split(" ")[0].zfill(3) + " " + class_names[i].split(" ")[1]
+    class_names.sort()
     return class_names
+
+
+def get_class_tree(_class_names):
+    '''loads the class tree'''
+    class_names = []
+    for c in _class_names:
+        class_names.append(c.split(" ")[1])
+    superclasses = []
+    for i, c in enumerate(class_names):
+        superclasses.append([])
+        for j, cl in enumerate(class_names):
+            if cl in c:
+                superclasses[i].append(j)
+    return superclasses
 
 
 def get_anchors(anchors_path):
@@ -320,7 +337,7 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
     return model
 
 
-def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes):
+def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
     '''data generator for fit_generator'''
     n = len(annotation_lines)
     i = 0
@@ -336,14 +353,14 @@ def data_generator(annotation_lines, batch_size, input_shape, anchors, num_class
             i = (i+1) % n
         image_data = np.array(image_data)
         box_data = np.array(box_data)
-        y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes)
+        y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes, class_tree)
         yield [image_data, *y_true], np.zeros(batch_size)
 
 
-def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, num_classes):
+def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
     n = len(annotation_lines)
     if n==0 or batch_size<=0: return None
-    return data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes)
+    return data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree)
 
 
 if __name__ == '__main__':

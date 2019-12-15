@@ -11,6 +11,6 @@ if not os.path.isfile(MODEL_LOCATION):
     convert.convert("yolov3.cfg", "model_data/yolov3.weights", MODEL_LOCATION)
 
 if MAKE_DATASET:
-    dataset.createDataset(True)
+    dataset.createDataset()
 if TRAIN:
     train.train()
