@@ -1,11 +1,11 @@
 import os
 import numpy as np
-import keras.backend as K
-from keras.layers import Input, Lambda
-from keras.layers.normalization import BatchNormalization
-from keras.models import Model
-from keras.optimizers import Adam
-from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
+import tensorflow.keras.backend as K
+from tensorflow.keras.layers import Input, Lambda
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
 from PIL import Image
 import shutil
 import time
