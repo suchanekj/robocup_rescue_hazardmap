@@ -17,7 +17,7 @@ from skimage.measure import regionprops
 from collections.abc import Iterable
 import threading
 import subprocess
-
+import multiprocessing as mp
 
 from config import *
 
@@ -863,9 +863,7 @@ def threadedCreateLabel(base_num, obj_nums, output, size_step):
         obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos, size_step)
         base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos, size_step)
     base_img, base_name_pos = filterImages(base_img, base_name_pos, size_step)
-    output[0] = base_img
-    output[1] = base_name_pos
-
+    writeImages(base_img, base_name_pos, size_step)
 
 def threadedCreateLabels():
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
@@ -913,9 +911,9 @@ def threadedCreateLabels():
                 obj_nums = [[objectList.pop(0) for i in range(num_labels)] for i in range(num_threads)]
 
                 threads = [None for i in range(num_threads)]
-                results = [[None, None] for i in range(num_threads)]
+                results = [(None, None) for i in range(num_threads)]
                 for i in range(num_threads):
-                    threads[i] = threading.Thread(target=threadedCreateLabel,
+                    threads[i] = mp.Process(target=threadedCreateLabel,
                                                   args=(base_num[i], obj_nums[i], results[i], size_step))
                     threads[i].start()
 
@@ -925,10 +923,10 @@ def threadedCreateLabels():
                     if len(os.listdir(dataset_f)) % 100 == 0:
                         print(len(os.listdir(dataset_f)) - 2)
                     threads[i].join()
-                    base_img, base_name_pos = results[i]
+                    #base_img, base_name_pos = results[i]
                     time_makeImage += time.time() - t
                     t = time.time()
-                    writeImages(base_img, base_name_pos, size_step)
+                    #writeImages(base_img, base_name_pos, size_step)
                     time_writeImages += time.time() - t
                     t = time.time()
             print("object numbers")
@@ -950,3 +948,6 @@ def createDataset(debug=False):
     if not os.path.exists("openimages/all-annotations-bbox.csv") or REFILTER_DATASET:
         filterOpenImages()
     threadedCreateLabels()
+
+if __name__=="__main__":
+    createDataset()

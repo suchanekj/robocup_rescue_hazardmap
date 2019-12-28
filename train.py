@@ -10,16 +10,20 @@ from PIL import Image
 import shutil
 import time
 
+import tensorflow as tf
+import horovod.keras as hvd
+
 from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
 from yolo import YOLO, detect_video
 from config import *
 
-
 def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
                 callbacks, class_tree, skip=0):
     yolo_splits = (249, 185, 65, 0)
-    model.compile(optimizer=Adam(lr=1e-3), loss={
+    opt = Adam(lr=1e-3*hvd.size())
+    opt = hvd.DistributedOptimizer(opt)
+    model.compile(optimizer=opt), loss={
         # use custom yolo_loss Lambda layer.
         'yolo_loss': lambda y_true, y_pred: y_pred})
 
@@ -45,6 +49,13 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
             batch_size = batch_size // 2
         print("batch_size", batch_size, "lr", lr)
         model.save_weights('model_data/temp.h5')
+
+        K.clear_session()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.gpu_options.visible_device_list = str(hvd.local_rank())
+        K.set_session(tf.Session(config=config))
+
         model = create_model(input_shape, anchors, num_classes,
                              freeze_body=0, weights_path='model_data/temp.h5')
         for i in range(len(model.layers)):
@@ -53,7 +64,9 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                 continue
             model.layers[i].trainable = False
 
-        model.compile(optimizer=Adam(lr=lr/10), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+        opt = Adam(lr=lr/10*hvd.size())
+        opt = hvd.DistributedOptimizer(opt)
+        model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         print("warmup with lr", lr/10)
         model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
@@ -61,6 +74,8 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             epochs=1,
                             initial_epoch=0)
 
+        opt = Adam(lr=lr*hvd.size())
+        opt = hvd.DistributedOptimizer(opt)
         model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
@@ -83,6 +98,14 @@ def train(specific=None):
     class_tree = get_class_tree(class_names)
     num_classes = len(class_names)
     anchors = get_anchors(anchors_path)
+
+    hvd.init()
+
+    # Horovod: pin GPU to be used to process local rank (one GPU per process)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
+    K.set_session(tf.Session(config=config))
 
     input_shape = DATASET_DEFAULT_SHAPE  # multiple of 32, hw
 
@@ -129,13 +152,24 @@ def train(specific=None):
                              weights_path=log_dir + latest)  # make sure you know what you freeze
         print(log_dir + latest)
 
+
+    callbacks = [
+        hvd.callbacks.BroadcastGlobalVariablesCallback(0),
+        hvd.callbacks.MetricAverageCallback(),
+    ]
+
     logging = TensorBoard(log_dir=log_dir, write_images=True)
-    checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
-                                 monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
                                   patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
                                    patience=TRAINING_STOPPING_PATIENCE, verbose=1)
+
+    callbacks = callbacks + [logging, reduce_lr, early_stopping]
+
+    if hvd.rank() = 0:
+        checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+                                     monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
+        callbacks.append(checkpoint)
 
     sizes = DATASET_TRAINING_SHAPES
     epochs = TRAINING_EPOCHS
@@ -167,9 +201,7 @@ def train(specific=None):
 
         model, current_epoch = train_cycle(model, lrs[i], epochs[i], current_epoch, lines, num_train, num_val,
                                            sizes[i], anchors, num_classes,
-                                           [logging, checkpoint, reduce_lr, early_stopping], class_tree, skip)
-
-        model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
+                                           callbacks, class_tree, skip)
 
     annotation_path = DATASET_LOCATION + str(len(sizes) - 1) + '/labels.txt'
     with open(annotation_path) as f:
@@ -275,7 +307,7 @@ def get_anchors(anchors_path):
 def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze_body=2,
             weights_path='model_data/yolo_weights.h5'):
     '''create the training model'''
-    K.clear_session() # get a new session
+
     image_input = Input(shape=(None, None, 3))
     h, w = input_shape
     num_anchors = len(anchors)
