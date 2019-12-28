@@ -855,7 +855,7 @@ def writeImages(base, namesPositions, size_step):
     f.close()
 
 
-def threadedCreateLabel(base_num, obj_nums, output, size_step):
+def threadedCreateLabel(base_num, obj_nums, output, size_step, lock):
     base_img, base_name_pos = makeBase(base_num, size_step)
     for obj_num in obj_nums:
         obj_img, obj_name_pos = objectMake(obj_num, size_step)
@@ -863,7 +863,9 @@ def threadedCreateLabel(base_num, obj_nums, output, size_step):
         obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos, size_step)
         base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos, size_step)
     base_img, base_name_pos = filterImages(base_img, base_name_pos, size_step)
+    lock.acquire()
     writeImages(base_img, base_name_pos, size_step)
+    lock.release()
 
 def threadedCreateLabels():
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
@@ -873,64 +875,65 @@ def threadedCreateLabels():
     time_loadBases = 0
     time_loadObjects = 0
     num_threads = DATASET_CREATION_TREADS
-    for size_step in range(DATASET_SIZE_STEPS):
-        dataset_f = DATASET_LOCATION + str(size_step)
-        if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
-                or REBUILD_DATASET:
+    size_step = DATASET_SIZE_STEP
+    dataset_f = DATASET_LOCATION + str(size_step)
+    lock = mp.Lock()
+    if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
+            or REBUILD_DATASET:
 
-            if os.path.exists(dataset_f):
-                shutil.rmtree(dataset_f)
-                time.sleep(0.2)
-            os.makedirs(dataset_f)
+        if os.path.exists(dataset_f):
+            shutil.rmtree(dataset_f)
+            time.sleep(0.2)
+        os.makedirs(dataset_f)
 
-            objectList = []
-            objectImgs = []
-            objectNames = []
-            objectIDs = {}
-            baseList = []
-            objectNums = {}
-            objectTree = None
+        objectList = []
+        objectImgs = []
+        objectNames = []
+        objectIDs = {}
+        baseList = []
+        objectNums = {}
+        objectTree = None
 
-            t = time.time()
-            print("make object list")
-            filterObjects(size_step)
-            makeObjectList(size_step)
-            print("object list length", len(objectList))
-            time_loadBases += time.time() - t
-            t = time.time()
-            print("make_base_list")
-            makeBaseList(size_step)
-            time_loadObjects += time.time() - t
-            t = time.time()
-            print("make dataset")
-            while len(os.listdir(dataset_f)) - 2 < DATASET_NUM_IMAGES:
-                num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
-                                              p=DATASET_OBJECT_PLACE_CHANCE)
+        t = time.time()
+        print("make object list")
+        filterObjects(size_step)
+        makeObjectList(size_step)
+        print("object list length", len(objectList))
+        time_loadBases += time.time() - t
+        t = time.time()
+        print("make_base_list")
+        makeBaseList(size_step)
+        time_loadObjects += time.time() - t
+        t = time.time()
+        print("make dataset")
+        while len(os.listdir(dataset_f)) - 2 < DATASET_NUM_IMAGES:
+            num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
+                                          p=DATASET_OBJECT_PLACE_CHANCE)
 
-                base_num = [baseList.pop(0) for i in range(num_threads)]
-                obj_nums = [[objectList.pop(0) for i in range(num_labels)] for i in range(num_threads)]
+            base_num = [baseList.pop(0) for i in range(num_threads)]
+            obj_nums = [[objectList.pop(0) for i in range(num_labels)] for i in range(num_threads)]
 
-                threads = [None for i in range(num_threads)]
-                results = [(None, None) for i in range(num_threads)]
-                for i in range(num_threads):
-                    threads[i] = mp.Process(target=threadedCreateLabel,
-                                                  args=(base_num[i], obj_nums[i], results[i], size_step))
-                    threads[i].start()
+            threads = [None for i in range(num_threads)]
+            results = [(None, None) for i in range(num_threads)]
+            for i in range(num_threads):
+                threads[i] = mp.Process(target=threadedCreateLabel,
+                                              args=(base_num[i], obj_nums[i], results[i], size_step, lock))
+                threads[i].start()
 
-                for i in range(num_threads):
-                    print(".", end="")
-                    sys.stdout.flush()
-                    if len(os.listdir(dataset_f)) % 100 == 0:
-                        print(len(os.listdir(dataset_f)) - 2)
-                    threads[i].join()
-                    #base_img, base_name_pos = results[i]
-                    time_makeImage += time.time() - t
-                    t = time.time()
-                    #writeImages(base_img, base_name_pos, size_step)
-                    time_writeImages += time.time() - t
-                    t = time.time()
-            print("object numbers")
-            print(objectNums)
+            for i in range(num_threads):
+                print(".", end="")
+                sys.stdout.flush()
+                if len(os.listdir(dataset_f)) % 100 == 0:
+                    print(len(os.listdir(dataset_f)) - 2)
+                threads[i].join()
+                #base_img, base_name_pos = results[i]
+                time_makeImage += time.time() - t
+                t = time.time()
+                #writeImages(base_img, base_name_pos, size_step)
+                time_writeImages += time.time() - t
+                t = time.time()
+        print("object numbers")
+        print(objectNums)
     print("time_loadBases", time_loadBases)
     print("time_loadObjects", time_loadObjects)
     print("time_makeImage", time_makeImage)
@@ -941,7 +944,7 @@ def createDataset(debug=False):
     global DEBUG, DATASET_NUM_IMAGES
     if debug:
         DEBUG = True
-        DATASET_NUM_IMAGES = 50
+        DATASET_NUM_IMAGES = 500
     print(DATASET_NUM_IMAGES)
     if not os.path.exists("openimages/test") or not os.path.exists("openimages/validation") or REDOWNLOAD_DATASET:
         newDownload()

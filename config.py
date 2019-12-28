@@ -244,4 +244,4 @@ TRAINING_CYCLE = 15
 MODEL_LOCATION = "model_data/yolo_original.h5"
 AVAILABLE_MEMORY_GB = 2
 
-DEBUG = False
+DEBUG = True
