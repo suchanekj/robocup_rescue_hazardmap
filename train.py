@@ -8,6 +8,7 @@ from keras.layers import BatchNormalization
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
+from keras.utils import Sequence
 from PIL import Image
 import shutil
 import time
@@ -68,7 +69,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             epochs=1,
                             initial_epoch=0,
                             workers=10,
-                            use_multiprocessing=True,
                             max_queue_size=100)
 
         opt = Adam(lr=lr*hvd.size())
@@ -84,7 +84,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
                             workers=10,
-                            use_multiprocessing=True,
                             max_queue_size=100)
         current_epoch += epoch
     return model, current_epoch
@@ -369,6 +368,30 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
 
     return model
 
+class threadsafe_iter:
+    """Takes an iterator/generator and makes it thread-safe by
+    serializing call to the `next` method of given iterator/generator.
+    """
+    def __init__(self, it):
+        self.it = it
+        self.lock = threading.Lock()
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        with self.lock:
+            return self.it.next()
+
+
+def threadsafe_generator(f):
+    """A decorator that takes a generator function and makes it thread-safe.
+    """
+    def g(*a, **kw):
+        return threadsafe_iter(f(*a, **kw))
+    return g
+
+@threadsafe_generator
 def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
     '''data generator for fit_generator'''
     n = len(annotation_lines)
