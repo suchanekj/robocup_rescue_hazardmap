@@ -52,8 +52,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         model = create_model(input_shape, anchors, num_classes,
                                          freeze_body=0, weights_path='model_data/temp.h5'.format(hvd.rank()))
 
-
-
         for i in range(len(model.layers)):
             if isinstance(model.layers[i], BatchNormalization) or i >= split:
                 model.layers[i].trainable = True
@@ -70,6 +68,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             epochs=1,
                             initial_epoch=0,
                             workers=10,
+                            use_multiprocessing=True,
                             max_queue_size=100)
 
         opt = Adam(lr=lr*hvd.size())
@@ -85,6 +84,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
                             workers=10,
+                            use_multiprocessing=True,
                             max_queue_size=100)
         current_epoch += epoch
     return model, current_epoch
