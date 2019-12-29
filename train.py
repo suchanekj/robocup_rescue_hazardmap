@@ -401,7 +401,7 @@ class DataGenerator(Sequence):
         self.anchors = anchors
         self.num_classes = num_classes
         self.class_tree = class_tree
-
+        self.lock = threading.Lock()
         np.random.shuffle(self.annotation_lines)
 
         print("initialised generator")
@@ -420,7 +420,8 @@ class DataGenerator(Sequence):
         image_data = np.array(image_data)
         box_data = np.array(box_data)
         y_true = preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes, self.class_tree)
-        return [image_data, *y_true], np.zeros(self.batch_size)
+        with self.lock:
+            return [image_data, *y_true], np.zeros(self.batch_size)
 
     def on_epoch_end(self):
         np.random.shuffle(self.annotation_lines)
