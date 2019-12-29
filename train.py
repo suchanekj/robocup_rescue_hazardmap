@@ -1,6 +1,8 @@
 import horovod.keras as hvd
+hvd.init()
 
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
 
 import tensorflow as tf
 
@@ -10,7 +12,7 @@ from keras.layers import Input, Lambda
 from keras.layers import BatchNormalization
 from keras.models import Model
 from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
+from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
 from PIL import Image
 import shutil
 import time
@@ -54,7 +56,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        config.gpu_options.visible_device_list = "0"#str(hvd.local_rank())
+        config.gpu_options.visible_device_list = str(hvd.local_rank())
         K.set_session(tf.Session(config=config))
 
         model = create_model(input_shape, anchors, num_classes,
@@ -102,12 +104,12 @@ def train(specific=None):
 
     hvd.init()
 
-    #os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
 
     # Horovod: pin GPU to be used to process local rank (one GPU per process)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = "0"#str(hvd.local_rank())
+    config.gpu_options.visible_device_list = str(hvd.local_rank())
     K.set_session(tf.Session(config=config))
 
     input_shape = DATASET_DEFAULT_SHAPE  # multiple of 32, hw
