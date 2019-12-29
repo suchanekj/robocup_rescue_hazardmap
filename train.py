@@ -17,7 +17,6 @@ from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_l
 from yolo3.utils import get_random_data
 from yolo import YOLO, detect_video
 from config import *
-
 def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
                 callbacks, class_tree, skip=0):
     yolo_splits = (249, 185, 65, 0)
