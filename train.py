@@ -69,9 +69,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
                             initial_epoch=0,
-                            workers=3,
-                            use_multiprocessing=False,
-                            max_queue_size=30)
+                            max_queue_size=40)
 
         opt = Adam(lr=lr*hvd.size())
         opt = hvd.DistributedOptimizer(opt)
@@ -85,9 +83,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
-                            workers=3,
-                            use_multiprocessing=False,
-                            max_queue_size=30)
+                            max_queue_size=40)
         current_epoch += epoch
     return model, current_epoch
 
@@ -371,31 +367,6 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
 
     return model
 
-
-class threadsafe_iter:
-    """Takes an iterator/generator and makes it thread-safe by
-    serializing call to the `next` method of given iterator/generator.
-    """
-    def __init__(self, it):
-        self.it = it
-        self.lock = threading.Lock()
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        with self.lock:
-            return self.it.next()
-
-
-def threadsafe_generator(f):
-    """A decorator that takes a generator function and makes it thread-safe.
-    """
-    def g(*a, **kw):
-        return threadsafe_iter(f(*a, **kw))
-    return g
-
-@threadsafe_generator
 def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
     '''data generator for fit_generator'''
     n = len(annotation_lines)
@@ -414,7 +385,6 @@ def data_generator(annotation_lines, batch_size, input_shape, anchors, num_class
         box_data = np.array(box_data)
         y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes, class_tree)
         yield [image_data, *y_true], np.zeros(batch_size)
-
 
 def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
     n = len(annotation_lines)
