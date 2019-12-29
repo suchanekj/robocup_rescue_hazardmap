@@ -49,14 +49,14 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         print("batch_size", batch_size, "lr", lr)
         if hvd.local_rank() == 0:
             model.save_weights('model_data/temp.h5')
+            model = create_model(input_shape, anchors, num_classes,
+                                         freeze_body=0, weights_path='model_data/temp.h5')
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         config.gpu_options.visible_device_list = str(hvd.local_rank())
         K.set_session(tf.Session(config=config))
 
-        model = create_model(input_shape, anchors, num_classes,
-                             freeze_body=0, weights_path='model_data/temp.h5')
         for i in range(len(model.layers)):
             if isinstance(model.layers[i], BatchNormalization) or i >= split:
                 model.layers[i].trainable = True
