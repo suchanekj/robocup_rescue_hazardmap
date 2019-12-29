@@ -950,7 +950,7 @@ def createDataset(debug=False):
         newDownload()
     if not os.path.exists("openimages/all-annotations-bbox.csv") or REFILTER_DATASET:
         filterOpenImages()
-    threadedCreateLabels()
+    #threadedCreateLabels()
 
 if __name__=="__main__":
     createDataset()
