@@ -47,9 +47,9 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         if split == 0:
             batch_size = batch_size // 2
         print("batch_size", batch_size, "lr", lr)
-        model.save_weights('model_data/temp{}.h5'.format(horovod.rank()))
+        model.save_weights('model_data/temp{}.h5'.format(hvd.rank()))
         model = create_model(input_shape, anchors, num_classes,
-                                         freeze_body=0, weights_path='model_data/temp.h5'.format(horovod.rank()))
+                                         freeze_body=0, weights_path='model_data/temp.h5'.format(hvd.rank()))
 
 
         config = tf.ConfigProto()
