@@ -64,7 +64,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         print("warmup with lr", lr/10)
-        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
+        model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
                             steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
                             initial_epoch=0,
