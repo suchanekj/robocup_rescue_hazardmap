@@ -1,11 +1,11 @@
 import os
 import numpy as np
-import tensorflow.keras.backend as K
-from tensorflow.keras.layers import Input, Lambda
-from tensorflow.keras.layers import BatchNormalization
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
+import keras.backend as K
+from keras.layers import Input, Lambda
+from keras.layers import BatchNormalization
+from keras.models import Model
+from keras.optimizers import Adam
+from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
 from PIL import Image
 import shutil
 import time
@@ -23,7 +23,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
     yolo_splits = (249, 185, 65, 0)
     opt = Adam(lr=1e-3*hvd.size())
     opt = hvd.DistributedOptimizer(opt)
-    model.compile(optimizer=opt), loss={
+    model.compile(optimizer=opt, loss={
         # use custom yolo_loss Lambda layer.
         'yolo_loss': lambda y_true, y_pred: y_pred})
 
@@ -166,7 +166,7 @@ def train(specific=None):
 
     callbacks = callbacks + [logging, reduce_lr, early_stopping]
 
-    if hvd.rank() = 0:
+    if hvd.rank() == 0:
         checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
                                      monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
         callbacks.append(checkpoint)
