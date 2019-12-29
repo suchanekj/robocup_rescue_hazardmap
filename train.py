@@ -1,8 +1,6 @@
 import horovod.keras as hvd
-hvd.init()
 
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
 
 import tensorflow as tf
 
@@ -12,7 +10,7 @@ from keras.layers import Input, Lambda
 from keras.layers import BatchNormalization
 from keras.models import Model
 from keras.optimizers import Adam
-from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
 from PIL import Image
 import shutil
 import time
@@ -104,7 +102,7 @@ def train(specific=None):
 
     hvd.init()
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
+    #os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
 
     # Horovod: pin GPU to be used to process local rank (one GPU per process)
     config = tf.ConfigProto()
