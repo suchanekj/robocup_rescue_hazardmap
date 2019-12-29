@@ -36,10 +36,9 @@ def rand(a=0, b=1):
 def get_random_data(annotation_line, input_shape, random=True, max_boxes=20, jitter=.3, hue=.1, sat=1.5, val=1.5, proc_img=True, lock=None):
     '''random preprocessing for real-time data augmentation'''
     line = annotation_line.split()
-    if lock != None:
-        with lock:
-            with Image.open(line[0]) as image:
-                image.load()
+    with lock:
+        with Image.open(line[0]) as image:
+            image.load()
     iw, ih = image.size
     h, w = input_shape
     box = np.array([np.array(list(map(int,box.split(',')))) for box in line[1:]])
