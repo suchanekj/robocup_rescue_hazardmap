@@ -64,18 +64,19 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         print("warmup with lr", lr/10)
-        model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
                             steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
                             initial_epoch=0,
                             workers=10,
+                            use_multiprocessing=True,
                             max_queue_size=100)
 
         opt = Adam(lr=lr*hvd.size())
         opt = hvd.DistributedOptimizer(opt)
         model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
                             steps_per_epoch=max(1, num_train // batch_size),
                             validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors,
                                                                    num_classes, class_tree),
@@ -84,6 +85,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
                             workers=10,
+                            use_multiprocessing=True,
                             max_queue_size=100)
         current_epoch += epoch
     return model, current_epoch
@@ -368,30 +370,6 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
 
     return model
 
-class threadsafe_iter:
-    """Takes an iterator/generator and makes it thread-safe by
-    serializing call to the `next` method of given iterator/generator.
-    """
-    def __init__(self, it):
-        self.it = it
-        self.lock = threading.Lock()
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        with self.lock:
-            return self.it.next()
-
-
-def threadsafe_generator(f):
-    """A decorator that takes a generator function and makes it thread-safe.
-    """
-    def g(*a, **kw):
-        return threadsafe_iter(f(*a, **kw))
-    return g
-
-@threadsafe_generator
 def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
     '''data generator for fit_generator'''
     n = len(annotation_lines)
@@ -417,6 +395,39 @@ def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, n
     if n==0 or batch_size<=0: return None
     return data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree)
 
+class DataGenerator(Sequence):
+    def __init__(self, annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
+        self.annotation_lines = annotation_lines
+        self.batch_size = batch_size
+        self.input_shape = input_shape
+        self.anchors = anchors
+        self.num_classes = num_classes
+        self.class_tree = class_tree
+
+        np.random.shuffle(self.annotation_lines)
+
+    def __len__(self):
+        return len(annotation_lines)
+
+    def __getitem__(self, idx):
+    image_data = []
+    box_data = []
+    for b in range(self.batch_size):
+        image, box = get_random_data(self.annotation_lines[idx], self.input_shape, random=True)
+        image_data.append(image)
+        box_data.append(box)
+    image_data = np.array(image_data)
+    box_data = np.array(box_data)
+    y_true = preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes, self.class_tree)
+    yield [image_data, *y_true], np.zeros(self.batch_size)
+
+    def on_epoch_end(self):
+        np.random.shuffle(self.annotation_lines)
+
+def data_generator_wrapper_sequence(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
+    n = len(annotation_lines)
+    if n==0 or batch_size<=0: return None
+    return DataGenerator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree)
 
 if __name__ == '__main__':
     train()
