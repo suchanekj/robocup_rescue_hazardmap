@@ -1,4 +1,11 @@
+import horovod.keras as hvd
+hvd.init()
+
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
+
+import tensorflow as tf
+
 import numpy as np
 import keras.backend as K
 from keras.layers import Input, Lambda
@@ -9,9 +16,6 @@ from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, Ear
 from PIL import Image
 import shutil
 import time
-
-import tensorflow as tf
-import horovod.keras as hvd
 
 from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
@@ -100,6 +104,8 @@ def train(specific=None):
     anchors = get_anchors(anchors_path)
 
     hvd.init()
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
 
     # Horovod: pin GPU to be used to process local rank (one GPU per process)
     config = tf.ConfigProto()
