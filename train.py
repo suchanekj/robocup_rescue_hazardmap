@@ -47,7 +47,8 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         if split == 0:
             batch_size = batch_size // 2
         print("batch_size", batch_size, "lr", lr)
-        model.save_weights('model_data/temp.h5')
+        if hvd.local_rank() == 0:
+            model.save_weights('model_data/temp.h5')
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
