@@ -69,7 +69,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             epochs=1,
                             initial_epoch=0,
                             workers=10,
-                            use_multiprocessing=True,
                             max_queue_size=100)
 
         opt = Adam(lr=lr*hvd.size())
@@ -85,7 +84,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
                             workers=10,
-                            use_multiprocessing=True,
                             max_queue_size=100)
         current_epoch += epoch
     return model, current_epoch
