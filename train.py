@@ -68,9 +68,9 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
                             initial_epoch=0,
-                            workers=4,
-                            use_multiprocessing=False,
-                            max_queue_size=50)
+                            workers=3,
+                            use_multiprocessing=True,
+                            max_queue_size=30)
 
         opt = Adam(lr=lr*hvd.size())
         opt = hvd.DistributedOptimizer(opt)
@@ -86,7 +86,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             callbacks=callbacks,
                             workers=3,
                             use_multiprocessing=True,
-                            max_queue_size=10)
+                            max_queue_size=30)
         current_epoch += epoch
     return model, current_epoch
 
