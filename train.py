@@ -48,9 +48,10 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
             batch_size = batch_size // 2
         print("batch_size", batch_size, "lr", lr)
         if hvd.rank() == 0:
-            model.save_weights('model_data/temp.h5')
-            model = create_model(input_shape, anchors, num_classes,
-                                         freeze_body=0, weights_path='model_data/temp.h5')
+            # model.save_weights('model_data/temp.h5')
+            # model = create_model(input_shape, anchors, num_classes,
+            #                              freeze_body=0, weights_path='model_data/temp.h5')
+            pass
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -123,7 +124,7 @@ def train(specific=None):
             #     if logged_files[i][-3:] == ".h5" and logged_files[i][0:2] == "ep":
             #         latest = logged_files[i]
         except:
-            pass
+            raise Exception("failed to find latest in logged files")
     else:
         latest = specific
 
