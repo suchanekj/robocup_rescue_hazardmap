@@ -1,4 +1,11 @@
+import horovod.keras as hvd
+hvd.init()
+
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
+
+import tensorflow as tf
+
 import numpy as np
 import keras.backend as K
 from keras.layers import Input, Lambda
@@ -9,9 +16,6 @@ from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, Ear
 from PIL import Image
 import shutil
 import time
-
-import tensorflow as tf
-import horovod.keras as hvd
 
 from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
@@ -100,6 +104,8 @@ def train(specific=None):
 
     hvd.init()
 
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(hvd.local_rank())
+
     # Horovod: pin GPU to be used to process local rank (one GPU per process)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -157,13 +163,13 @@ def train(specific=None):
         hvd.callbacks.MetricAverageCallback(),
     ]
 
-    logging = TensorBoard(log_dir=log_dir, write_images=True)
+    #logging = TensorBoard(log_dir=log_dir, write_images=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
                                   patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
                                    patience=TRAINING_STOPPING_PATIENCE, verbose=1)
 
-    callbacks = callbacks + [logging, reduce_lr, early_stopping]
+    callbacks = callbacks + [reduce_lr, early_stopping]
 
     if hvd.rank() == 0:
         checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
