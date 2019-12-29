@@ -29,7 +29,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
     if AVAILABLE_MEMORY_GB == 2:
         batch_size = 1
     else:
-        batch_size = 6
+        batch_size = 5
         if input_shape[0] * input_shape[1] <= 360 * 480:
             batch_size *= 2
         if input_shape[0] * input_shape[1] <= 240 * 320:
