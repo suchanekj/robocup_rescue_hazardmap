@@ -48,11 +48,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
             batch_size = batch_size // 2
         print("batch_size", batch_size, "lr", lr)
         model.save_weights('model_data/temp{}.h5'.format(hvd.rank()))
-        K.clear_session()
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        config.gpu_options.visible_device_list = str(hvd.local_rank())
-        K.set_session(tf.Session(config=config))
         model = create_model(input_shape, anchors, num_classes,
                                          freeze_body=0, weights_path='model_data/temp.h5'.format(hvd.rank()))
 
