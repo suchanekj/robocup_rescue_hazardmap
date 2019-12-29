@@ -68,7 +68,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
                             initial_epoch=0,
-                            workers=3,
+                            workers=2,
                             max_queue_size=10)
 
         opt = Adam(lr=lr*hvd.size())
@@ -83,7 +83,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
-                            workers=3,
+                            workers=2,
                             max_queue_size=10)
         current_epoch += epoch
     return model, current_epoch
@@ -404,13 +404,10 @@ class DataGenerator(Sequence):
         self.lock = threading.Lock()
         np.random.shuffle(self.annotation_lines)
 
-        print("initialised generator")
-
     def __len__(self):
         return len(self.annotation_lines)
 
     def __getitem__(self, idx):
-        print("generating data")
         image_data = []
         box_data = []
         for b in range(self.batch_size):
