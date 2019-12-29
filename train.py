@@ -67,7 +67,10 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
                             steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
-                            initial_epoch=0)
+                            initial_epoch=0,
+                            workers=4,
+                            use_multiprocessing=True,
+                            max_queue_size=50)
 
         opt = Adam(lr=lr*hvd.size())
         opt = hvd.DistributedOptimizer(opt)
@@ -80,7 +83,10 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                             validation_steps=max(1, num_val // batch_size),
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
-                            callbacks=callbacks)
+                            callbacks=callbacks,
+                            workers=3,
+                            use_multiprocessing=True,
+                            max_queue_size=50)
         current_epoch += epoch
     return model, current_epoch
 
