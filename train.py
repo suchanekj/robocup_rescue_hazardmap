@@ -107,7 +107,7 @@ def train(specific=None):
     # Horovod: pin GPU to be used to process local rank (one GPU per process)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    config.gpu_options.visible_device_list = "0"str(hvd.local_rank())
+    config.gpu_options.visible_device_list = "0"#str(hvd.local_rank())
     K.set_session(tf.Session(config=config))
 
     input_shape = DATASET_DEFAULT_SHAPE  # multiple of 32, hw
