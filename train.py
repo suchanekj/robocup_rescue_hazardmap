@@ -21,6 +21,7 @@ from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_l
 from yolo3.utils import get_random_data
 from yolo import YOLO, detect_video
 from config import *
+
 def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
                 callbacks, class_tree, skip=0):
     yolo_splits = (249, 185, 65, 0)
@@ -53,7 +54,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         print("batch_size", batch_size, "lr", lr)
         model.save_weights('model_data/temp.h5')
 
-        K.clear_session()
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         config.gpu_options.visible_device_list = str(hvd.local_rank())
@@ -256,12 +256,12 @@ def train(specific=None):
                     "score": 0.05,  # 0.3
                     "iou": 0.45,  # 0.45
                 }
-                K.clear_session()
+                #K.clear_session()
 
                 if TEST_VISUALIZE_VIDEO:
                     yolo = YOLO(**settings)
                     detect_video(yolo, "test.mp4", folder[:-1] + ".avi")
-                    K.clear_session()
+                    #K.clear_session()
 
                 if TEST_VISUALIZE_IMAGES:
                     yolo = YOLO(**settings)
@@ -273,7 +273,7 @@ def train(specific=None):
                         name = line.split("/")[-1]
                         r_image.save(folder + "imgs/" + name)
                     yolo.close_session()
-                    K.clear_session()
+                    #K.clear_session()
 
 
 def get_classes(classes_path):
