@@ -124,7 +124,8 @@ def train(specific=None):
             #     if logged_files[i][-3:] == ".h5" and logged_files[i][0:2] == "ep":
             #         latest = logged_files[i]
         except:
-            raise Exception("failed to find latest in logged files")
+            #raise Exception("failed to find latest in logged files")
+            pass
     else:
         latest = specific
 
