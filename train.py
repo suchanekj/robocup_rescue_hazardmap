@@ -155,8 +155,7 @@ def train(specific=None):
 
 
     callbacks = [
-        hvd.callbacks.BroadcastGlobalVariablesCallback(0),
-        hvd.callbacks.MetricAverageCallback(),
+        hvd.callbacks.BroadcastGlobalVariablesCallback(0)
     ]
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
                                   patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
