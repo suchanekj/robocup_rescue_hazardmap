@@ -76,11 +76,11 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         opt = hvd.DistributedOptimizer(opt)
         model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//15], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size //15),
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//20], batch_size, input_shape, anchors, num_classes, class_tree),
+                            steps_per_epoch=max(1, num_train // batch_size //20),
                             validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors,
                                                                    num_classes, class_tree),
-                            validation_steps=max(1, num_val // batch_size//15),
+                            validation_steps=max(1, num_val // batch_size//20),
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
@@ -423,7 +423,7 @@ class DataGenerator(Sequence):
         y_true = preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes, self.class_tree)
         return [image_data, *y_true], np.zeros(self.batch_size)
 
-    def on_epoch_end(self)
+    def on_epoch_end(self):
         np.random.shuffle(self.annotation_lines)
 
 def data_generator_wrapper_sequence(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
