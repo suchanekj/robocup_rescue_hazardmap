@@ -420,8 +420,10 @@ class DataGenerator(Sequence):
         image_data = np.array(image_data)
         box_data = np.array(box_data)
         y_true = preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes, self.class_tree)
-        with self.lock:
-            return [image_data, *y_true], np.zeros(self.batch_size)
+        if self.lock != None:
+            with self.lock:
+                print("returning getitem")
+                return [image_data, *y_true], np.zeros(self.batch_size)
 
     def on_epoch_end(self):
         print("\n\n\nAN EPOCH HATH ENDED\n\n\n")
