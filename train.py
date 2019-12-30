@@ -52,7 +52,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         print("batch_size", batch_size, "lr", lr)
         model.save_weights('model_data/temp{}.h5'.format(hvd.rank()))
         model = create_model(input_shape, anchors, num_classes,
-                                         freeze_body=0, weights_path='model_data/temp.h5'.format(hvd.rank()))
+                                         freeze_body=0, weights_path='model_data/temp{}.h5'.format(hvd.rank()))
 
         for i in range(len(model.layers)):
             if isinstance(model.layers[i], BatchNormalization) or i >= split:
