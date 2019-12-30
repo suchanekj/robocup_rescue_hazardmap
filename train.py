@@ -65,8 +65,8 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         print("warmup with lr", lr/10)
-        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//100], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size // 100),
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
+                            steps_per_epoch=max(1, num_train // batch_size // 10),
                             epochs=1,
                             initial_epoch=0,
                             workers=2,
@@ -76,11 +76,11 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         opt = hvd.DistributedOptimizer(opt)
         model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//20], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size //20),
-                            validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors,
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
+                            steps_per_epoch=max(1, num_train // batch_size),
+                            validation_data=data_generator_wrapper_sequence(lines[num_train:], batch_size, input_shape, anchors,
                                                                    num_classes, class_tree),
-                            validation_steps=max(1, num_val // batch_size//20),
+                            validation_steps=max(1, num_val // batch_size),
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
@@ -369,41 +369,14 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
 
     return model
 
-def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
-    '''data generator for fit_generator'''
-    n = len(annotation_lines)
-    i = 0
-    while True:
-        image_data = []
-        box_data = []
-        for b in range(batch_size):
-            if i==0:
-                np.random.shuffle(annotation_lines)
-            image, box = get_random_data(annotation_lines[i], input_shape, random=True)
-            image_data.append(image)
-            box_data.append(box)
-            i = (i+1) % n
-        image_data = np.array(image_data)
-        box_data = np.array(box_data)
-        y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes, class_tree)
-        yield [image_data, *y_true], np.zeros(batch_size)
-
-
-def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
-    n = len(annotation_lines)
-    if n==0 or batch_size<=0: return None
-    return data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree)
-
 class DataGenerator(Sequence):
     def __init__(self, annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
-        print("\n\n\n\n\n\n\nINITIALISING DataGenerator!\n\n\n\n\n\n")
         self.annotation_lines = annotation_lines
         self.batch_size = batch_size
         self.input_shape = input_shape
         self.anchors = anchors
         self.num_classes = num_classes
         self.class_tree = class_tree
-        #self.lock = threading.Lock()
         self.on_epoch_end()
 
     def __len__(self):
@@ -411,7 +384,6 @@ class DataGenerator(Sequence):
 
     def __getitem__(self, idx):
         index = idx % self.__len__()
-        print("    generating data")
         image_data = []
         box_data = []
         for b in range(self.batch_size):
