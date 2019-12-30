@@ -406,15 +406,15 @@ class DataGenerator(Sequence):
         np.random.shuffle(self.annotation_lines)
 
     def __len__(self):
-        print("len called")
-        return len(self.annotation_lines)
+        return len(self.annotation_lines) // self.batch_size
 
     def __getitem__(self, idx):
+        index = idx % self.__len__()
         print("    generating data")
         image_data = []
         box_data = []
         for b in range(self.batch_size):
-            image, box = get_random_data(self.annotation_lines[idx], self.input_shape, random=True)
+            image, box = get_random_data(self.annotation_lines[index + b], self.input_shape, random=True)
             image_data.append(image)
             box_data.append(box)
         image_data = np.array(image_data)
