@@ -65,7 +65,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
 
         print("warmup with lr", lr/10)
         model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size // 10),
+                            steps_per_epoch=max(1, num_train // batch_size // 100),
                             epochs=1,
                             initial_epoch=0,
                             workers=2,
@@ -76,10 +76,10 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         model.fit_generator(data_generator_wrapper_sequence(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size),
+                            steps_per_epoch=max(1, num_train // batch_size //10),
                             validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors,
                                                                    num_classes, class_tree),
-                            validation_steps=max(1, num_val // batch_size),
+                            validation_steps=max(1, num_val // batch_size//10),
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
                             callbacks=callbacks,
@@ -407,7 +407,7 @@ class DataGenerator(Sequence):
 
     def __len__(self):
         print("len called")
-        return len(self.annotation_lines)
+        return len(self.annotation_lines) // batch_size
 
     def __getitem__(self, idx):
         print("    generating data")
