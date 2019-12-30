@@ -157,19 +157,19 @@ def train(specific=None):
         hvd.callbacks.BroadcastGlobalVariablesCallback(0),
         hvd.callbacks.MetricAverageCallback(),
     ]
-
-    logging = TensorBoard(log_dir=log_dir, write_images=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
                                   patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
                                    patience=TRAINING_STOPPING_PATIENCE, verbose=1)
 
-    callbacks = callbacks + [logging, reduce_lr, early_stopping]
+    callbacks = callbacks + [reduce_lr, early_stopping]
 
     if hvd.rank() == 0:
         checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
                                      monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
+        logging = TensorBoard(log_dir=log_dir, write_images=True)
         callbacks.append(checkpoint)
+        callbacks.append(logging)
 
     sizes = DATASET_TRAINING_SHAPES
     epochs = TRAINING_EPOCHS
