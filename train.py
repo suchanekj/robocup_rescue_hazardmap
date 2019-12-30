@@ -74,7 +74,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
 
         opt = Adam(lr=lr*hvd.size())
         opt = hvd.DistributedOptimizer(opt)
-        model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+        model.compile(opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         model.fit_generator(data_generator_wrapper_sequence(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
                             steps_per_epoch=max(1, num_train // batch_size),
