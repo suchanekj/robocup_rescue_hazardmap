@@ -408,19 +408,22 @@ class DataGenerator(Sequence):
         return len(self.annotation_lines)
 
     def __getitem__(self, idx):
-        image_data = []
-        box_data = []
-        for b in range(self.batch_size):
-            image, box = get_random_data(self.annotation_lines[idx], self.input_shape, random=True, lock=self.lock)
-            image_data.append(image)
-            box_data.append(box)
-        image_data = np.array(image_data)
-        box_data = np.array(box_data)
-        y_true = preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes, self.class_tree)
         with self.lock:
+            image_data = []
+            box_data = []
+            for b in range(self.batch_size):
+                image, box = get_random_data(self.annotation_lines[idx], self.input_shape, random=True, lock=self.lock)
+                image_data.append(image)
+                box_data.append(box)
+            image_data = np.array(image_data)
+            box_data = np.array(box_data)
+            y_true = preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes, self.class_tree)
             return [image_data, *y_true], np.zeros(self.batch_size)
 
     def on_epoch_end(self):
+        with self.lock:
+            newlock = threading.Lock()
+        self.lock = newlock
         np.random.shuffle(self.annotation_lines)
 
 def data_generator_wrapper_sequence(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
