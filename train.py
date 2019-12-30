@@ -13,6 +13,7 @@ from PIL import Image
 import shutil
 import time
 import threading
+import math
 
 from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
@@ -406,7 +407,7 @@ class DataGenerator(Sequence):
         np.random.shuffle(self.annotation_lines)
 
     def __len__(self):
-        return len(self.annotation_lines) // self.batch_size
+        return math.ceil(len(self.annotation_lines) / self.batch_size)
 
     def __getitem__(self, idx):
         index = idx % self.__len__()
