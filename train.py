@@ -407,7 +407,7 @@ class DataGenerator(Sequence):
 
     def __len__(self):
         print("len called")
-        return len(self.annotation_lines) // batch_size
+        return len(self.annotation_lines)
 
     def __getitem__(self, idx):
         print("    generating data")
