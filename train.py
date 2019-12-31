@@ -59,9 +59,11 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         opt = hvd.DistributedOptimizer(opt)
         model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
+
+
         print("warmup with lr", lr/10)
-        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size // 10),
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//100], batch_size, input_shape, anchors, num_classes, class_tree),
+                            steps_per_epoch=max(1, num_train // batch_size // 100),
                             epochs=1,
                             initial_epoch=0,
                             workers=2,
@@ -71,11 +73,12 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         opt = hvd.DistributedOptimizer(opt)
         model.compile(opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size),
-                            validation_data=data_generator_wrapper_sequence(lines[num_train:], batch_size, input_shape, anchors,
+
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//5], batch_size, input_shape, anchors, num_classes, class_tree),
+                            steps_per_epoch=max(1, num_train // batch_size//5),
+                            validation_data=data_generator_wrapper_sequence(lines[num_train//5:], batch_size, input_shape, anchors,
                                                                    num_classes, class_tree),
-                            validation_steps=max(1, num_val // batch_size),
+                            validation_steps=max(1, num_val // batch_size//5),
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
                             callbacks=callbacks,

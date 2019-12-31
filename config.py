@@ -221,7 +221,7 @@ DATASET_VALIDATION_PART = 0.05
 DATASET_TEST_PART = 1 - DATASET_TRAINING_PART - DATASET_VALIDATION_PART
 DATASET_CREATION_THREADS = 48
 
-TRAINING_EPOCHS = ((0, 0, 0, 0), (0, 0, 0, 0), (0, 0, 0, 0), (0, 0, 1, 1), (0, 1, 1, 2))
+TRAINING_EPOCHS = ((0, 0, 0, 0), (0, 0, 0, 0), (0, 0, 0, 0), (0, 0, 0, 0), (0, 1, 1, 2))
 # TRAINING_EPOCHS = ((0, 0, 0, 0), (5, 5, 10, 0), (5, 5, 5, 5), (5, 5, 5, 5), (5, 5, 5, 5))
 TRAINING_LRS = ((4e-3, 4e-4, 4e-5, 4e-6), (3e-3, 3e-4, 3e-5, 3e-6), (2e-3, 2e-4, 2e-5, 2e-6), (1e-3, 1e-4, 1e-5, 1e-6), (1e-4, 1e-5, 1e-6, 1e-7))
 TRAINING_REDUCE_LR_PATIENCE = 3
