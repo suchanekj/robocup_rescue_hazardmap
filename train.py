@@ -23,11 +23,9 @@ from config import *
 def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
                 callbacks, class_tree, skip=0):
     yolo_splits = (249, 185, 65, 0)
-    opt = Adam(lr=1e-3*hvd.size())
-    opt = hvd.DistributedOptimizer(opt)
-    model.compile(optimizer=opt, loss={
-        # use custom yolo_loss Lambda layer.
-        'yolo_loss': lambda y_true, y_pred: y_pred})
+    model.save_weights('model_data/temp{}.h5'.format(hvd.rank()))
+    model = create_model(input_shape, anchors, num_classes,
+                                     freeze_body=0, weights_path='model_data/temp{}.h5'.format(hvd.rank()))
 
     if AVAILABLE_MEMORY_GB == 2:
         batch_size = 1
@@ -50,9 +48,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         if split == 0:
             batch_size = batch_size // 2
         print("batch_size", batch_size, "lr", lr)
-        model.save_weights('model_data/temp{}.h5'.format(hvd.rank()))
-        model = create_model(input_shape, anchors, num_classes,
-                                         freeze_body=0, weights_path='model_data/temp{}.h5'.format(hvd.rank()))
 
         for i in range(len(model.layers)):
             if isinstance(model.layers[i], BatchNormalization) or i >= split:
