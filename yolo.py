@@ -21,13 +21,13 @@ from config import *
 
 class YOLO(object):
     _defaults = {
-        "model_path": 'model_data/yolo.h5',
-        # "model_path": 'logs/012/ep086-loss15.587-val_loss15.788.h5',
+        # "model_path": 'model_data/yolo.h5',
+        "model_path": 'logs/015/ep009-loss34.003-val_loss22.638.h5',
         "anchors_path": 'model_data/yolo_anchors.txt',
-        "classes_path": 'datasets/dataset_open_480/labelNames.txt',
+        "classes_path": 'datasets/labelNames.txt',
         # "classes_path": 'model_data/coco_classes.txt',
-        "score" : 0.3,
-        "iou" : 0.45,
+        "score" : 0.03,
+        "iou" : 0.045,
         "model_image_size" : DATASET_DEFAULT_SHAPE,
         "gpu_num" : 1,
     }

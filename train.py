@@ -141,35 +141,36 @@ def train(specific=None):
     epochs = TRAINING_EPOCHS
     lrs = TRAINING_LRS
 
-    for i in range(len(sizes)):
-        if i <= latest_part:
-            current_epoch += np.sum(epochs[i])
-            continue
-        skip = 0
-        for epoch in epochs[i]:
-            if skip_epochs >= epoch:
-                skip_epochs -= epoch
-                skip += epoch
-        if skip >= np.sum(epochs[i]):
-            continue
-        skip += skip_epochs
-        skip_epochs = 0
-        annotation_path = DATASET_LOCATION + str(i) + '/labels.txt'
-        with open(annotation_path) as f:
-            lines = f.readlines()
-        np.random.seed(10101)
-        np.random.shuffle(lines)
-        np.random.seed(None)
-        lines = lines[int(len(lines) * DATASET_TEST_PART):]
-        val_split = DATASET_VALIDATION_PART / (DATASET_TRAINING_PART + DATASET_VALIDATION_PART)
-        num_val = int(len(lines) * val_split)
-        num_train = len(lines) - num_val
+    if TRAIN:
+        for i in range(len(sizes)):
+            if i <= latest_part:
+                current_epoch += np.sum(epochs[i])
+                continue
+            skip = 0
+            for epoch in epochs[i]:
+                if skip_epochs >= epoch:
+                    skip_epochs -= epoch
+                    skip += epoch
+            if skip >= np.sum(epochs[i]):
+                continue
+            skip += skip_epochs
+            skip_epochs = 0
+            annotation_path = DATASET_LOCATION + str(i) + '/labels.txt'
+            with open(annotation_path) as f:
+                lines = f.readlines()
+            np.random.seed(10101)
+            np.random.shuffle(lines)
+            np.random.seed(None)
+            lines = lines[int(len(lines) * DATASET_TEST_PART):]
+            val_split = DATASET_VALIDATION_PART / (DATASET_TRAINING_PART + DATASET_VALIDATION_PART)
+            num_val = int(len(lines) * val_split)
+            num_train = len(lines) - num_val
 
-        model, current_epoch = train_cycle(model, lrs[i], epochs[i], current_epoch, lines, num_train, num_val,
-                                           sizes[i], anchors, num_classes,
-                                           [logging, checkpoint, reduce_lr, early_stopping], class_tree, skip)
+            model, current_epoch = train_cycle(model, lrs[i], epochs[i], current_epoch, lines, num_train, num_val,
+                                               sizes[i], anchors, num_classes,
+                                               [logging, checkpoint, reduce_lr, early_stopping], class_tree, skip)
 
-        model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
+            model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
 
     annotation_path = DATASET_LOCATION + str(len(sizes) - 1) + '/labels.txt'
     with open(annotation_path) as f:
@@ -179,15 +180,16 @@ def train(specific=None):
     np.random.seed(None)
     test_lines = lines[0:int(len(lines) * DATASET_TEST_PART)]
 
-    epoch = 0
-    for i in range(len(sizes)):
-        if sizes[i] != sizes[-1]:
-            epoch += sum(epochs[i])
-            continue
-        for j in range(len(epochs[i])):
-            if epochs[i][j] == 0:
-                continue
-            epoch += epochs[i][j]
+    # epoch = 0
+    # for i in range(len(sizes)):
+    #     if sizes[i] != sizes[-1]:
+    #         epoch += sum(epochs[i])
+    #         continue
+    #     for j in range(len(epochs[i])):
+    #         if epochs[i][j] == 0:
+    #             continue
+    #         epoch += epochs[i][j]
+    for epoch in range(1, 10):
             files = os.listdir(log_dir)
             if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
                 print("Missing checkpoint for ep" + str(epoch).zfill(3))

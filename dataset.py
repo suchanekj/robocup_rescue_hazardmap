@@ -39,7 +39,7 @@ objectTree = None
 # Fire extinguisher - folder
 # Baby doll - folder
 # Person - /m/03bt1vf /m/04yx4 /m/01g317
-# Valve - floder
+# Valve - folder
 # Hazmat labels - images
 # Qr codes - script -> folder
 # Exit signs - folder
@@ -933,6 +933,7 @@ def threadedCreateLabels():
                     t = time.time()
             print("object numbers")
             print(objectNums)
+
     print("time_loadBases", time_loadBases)
     print("time_loadObjects", time_loadObjects)
     print("time_makeImage", time_makeImage)

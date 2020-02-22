@@ -12,5 +12,5 @@ if not os.path.isfile(MODEL_LOCATION):
 
 if MAKE_DATASET:
     dataset.createDataset()
-if TRAIN:
+if TRAIN or TEST:
     train.train()
