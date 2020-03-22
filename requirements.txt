@@ -1,0 +1,10 @@
+pillow
+numpy
+matplotlib
+opencv-python
+awscli
+scikit-image
+pyqrcodeng
+pandas
+google_images_download
+

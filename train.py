@@ -1,11 +1,18 @@
+from config import *
+
+if GPU_NUM > 1:
+    import horovod.keras as hvd
+
 import os
+import tensorflow as tf
 import numpy as np
 import keras.backend as K
 from keras.layers import Input, Lambda
-from keras.layers.normalization import BatchNormalization
+from keras.layers import BatchNormalization
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, Callback
+from keras.utils import Sequence
 from PIL import Image
 import shutil
 import time
@@ -13,20 +20,21 @@ import time
 from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
 from yolo import YOLO, detect_video
-from config import *
-
 
 def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
                 callbacks, class_tree, skip=0):
     yolo_splits = (249, 185, 65, 0)
-    model.compile(optimizer=Adam(lr=1e-3), loss={
-        # use custom yolo_loss Lambda layer.
-        'yolo_loss': lambda y_true, y_pred: y_pred})
+    if GPU_NUM > 1:
+        temp_file = 'model_data/temp{}.h5'.format(hvd.rank())
+    else:
+        temp_file = 'model_data/temp.h5'
+    model.save_weights(temp_file)
+    model = create_model(input_shape, anchors, num_classes, freeze_body=0, weights_path=temp_file)
 
     if AVAILABLE_MEMORY_GB == 2:
         batch_size = 1
     else:
-        batch_size = 16
+        batch_size = 6
         if input_shape[0] * input_shape[1] <= 360 * 480:
             batch_size *= 2
         if input_shape[0] * input_shape[1] <= 240 * 320:
@@ -44,33 +52,46 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         if split == 0:
             batch_size = batch_size // 2
         print("batch_size", batch_size, "lr", lr)
-        model.save_weights('model_data/temp.h5')
-        model = create_model(input_shape, anchors, num_classes,
-                             freeze_body=0, weights_path='model_data/temp.h5')
+
         for i in range(len(model.layers)):
             if isinstance(model.layers[i], BatchNormalization) or i >= split:
                 model.layers[i].trainable = True
                 continue
             model.layers[i].trainable = False
 
-        model.compile(optimizer=Adam(lr=lr/10), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+        if GPU_NUM > 1:
+            opt = Adam(lr=lr/10*hvd.size())
+            opt = hvd.DistributedOptimizer(opt)
+        else:
+            opt = Adam(lr=lr/10)
+        model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         print("warmup with lr", lr/10)
-        model.fit_generator(data_generator_wrapper(lines[:num_train//10], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size // 10),
+        model.fit_generator(data_generator_wrapper_sequence(lines[:max(num_train//100, min(10, num_train))], batch_size, input_shape, anchors, num_classes, class_tree),
+                            steps_per_epoch=max(1, num_train // batch_size // 100),
                             epochs=1,
-                            initial_epoch=0)
+                            initial_epoch=0,
+                            workers=2,
+                            max_queue_size=10)
 
-        model.compile(optimizer=Adam(lr=lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+        if GPU_NUM > 1:
+            opt = Adam(lr=lr*hvd.size())
+            opt = hvd.DistributedOptimizer(opt)
+        else:
+            opt = Adam(lr=lr)
+        model.compile(opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size),
-                            validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors,
+        divider = 5
+        model.fit_generator(data_generator_wrapper_sequence(lines[:num_train//5], batch_size, input_shape, anchors, num_classes, class_tree),
+                            steps_per_epoch=max(1, num_train // batch_size//5),
+                            validation_data=data_generator_wrapper_sequence(lines[num_train//5:], batch_size, input_shape, anchors,
                                                                    num_classes, class_tree),
-                            validation_steps=max(1, num_val // batch_size),
+                            validation_steps=max(1, num_val // batch_size//5),
                             epochs=current_epoch + epoch - skip,
                             initial_epoch=current_epoch,
-                            callbacks=callbacks)
+                            callbacks=callbacks,
+                            workers=2,
+                            max_queue_size=10)
         current_epoch += epoch
     return model, current_epoch
 
@@ -83,6 +104,15 @@ def train(specific=None):
     class_tree = get_class_tree(class_names)
     num_classes = len(class_names)
     anchors = get_anchors(anchors_path)
+
+    if GPU_NUM > 1:
+        hvd.init()
+
+        # Horovod: pin GPU to be used to process local rank (one GPU per process)
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.gpu_options.visible_device_list = str(hvd.local_rank())
+        K.set_session(tf.Session(config=config))
 
     input_shape = DATASET_DEFAULT_SHAPE  # multiple of 32, hw
 
@@ -101,6 +131,7 @@ def train(specific=None):
             #     if logged_files[i][-3:] == ".h5" and logged_files[i][0:2] == "ep":
             #         latest = logged_files[i]
         except:
+            #raise Exception("failed to find latest in logged files")
             pass
     else:
         latest = specific
@@ -129,13 +160,32 @@ def train(specific=None):
                              weights_path=log_dir + latest)  # make sure you know what you freeze
         print(log_dir + latest)
 
-    logging = TensorBoard(log_dir=log_dir, write_images=True)
-    checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
-                                 monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
-                                  patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
-    early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
-                                   patience=TRAINING_STOPPING_PATIENCE, verbose=1)
+    if GPU_NUM > 1:
+        callbacks = [
+            hvd.callbacks.BroadcastGlobalVariablesCallback(0)
+        ]
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                      patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
+        early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                       patience=TRAINING_STOPPING_PATIENCE, verbose=1)
+
+        callbacks = callbacks + [reduce_lr, early_stopping]
+
+        if hvd.rank() == 0:
+            checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+                                         monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
+            logging = TensorBoard(log_dir=log_dir, write_images=True)
+            callbacks.append(checkpoint)
+            callbacks.append(logging)
+    else:
+        checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+                                     monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
+        logging = TensorBoard(log_dir=log_dir, write_images=True)
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                      patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
+        early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                       patience=TRAINING_STOPPING_PATIENCE, verbose=1)
+        callbacks = [logging, checkpoint, reduce_lr, early_stopping]
 
     sizes = DATASET_TRAINING_SHAPES
     epochs = TRAINING_EPOCHS
@@ -168,9 +218,9 @@ def train(specific=None):
 
             model, current_epoch = train_cycle(model, lrs[i], epochs[i], current_epoch, lines, num_train, num_val,
                                                sizes[i], anchors, num_classes,
-                                               [logging, checkpoint, reduce_lr, early_stopping], class_tree, skip)
-
-            model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
+                                               callbacks, class_tree, skip)
+            if GPU_NUM <= 1:
+                model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
 
     annotation_path = DATASET_LOCATION + str(len(sizes) - 1) + '/labels.txt'
     with open(annotation_path) as f:
@@ -196,15 +246,15 @@ def train(specific=None):
                 continue
             model_file = [f for f in files if ("ep" + str(epoch).zfill(3)) in f][0]
 
-            if TEST_EVALUATE:
-                model = create_model(input_shape, anchors, num_classes, freeze_body=2,
-                                     weights_path=log_dir + model_file)
-                batch_size = 16
-                model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
-                result = model.evaluate_generator(
-                    data_generator_wrapper(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
-                    steps=max(1, len(test_lines) // batch_size))
-                print(result)
+            # if TEST_EVALUATE:
+            #     model = create_model(input_shape, anchors, num_classes, freeze_body=2,
+            #                          weights_path=log_dir + model_file)
+            #     batch_size = 16
+            #     model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+            #     result = model.evaluate_generator(
+            #         data_generator_wrapper(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
+            #         steps=max(1, len(test_lines) // batch_size))
+            #     print(result)
 
             if TEST_VISUALIZE_IMAGES or TEST_VISUALIZE_VIDEO:
                 folder = log_dir + "test" + str(epoch).zfill(3) + "/"
@@ -221,12 +271,12 @@ def train(specific=None):
                     "score": 0.05,  # 0.3
                     "iou": 0.45,  # 0.45
                 }
-                K.clear_session()
+                #K.clear_session()
 
                 if TEST_VISUALIZE_VIDEO:
                     yolo = YOLO(**settings)
                     detect_video(yolo, "test.mp4", folder[:-1] + ".avi")
-                    K.clear_session()
+                    #K.clear_session()
 
                 if TEST_VISUALIZE_IMAGES:
                     yolo = YOLO(**settings)
@@ -238,7 +288,7 @@ def train(specific=None):
                         name = line.split("/")[-1]
                         r_image.save(folder + "imgs/" + name)
                     yolo.close_session()
-                    K.clear_session()
+                    #K.clear_session()
 
 
 def get_classes(classes_path):
@@ -277,7 +327,13 @@ def get_anchors(anchors_path):
 def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze_body=2,
             weights_path='model_data/yolo_weights.h5'):
     '''create the training model'''
-    K.clear_session() # get a new session
+    K.clear_session()
+    if GPU_NUM > 1:
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.gpu_options.visible_device_list = str(hvd.local_rank())
+        K.set_session(tf.Session(config=config))
+
     image_input = Input(shape=(None, None, 3))
     h, w = input_shape
     num_anchors = len(anchors)
@@ -311,7 +367,13 @@ def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze
 def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, freeze_body=2,
             weights_path='model_data/tiny_yolo_weights.h5'):
     '''create the training model, for Tiny YOLOv3'''
-    K.clear_session() # get a new session
+    K.clear_session()
+    if GPU_NUM > 1:
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.gpu_options.visible_device_list = str(hvd.local_rank())
+        K.set_session(tf.Session(config=config))
+
     image_input = Input(shape=(None, None, 3))
     h, w = input_shape
     num_anchors = len(anchors)
@@ -338,32 +400,39 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
 
     return model
 
+class DataGenerator(Sequence):
+    def __init__(self, annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
+        self.annotation_lines = annotation_lines
+        self.batch_size = batch_size
+        self.input_shape = input_shape
+        self.anchors = anchors
+        self.num_classes = num_classes
+        self.class_tree = class_tree
+        self.on_epoch_end()
 
-def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
-    '''data generator for fit_generator'''
-    n = len(annotation_lines)
-    i = 0
-    while True:
+    def __len__(self):
+        return len(self.annotation_lines) // self.batch_size
+
+    def __getitem__(self, idx):
+        index = idx % self.__len__()
         image_data = []
         box_data = []
-        for b in range(batch_size):
-            if i==0:
-                np.random.shuffle(annotation_lines)
-            image, box = get_random_data(annotation_lines[i], input_shape, random=True)
+        for b in range(self.batch_size):
+            image, box = get_random_data(self.annotation_lines[index + b], self.input_shape, random=True)
             image_data.append(image)
             box_data.append(box)
-            i = (i+1) % n
         image_data = np.array(image_data)
         box_data = np.array(box_data)
-        y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes, class_tree)
-        yield [image_data, *y_true], np.zeros(batch_size)
+        y_true = preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes, self.class_tree)
+        return [image_data, *y_true], np.zeros(self.batch_size)
 
+    def on_epoch_end(self):
+        np.random.shuffle(self.annotation_lines)
 
-def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
+def data_generator_wrapper_sequence(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree):
     n = len(annotation_lines)
     if n==0 or batch_size<=0: return None
-    return data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree)
-
+    return DataGenerator(annotation_lines, batch_size, input_shape, anchors, num_classes, class_tree)
 
 if __name__ == '__main__':
     train()

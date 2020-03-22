@@ -17,7 +17,8 @@ from skimage.measure import regionprops
 from collections.abc import Iterable
 import threading
 import subprocess
-
+import multiprocessing as mp
+from queue import Empty as qEmpty
 
 from config import *
 
@@ -78,6 +79,7 @@ def generate_qr_codes():
 
 
 def filterObjects(size_step):
+    print("Filtering")
     object_fs = []
     for root, dirs, files in os.walk("objects", topdown=False):
         for name in files:
@@ -812,12 +814,9 @@ def filterImages(base, namesPositions, size_step):
     return base, namesPositions
 
 
-# lastIndex = 4
-
-def writeImages(base, namesPositions, size_step):
+def writeImages(prefix, index, annotations_q, base, namesPositions, size_step):
     strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     dataset_f = DATASET_LOCATION + str(size_step)
-    f = open(dataset_f + "/labels.txt", "a+")
 
     is_jpg = rand() < 0.5 * strength_mod
 
@@ -829,11 +828,8 @@ def writeImages(base, namesPositions, size_step):
             print("DRAWING RECTANGLE!!!")
             cv2.rectangle(base, tuple(namesPositions[a][1:3]), tuple(namesPositions[a][3:]), (255, 0, 255, 255), 1)
 
-    index = len(os.listdir(dataset_f)) - 2
-    # if index > 5:
-    #     lastIndex += 1
-    #     index = lastIndex
-    f.write(os.getcwd() + "/" + dataset_f + "/" + str(index).zfill(7) + (".jpg " if is_jpg else ".png "))
+    file_name = prefix + str(index).zfill(7) + (".jpg " if is_jpg else ".png ")
+    ann_line = os.getcwd() + "/" + dataset_f + "/" + file_name
     for a in range(len(namesPositions)):
         if objectNums.get(namesPositions[a][0]) is None:
             objectNums[namesPositions[a][0]] = 1
@@ -841,21 +837,20 @@ def writeImages(base, namesPositions, size_step):
             objectNums[namesPositions[a][0]] += 1
         if (namesPositions[a][1] - namesPositions[a][3]) * (namesPositions[a][2] - namesPositions[a][4]) == 0:
             continue
-        f.write(','.join(map(str, namesPositions[a][1:])))
-        f.write(',')
-        f.write(str(objectIDs[namesPositions[a][0]]))
+        ann_line += ','.join(map(str, namesPositions[a][1:]))
+        ann_line += ',' + str(objectIDs[namesPositions[a][0]])
         if a != len(namesPositions) - 1:
-            f.write(' ')
-    f.write('\n')
+            ann_line += ' '
+    ann_line += '\n'
     # print("saving as", dataset_f + "/" + str(index).zfill(7) + ".png")
     if is_jpg:
-        cv2.imwrite(dataset_f + "/" + str(index).zfill(7) + ".jpg", base, [cv2.IMWRITE_JPEG_QUALITY, int(rand(85,10))])
+        cv2.imwrite(dataset_f + "/" + file_name, base, [cv2.IMWRITE_JPEG_QUALITY, int(rand(85,10))])
     else:
-        cv2.imwrite(dataset_f + "/" + str(index).zfill(7) + ".png", base)
-    f.close()
+        cv2.imwrite(dataset_f + "/" + file_name, base)
+    annotations_q.put(ann_line)
 
 
-def threadedCreateLabel(base_num, obj_nums, output, size_step):
+def createLabel(base_num, obj_nums, size_step):
     base_img, base_name_pos = makeBase(base_num, size_step)
     for obj_num in obj_nums:
         obj_img, obj_name_pos = objectMake(obj_num, size_step)
@@ -863,18 +858,49 @@ def threadedCreateLabel(base_num, obj_nums, output, size_step):
         obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos, size_step)
         base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos, size_step)
     base_img, base_name_pos = filterImages(base_img, base_name_pos, size_step)
-    output[0] = base_img
-    output[1] = base_name_pos
+    return base_img, base_name_pos
 
 
-def threadedCreateLabels():
+def threadedCreateLabels(prefix, number, size_step, annotations_q):
+    print("threadedCreateLabels")
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
-    time_makeImage = 0
-    time_writeImages = 0
-    time_loadBases = 0
-    time_loadObjects = 0
-    num_threads = DATASET_CREATION_TREADS
+    dataset_f = DATASET_LOCATION + str(size_step)
+
+    objectList = []
+    objectImgs = []
+    objectNames = []
+    objectIDs = {}
+    baseList = []
+    objectNums = {}
+    objectTree = None
+
+    makeObjectList(size_step)
+    makeBaseList(size_step)
+    for k in range(number):
+        num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
+                                      p=DATASET_OBJECT_PLACE_CHANCE)
+
+        base_num = baseList.pop(0)
+        obj_nums = [objectList.pop(0) for i in range(num_labels)]
+
+        base_img, base_name_pos = createLabel(base_num, obj_nums, size_step)
+
+        print(".", end="")
+        sys.stdout.flush()
+        if random.random() < 0.01:
+            print(len(os.listdir(dataset_f)) - 2)
+
+        writeImages(prefix, k, annotations_q, base_img, base_name_pos, size_step)
+
+    print("threadedCreateLabels finished")
+    return True
+
+
+def createLabels():
+    global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
+        objectTree
+    num_threads = DATASET_CREATION_THREADS
     for size_step in range(DATASET_SIZE_STEPS):
         dataset_f = DATASET_LOCATION + str(size_step)
         if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
@@ -885,59 +911,40 @@ def threadedCreateLabels():
                 time.sleep(0.2)
             os.makedirs(dataset_f)
 
-            objectList = []
-            objectImgs = []
-            objectNames = []
-            objectIDs = {}
-            baseList = []
-            objectNums = {}
-            objectTree = None
+            print(size_step)
 
-            t = time.time()
-            print("make object list")
             filterObjects(size_step)
-            makeObjectList(size_step)
-            print("object list length", len(objectList))
-            time_loadBases += time.time() - t
-            t = time.time()
-            print("make_base_list")
-            makeBaseList(size_step)
-            time_loadObjects += time.time() - t
-            t = time.time()
-            print("make dataset")
-            while len(os.listdir(dataset_f)) - 2 < DATASET_NUM_IMAGES:
-                num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
-                                              p=DATASET_OBJECT_PLACE_CHANCE)
 
-                base_num = [baseList.pop(0) for i in range(num_threads)]
-                obj_nums = [[objectList.pop(0) for i in range(num_labels)] for i in range(num_threads)]
+            # ann_q = mp.Queue()
+            m = mp.Manager()
+            ann_q = m.Queue()
+            ann_f = open(dataset_f + "/labels.txt", "a+")
 
-                threads = [None for i in range(num_threads)]
-                results = [[None, None] for i in range(num_threads)]
-                for i in range(num_threads):
-                    threads[i] = threading.Thread(target=threadedCreateLabel,
-                                                  args=(base_num[i], obj_nums[i], results[i], size_step))
-                    threads[i].start()
+            params = [(str(thread_i).zfill(4) + "_", DATASET_NUM_IMAGES // num_threads +
+                      (1 if DATASET_NUM_IMAGES % num_threads > thread_i else 0), size_step, ann_q)
+                      for thread_i in range(num_threads)]
+            pool = mp.Pool(processes=num_threads)
 
-                for i in range(num_threads):
-                    print(".", end="")
-                    sys.stdout.flush()
-                    if len(os.listdir(dataset_f)) % 100 == 0:
-                        print(len(os.listdir(dataset_f)) - 2)
-                    threads[i].join()
-                    base_img, base_name_pos = results[i]
-                    time_makeImage += time.time() - t
-                    t = time.time()
-                    writeImages(base_img, base_name_pos, size_step)
-                    time_writeImages += time.time() - t
-                    t = time.time()
-            print("object numbers")
-            print(objectNums)
+            print(params)
+            result = pool.starmap_async(threadedCreateLabels, params)
 
-    print("time_loadBases", time_loadBases)
-    print("time_loadObjects", time_loadObjects)
-    print("time_makeImage", time_makeImage)
-    print("time_writeImages", time_writeImages)
+            while not result.ready() or not ann_q.empty():
+                try:
+                    ann = ann_q.get_nowait()
+                    ann_f.write(ann)
+                except qEmpty:
+                    pass
+            print(result.get())
+            time.sleep(0.1)
+            while not ann_q.empty():
+                try:
+                    ann = ann_q.get_nowait()
+                    ann_f.write(ann)
+                except qEmpty:
+                    pass
+            pool.close()
+            pool.join()
+            ann_f.close()
 
 
 def createDataset(debug=False):
@@ -950,4 +957,8 @@ def createDataset(debug=False):
         newDownload()
     if not os.path.exists("openimages/all-annotations-bbox.csv") or REFILTER_DATASET:
         filterOpenImages()
-    threadedCreateLabels()
+    createLabels()
+
+
+if __name__=="__main__":
+    createDataset()

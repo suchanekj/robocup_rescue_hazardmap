@@ -6,8 +6,8 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import Conv2D, Add, ZeroPadding2D, UpSampling2D, Concatenate, MaxPooling2D
-from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.normalization import BatchNormalization
+from keras.layers import LeakyReLU
+from keras.layers import BatchNormalization
 from keras.models import Model
 from keras.regularizers import l2
 
@@ -465,7 +465,11 @@ def yolo_loss(args, anchors, num_classes, ignore_thresh=.5, print_loss=False):
             return b + 1, ignore_mask
 
         # if the line bellow gives error: https://blog.csdn.net/CAU_Ayao/article/details/89312354
-        _, ignore_mask = K.control_flow_ops.while_loop(lambda b, *args: b < m, loop_body, [0, ignore_mask])
+
+        # _, ignore_mask = K.control_flow_ops.while_loop(lambda b, *args: b < m, loop_body, [0, ignore_mask])
+
+        _, ignore_mask = tf.while_loop(lambda b,*args: b<m, loop_body, [0, ignore_mask])
+
         ignore_mask = ignore_mask.stack()
         ignore_mask = K.expand_dims(ignore_mask, -1)
 

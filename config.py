@@ -1,50 +1,3 @@
-# Reason (by Isaac Asimov)
-#
-# ...
-#
-# “It’s done,” said the robot quietly, “and so I’ve come to have a talk with the two
-# of you”
-#  “Oh!” Powell looked uncomfortable. “Well, sit down. No, not that chair. One of
-# the legs is weak and you’re no lightweight.”
-#  The robot did so and said placidly, “I have come to a decision.”
-#  Donovan glowered and put the remnants of his sandwich aside. “If it’s on any of
-# that screwy--”
-#  The other motioned impatiently for silence, “Go ahead, Cutie. We’re listening.”
-#  “I have spent these last two days in concentrated introspection,” said Cutie, “and
-# the results have been most interesting. I began at the one sure assumption I felt permitted
-# to make. I, myself, exist, because I think--”
-#  Powell groaned, “Oh, Jupiter, a robot Descartes!”
-#  “Who’s Descartes?” demanded Donovan. “Listen, do we have to sit here and
-# listen to this metal maniac--”
-#  “Keep quiet, Mike!”
-#  Cutie continued imperturbably, “And the question that immediately arose was:
-# Just what is the cause of my existence?”
-#  Powell’s jaw set lumpily. “You’re being foolish. I told you already that we made
-# you.”
-#  “And if you don’t believe us,” added Donovan, “we’ll gladly take you apart!”
-#  The robot spread his strong hands in a deprecatory gesture, “I accept nothing on
-# authority. A hypothesis must be backed by reason, or else it is worthless -- and it goes
-# against all the dictates of logic to suppose that you made me.”
-#  Powell dropped a restraining arm upon Donovan’s suddenly bunched fist. “Just
-# why do you say that?”
-#  Cutie laughed. It was a very inhuman laugh -- the most machine-like utterance he
-# had yet given vent to. It was sharp and explosive, as regular as a metronome and as
-# uninflected.
-#  “Look at you,” he said finally. “I say this in no spirit of contempt, but look at you!
-# The material you are made of is soft and flabby, lacking endurance and strength,
-# depending for energy upon the inefficient oxidation of organic material -- like that.” He
-# pointed a disapproving finger at what remained of Donovan’s sandwich. “Periodically
-# you pass into a coma and the least variation in temperature, air pressure, humidity, or
-# radiation intensity impairs your efficiency. You are makeshift.
-#  “I, on the other hand, am a finished product. I absorb electrical energy directly
-# and utilize it with an almost one hundred percent efficiency. I am composed of strong
-# metal, am continuously conscious, and can stand extremes of environment easily. These
-# are facts which, with the self-evident proposition that no being can create another being
-# superior to itself, smashes your silly hypothesis to nothing.”
-#
-# ...
-
-
 # Download
 # DATASET_DOWNLOAD_KEYWORDS = ["why are you not working"]
 
@@ -203,13 +156,13 @@ DATASET_MAX_NUM_IMAGES = 100000
 DATASET_DOWNLOAD_TIME_MUL = 1
 DATASET_NUM_IMAGES = DATASET_MAX_NUM_IMAGES
 
-DATASET_OBJECT_PLACE_CHANCE = (0.03, 0.6, 0.3, 0.07)
+DATASET_OBJECT_PLACE_CHANCE = (0.03, 0.4, 0.3, 0.17, 0.07, 0.03)
 DATASET_FOURS_PART = 1 / 4
 DATASET_MAX_OBJECTS_PER_IMG = len(DATASET_OBJECT_PLACE_CHANCE) - 1
 DATASET_FOUR_MEMBER_WIGGLE = 2
 DATASET_DEFAULT_SHAPE = (480, 640)
 DATASET_TRAINING_SHAPES = ((96, 128), (192, 256), (288, 384), (480, 640), (480, 640))
-DATASET_TRAINING_OBJECT_SIZES = (50, 70, 150, 200, 200)
+DATASET_TRAINING_OBJECT_SIZES = (500, 70, 150, 200, 200)
 DATASET_FILTERING_STRENGTHS = (0.1, 0.4, 1., 1., 0.9)
 DATASET_EROSION_MAX_SIZE = (3, 5, 10, 15, 10)
 DATASET_SIZE_STEPS = len(DATASET_FILTERING_STRENGTHS)
@@ -219,14 +172,14 @@ DATASET_LOCATION = "datasets/dataset_open_"
 DATASET_TRAINING_PART = 0.9
 DATASET_VALIDATION_PART = 0.05
 DATASET_TEST_PART = 1 - DATASET_TRAINING_PART - DATASET_VALIDATION_PART
-DATASET_CREATION_TREADS = 1
+DATASET_CREATION_THREADS = 10
 
-TRAINING_EPOCHS = ((3, 3, 0, 0), (5, 5, 10, 0), (5, 5, 5, 5), (3, 3, 3, 3), (0, 3, 5, 10))
+TRAINING_EPOCHS = ((5, 5, 0, 0), (5, 5, 10, 0), (5, 5, 5, 5), (5, 5, 5, 5), (0, 5, 5, 5))
 # TRAINING_EPOCHS = ((0, 0, 0, 0), (5, 5, 10, 0), (5, 5, 5, 5), (5, 5, 5, 5), (5, 5, 5, 5))
 TRAINING_LRS = ((4e-3, 4e-4, 4e-5, 4e-6), (3e-3, 3e-4, 3e-5, 3e-6), (2e-3, 2e-4, 2e-5, 2e-6), (1e-3, 1e-4, 1e-5, 1e-6), (1e-4, 1e-5, 1e-6, 1e-7))
 TRAINING_REDUCE_LR_PATIENCE = 3
 TRAINING_STOPPING_PATIENCE = 10
-TRAINING_PATIENCE_LOSS_MARGIN = 0.03
+TRAINING_PATIENCE_LOSS_MARGIN = 0.3
 TRAINING_RANDOM_MODIFY = False
 TRAINING_LOG_PERIOD = 100
 TRAINING_CHECKPOINT_PERIOD = 1800
@@ -234,15 +187,16 @@ TEST_EVALUATE = False
 TEST_VISUALIZE_IMAGES = True
 TEST_VISUALIZE_VIDEO = True
 
-MAKE_DATASET = False
+MAKE_DATASET = True
 REDOWNLOAD_DATASET = False
 REFILTER_DATASET = False
 REBUILD_DATASET = False
-TRAIN = False
-TEST = True
+TRAIN = True
+TEST = False
 TRAINING_CYCLE = 15
 
 MODEL_LOCATION = "model_data/yolo_original.h5"
 AVAILABLE_MEMORY_GB = 2
+GPU_NUM = 1
 
-DEBUG = False
+DEBUG = True
