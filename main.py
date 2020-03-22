@@ -12,7 +12,7 @@ if __name__=="__main__":
 
     if MAKE_DATASET:
         import dataset
-        dataset.createDataset(True)
+        dataset.createDataset()
     if TRAIN or TEST:
         import train
         train.train()
