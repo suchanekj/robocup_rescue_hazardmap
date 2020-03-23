@@ -19,6 +19,7 @@ import threading
 import subprocess
 import multiprocessing as mp
 from queue import Empty as qEmpty
+import psutil
 
 from config import *
 
@@ -928,12 +929,19 @@ def createLabels():
             print(params)
             result = pool.starmap_async(threadedCreateLabels, params)
 
+            t = time.time() - 300
             while not result.ready() or not ann_q.empty():
                 try:
                     ann = ann_q.get_nowait()
                     ann_f.write(ann)
                 except qEmpty:
                     pass
+                if time.time() - t > 300:
+                    t = time.time()
+                    # gives a single float value
+                    print("cpu", psutil.cpu_percent(interval=None, percpu=True))
+                    # gives an object with many fields
+                    print("memory", psutil.virtual_memory())
             print(result.get())
             time.sleep(0.1)
             while not ann_q.empty():
