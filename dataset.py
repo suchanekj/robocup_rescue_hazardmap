@@ -336,6 +336,8 @@ def makeBaseList(size_step):
                 sys.stdout.flush()
                 if (id + 1) % 100 == 0:
                     print(id)
+                    if random.random() < 0.2:
+                        print("cpu", psutil.cpu_percent(interval=None, percpu=True))
                 if len(objects_df) == 0:
                     nothingBases.append(id)
                 elif DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"].values[0]] == "physical/door":
