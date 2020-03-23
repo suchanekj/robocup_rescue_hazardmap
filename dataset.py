@@ -326,7 +326,8 @@ def makeBaseList(size_step):
             for f in files:
                 if DEBUG and min(len(doorBases), len(nothingBases), len(personBases)) >= 1:
                     continue
-                if min(len(doorBases), len(nothingBases), len(personBases)) >= DATASET_NUM_IMAGES // 10:
+                if min(len(doorBases), len(nothingBases), len(personBases)) >= \
+                        DATASET_NUM_IMAGES // (10 * DATASET_CREATION_THREADS):
                     continue
                 name = f[:-4]
                 objects_df = all_df[all_df["ImageID"] == name]
