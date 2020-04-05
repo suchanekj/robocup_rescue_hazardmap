@@ -20,6 +20,7 @@ import subprocess
 import multiprocessing as mp
 from queue import Empty as qEmpty
 import psutil
+import argparse
 
 from config import *
 
@@ -86,9 +87,10 @@ def filterObjects(size_step):
         for name in files:
             file = os.path.join(root, name).replace('\\', '/')
             object_fs.append(file)
-    shutil.rmtree("filtered_objects/", ignore_errors=True)
+    filtered_objects = "filtered_objects_" + str(size_step) + "/"
+    shutil.rmtree(filtered_objects, ignore_errors=True)
     time.sleep(0.5)
-    os.makedirs("filtered_objects/")
+    os.makedirs(filtered_objects)
     for obj in object_fs:
         filtering = (0, 0)
         for key in DATASET_OBJECT_BACKGROUND_REMOVAL.keys():
@@ -162,10 +164,11 @@ def filterObjects(size_step):
 
             res = cv2.resize(res, new_shape)
 
-        dir = "filtered_" + "/".join(f.split("/")[:-1])
+        dir = filtered_objects + "/".join(f.split("/")[1:-1])
         if not os.path.exists(dir):
             os.makedirs(dir)
-        cv2.imwrite("filtered_" + ".".join(f.split(".")[:-1]) + ".png", res)
+        f_out = filtered_objects + ".".join(("/".join(f.split("/")[1:])).split(".")[:-1]) + ".png"
+        cv2.imwrite(f_out, res)
 
 
 def filterOpenImages():
@@ -242,7 +245,8 @@ def makeObjectList(size_step):
     object_fs = []
     super_object_fs = []
     objectTree = ClassTree("")
-    for root, dirs, files in os.walk("filtered_objects", topdown=False):
+    filtered_objects = "filtered_objects_" + str(size_step) + "/"
+    for root, dirs, files in os.walk(filtered_objects, topdown=False):
         for name in files:
             file = "/".join(os.path.join(root, name).replace('\\', '/').split("/")[1:])
             if "!" not in file:
@@ -264,10 +268,10 @@ def makeObjectList(size_step):
         objectNames.append(name)
         objectIDs[name] = len(objectNames) - 1
         names_f.write(str(len(objectNames) - 1) + " " + name + "\n")
-        if os.path.isdir("filtered_objects/" + obj):
-            obj_fs = ["filtered_objects/" + obj + "/" + f for f in os.listdir("filtered_objects/" + obj)]
+        if os.path.isdir(filtered_objects + obj):
+            obj_fs = [filtered_objects + obj + "/" + f for f in os.listdir(filtered_objects + obj)]
         else:
-            obj_fs = ["filtered_objects/" + obj]
+            obj_fs = [filtered_objects + obj]
         for obj_f in obj_fs:
             img = cv2.imread(obj_f, cv2.IMREAD_UNCHANGED)
             objectImgs[-1].append(img)
@@ -327,7 +331,7 @@ def makeBaseList(size_step):
                 if DEBUG and min(len(doorBases), len(nothingBases), len(personBases)) >= 1:
                     continue
                 if min(len(doorBases), len(nothingBases), len(personBases)) >= \
-                        DATASET_NUM_IMAGES // (10 * DATASET_CREATION_THREADS):
+                        DATASET_NUM_IMAGES // (10 * max(DATASET_CREATION_THREADS, 1)):
                     continue
                 name = f[:-4]
                 objects_df = all_df[all_df["ImageID"] == name]
@@ -851,7 +855,11 @@ def writeImages(prefix, index, annotations_q, base, namesPositions, size_step):
         cv2.imwrite(dataset_f + "/" + file_name, base, [cv2.IMWRITE_JPEG_QUALITY, int(rand(85,10))])
     else:
         cv2.imwrite(dataset_f + "/" + file_name, base)
-    annotations_q.put(ann_line)
+    if annotations_q is not None:
+        annotations_q.put(ann_line)
+    else:
+        with open(dataset_f + "/labels.txt", "a+") as ann_f:
+            ann_f.write(ann_line)
 
 
 def createLabel(base_num, obj_nums, size_step):
@@ -865,7 +873,7 @@ def createLabel(base_num, obj_nums, size_step):
     return base_img, base_name_pos
 
 
-def threadedCreateLabels(prefix, number, size_step, annotations_q):
+def threadCreateLabels(prefix, number, size_step, annotations_q):
     print("threadedCreateLabels")
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
@@ -901,7 +909,7 @@ def threadedCreateLabels(prefix, number, size_step, annotations_q):
     return True
 
 
-def createLabels():
+def threadedCreateLabels():
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
     num_threads = DATASET_CREATION_THREADS
@@ -958,7 +966,52 @@ def createLabels():
             ann_f.close()
 
 
-def createDataset(debug=False):
+def createLabels(size=None):
+    global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
+        objectTree
+    print(size)
+    for size_step in (range(DATASET_SIZE_STEPS) if size is None else [size]):
+        dataset_f = DATASET_LOCATION + str(size_step)
+        if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
+                or REBUILD_DATASET:
+
+            if os.path.exists(dataset_f):
+                shutil.rmtree(dataset_f)
+                time.sleep(0.2)
+            os.makedirs(dataset_f)
+
+            print(size_step)
+
+            filterObjects(size_step)
+
+            objectList = []
+            objectImgs = []
+            objectNames = []
+            objectIDs = {}
+            baseList = []
+            objectNums = {}
+            objectTree = None
+
+            makeObjectList(size_step)
+            makeBaseList(size_step)
+            while len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES + 2:
+                num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
+                                              p=DATASET_OBJECT_PLACE_CHANCE)
+
+                base_num = baseList.pop(0)
+                obj_nums = [objectList.pop(0) for i in range(num_labels)]
+
+                base_img, base_name_pos = createLabel(base_num, obj_nums, size_step)
+
+                print(".", end="")
+                sys.stdout.flush()
+                if random.random() < 0.01:
+                    print(len(os.listdir(dataset_f)) - 2)
+
+                writeImages("", len(os.listdir(dataset_f)) - 2, None, base_img, base_name_pos, size_step)
+
+
+def createDataset(debug=False, size=None):
     global DEBUG, DATASET_NUM_IMAGES
     if debug:
         DEBUG = True
@@ -968,8 +1021,15 @@ def createDataset(debug=False):
         newDownload()
     if not os.path.exists("openimages/all-annotations-bbox.csv") or REFILTER_DATASET:
         filterOpenImages()
-    createLabels()
+    if DATASET_CREATION_THREADS == 0:
+        createLabels(size)
+    else:
+        threadedCreateLabels()
 
 
 if __name__=="__main__":
-    createDataset()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('size', type=int)
+    args = parser.parse_args()
+    print(args.size)
+    createDataset(size=args.size)
