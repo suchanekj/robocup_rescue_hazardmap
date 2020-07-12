@@ -34,7 +34,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
     if AVAILABLE_MEMORY_GB == 2:
         batch_size = 1
     else:
-        batch_size = 6
+        batch_size = 4
         if input_shape[0] * input_shape[1] <= 360 * 480:
             batch_size *= 2
         if input_shape[0] * input_shape[1] <= 240 * 320:
@@ -239,7 +239,9 @@ def train(specific=None):
     #         if epochs[i][j] == 0:
     #             continue
     #         epoch += epochs[i][j]
-    for epoch in range(1, 10):
+    epochs_to_test_steps = [a for b in TRAINING_EPOCHS for a in b if a != 0]
+    epochs_to_test = [sum(epochs_to_test_steps[:i]) for i in range(len(epochs_to_test_steps))]
+    for epoch in epochs_to_test:
             files = os.listdir(log_dir)
             if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
                 print("Missing checkpoint for ep" + str(epoch).zfill(3))
@@ -271,12 +273,12 @@ def train(specific=None):
                     "score": 0.05,  # 0.3
                     "iou": 0.45,  # 0.45
                 }
-                #K.clear_session()
+                K.clear_session()
 
                 if TEST_VISUALIZE_VIDEO:
                     yolo = YOLO(**settings)
                     detect_video(yolo, "test.mp4", folder[:-1] + ".avi")
-                    #K.clear_session()
+                    K.clear_session()
 
                 if TEST_VISUALIZE_IMAGES:
                     yolo = YOLO(**settings)
@@ -288,7 +290,7 @@ def train(specific=None):
                         name = line.split("/")[-1]
                         r_image.save(folder + "imgs/" + name)
                     yolo.close_session()
-                    #K.clear_session()
+                    K.clear_session()
 
 
 def get_classes(classes_path):

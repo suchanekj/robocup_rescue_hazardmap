@@ -276,10 +276,10 @@ def makeObjectList(size_step):
             img = cv2.imread(obj_f, cv2.IMREAD_UNCHANGED)
             objectImgs[-1].append(img)
     num_id = len(objectNames) + len(list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values())))
-    for obj in super_object_fs:
-        name = obj.split(".")[0]
-        names_f.write(str(num_id) + " " + name + "\n")
-        num_id += 1
+    # for obj in super_object_fs:
+    #     name = obj.split(".")[0]
+    #     names_f.write(str(num_id) + " " + name + "\n")
+    #     num_id += 1
     hazmat_skip = 0
     for i in range(int(DATASET_MAX_OBJECTS_PER_IMG * DATASET_NUM_IMAGES * 4) + 100):
         obj = None
@@ -301,6 +301,10 @@ def makeObjectList(size_step):
         else:
             obj = objectIDs[obj]
         objectList.append(obj)
+    objectFromBaseNames = list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values()))
+    for objName in objectFromBaseNames:
+        objectIDs[objName] = len(objectIDs.keys())
+        names_f.write(str(objectIDs[objName]) + " " + objName + "\n")
     names_f.close()
 
 
@@ -310,7 +314,6 @@ def makeBaseList(size_step):
     global baseDefaultNamesPositions
     global doorBases, personBases, nothingBases
     dataset_f = DATASET_LOCATION + str(size_step)
-    names_f = open(dataset_f + "/labelNames.txt", "a")
 
     parts = ["validation", "test"]
     all_df = pd.read_csv("openimages/all-annotations-bbox.csv", index_col=0)
@@ -319,9 +322,6 @@ def makeBaseList(size_step):
 
     objectFromBaseNames = list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values()))
     objectNames.extend(objectFromBaseNames)
-    for objName in objectFromBaseNames:
-        objectIDs[objName] = len(objectIDs.keys())
-        names_f.write(str(objectIDs[objName]) + " " + objName + "\n")
 
     id = 0
     if len(baseDefaultNamesPositions) == 0:
@@ -403,7 +403,6 @@ def makeBaseList(size_step):
                 person_skip += 1
         baseList.append(chosen_base)
     print("doors:", doors, "people:", persons)
-    names_f.close()
 
 
 def crop(x, crop_size):
@@ -938,7 +937,7 @@ def threadedCreateLabels():
             pool = mp.Pool(processes=num_threads)
 
             print(params)
-            result = pool.starmap_async(threadedCreateLabels, params)
+            result = pool.starmap_async(threadCreateLabels, params)
 
             t = time.time() - 300
             while not result.ready() or not ann_q.empty():
