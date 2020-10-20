@@ -181,76 +181,76 @@ def yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape):
 def yolo_boxes_and_scores(feats, anchors, num_classes, input_shape, image_shape):
     '''Process Conv layer output'''
 
-    class_names = ["00 physical/baby_doll!",
-                   "01 physical/valve!",
-                   "02 physical/fire_extinguisher!",
-                   "03 label/n/fire_extinguisher_sign!",
-                   "04 label/n/fire_exit!",
-                   "05 label/s/hazmat_5/1-oxidizer!",
-                   "06 label/s/hazmat_5/2-organic-peroxide!",
-                   "07 label/s/hazmat_7/radioactive-iii!",
-                   "08 label/s/hazmat_7/radioactive-i!",
-                   "09 label/s/hazmat_7/fissile!",
-                   "10 label/s/hazmat_7/radioactive-ii!",
-                   "11 label/s/hazmat_4/flammable-solid!",
-                   "12 label/s/hazmat_4/spontaneously-combustible!",
-                   "13 label/s/hazmat_4/dangerous-when-wet!",
-                   "14 label/s/hazmat_1/5-blasting-agent!",
-                   "15 label/s/hazmat_1/4-explosive!",
-                   "16 label/s/hazmat_1/3-explosive!",
-                   "17 label/s/hazmat_1/2-explosive!",
-                   "18 label/s/hazmat_1/6-explosive!",
-                   "19 label/s/hazmat_1/explosive-subsidiary!",
-                   "20 label/s/hazmat_1/1-explosive!",
-                   "21 label/s/hazmat_9/other-dangerous-goods!",
-                   "22 label/s/hazmat_3/flammable-liquid!",
-                   "23 label/s/hazmat_6/poison!",
-                   "24 label/s/hazmat_6/infectious-substance!",
-                   "25 label/s/hazmat_6/poison-inhalation-hazard!",
-                   "26 label/s/hazmat_2/flammable-gas!",
-                   "27 label/s/hazmat_2/poison-gas!",
-                   "28 label/s/hazmat_2/non-flammable-gas!",
-                   "29 label/s/hazmat_8/corrosive!",
-                   "30 label/s/hazmat_other/label-empty!",
-                   "31 label/s/hazmat_other/label-cargo-aircraft-only!",
-                   "32 label/s/qr_code!",
-                   "35 label/s/hazmat_5",
-                   "36 label/s/hazmat_7",
-                   "37 label/s/hazmat_4",
-                   "38 label/s/hazmat_1",
-                   "39 label/s/hazmat_9",
-                   "40 label/s/hazmat_3",
-                   "41 label/s/hazmat_6",
-                   "42 label/s/hazmat_2",
-                   "43 label/s/hazmat_8",
-                   "44 label/s/hazmat_other",
-                   "45 label/n",
-                   "46 label/s",
-                   "47 physical",
-                   "48 label",
-                   "33 physical/person!",
-                   "34 physical/door!"]
-    class_names.sort()
-    class_names = [c.split(" ")[1] for c in class_names]
-    superclasses = [[i for i, x in enumerate(class_names) if x in c] for c in class_names if "!" in c]
+    # class_names = ["00 physical/baby_doll!",
+    #                "01 physical/valve!",
+    #                "02 physical/fire_extinguisher!",
+    #                "03 label/n/fire_extinguisher_sign!",
+    #                "04 label/n/fire_exit!",
+    #                "05 label/s/hazmat_5/1-oxidizer!",
+    #                "06 label/s/hazmat_5/2-organic-peroxide!",
+    #                "07 label/s/hazmat_7/radioactive-iii!",
+    #                "08 label/s/hazmat_7/radioactive-i!",
+    #                "09 label/s/hazmat_7/fissile!",
+    #                "10 label/s/hazmat_7/radioactive-ii!",
+    #                "11 label/s/hazmat_4/flammable-solid!",
+    #                "12 label/s/hazmat_4/spontaneously-combustible!",
+    #                "13 label/s/hazmat_4/dangerous-when-wet!",
+    #                "14 label/s/hazmat_1/5-blasting-agent!",
+    #                "15 label/s/hazmat_1/4-explosive!",
+    #                "16 label/s/hazmat_1/3-explosive!",
+    #                "17 label/s/hazmat_1/2-explosive!",
+    #                "18 label/s/hazmat_1/6-explosive!",
+    #                "19 label/s/hazmat_1/explosive-subsidiary!",
+    #                "20 label/s/hazmat_1/1-explosive!",
+    #                "21 label/s/hazmat_9/other-dangerous-goods!",
+    #                "22 label/s/hazmat_3/flammable-liquid!",
+    #                "23 label/s/hazmat_6/poison!",
+    #                "24 label/s/hazmat_6/infectious-substance!",
+    #                "25 label/s/hazmat_6/poison-inhalation-hazard!",
+    #                "26 label/s/hazmat_2/flammable-gas!",
+    #                "27 label/s/hazmat_2/poison-gas!",
+    #                "28 label/s/hazmat_2/non-flammable-gas!",
+    #                "29 label/s/hazmat_8/corrosive!",
+    #                "30 label/s/hazmat_other/label-empty!",
+    #                "31 label/s/hazmat_other/label-cargo-aircraft-only!",
+    #                "32 label/s/qr_code!",
+    #                "35 label/s/hazmat_5",
+    #                "36 label/s/hazmat_7",
+    #                "37 label/s/hazmat_4",
+    #                "38 label/s/hazmat_1",
+    #                "39 label/s/hazmat_9",
+    #                "40 label/s/hazmat_3",
+    #                "41 label/s/hazmat_6",
+    #                "42 label/s/hazmat_2",
+    #                "43 label/s/hazmat_8",
+    #                "44 label/s/hazmat_other",
+    #                "45 label/n",
+    #                "46 label/s",
+    #                "47 physical",
+    #                "48 label",
+    #                "33 physical/person!",
+    #                "34 physical/door!"]
+    # class_names.sort()
+    # class_names = [c.split(" ")[1] for c in class_names]
+    # superclasses = [[i for i, x in enumerate(class_names) if x in c] for c in class_names if "!" in c]
 
     box_xy, box_wh, box_confidence, box_class_probs = yolo_head(feats, anchors, num_classes, input_shape)
 
-    new_num_classes = len(superclasses)
-    # new_class_probs = tf.ones_like(box_class_probs[:,0:new_num_classes])
-    new_class_probs_list = [tf.ones_like(box_class_probs[...,0]) for i in range(new_num_classes)]
-    for i in range(new_num_classes):
-        for sc in superclasses[i]:
-            new_class_probs_list[i] = tf.multiply(new_class_probs_list[i], box_class_probs[...,sc])
-        new_class_probs_list[i] = tf.pow(new_class_probs_list[i], 1/len(superclasses[i]))
-    new_class_probs = tf.stack([new_class_probs_list], axis=len(new_class_probs_list[0].shape))
+    # new_num_classes = len(superclasses)
+    # # new_class_probs = tf.ones_like(box_class_probs[:,0:new_num_classes])
+    # new_class_probs_list = [tf.ones_like(box_class_probs[...,0]) for i in range(new_num_classes)]
+    # for i in range(new_num_classes):
+    #     for sc in superclasses[i]:
+    #         new_class_probs_list[i] = tf.multiply(new_class_probs_list[i], box_class_probs[...,sc])
+    #     new_class_probs_list[i] = tf.pow(new_class_probs_list[i], 1/len(superclasses[i]))
+    # new_class_probs = tf.stack([new_class_probs_list], axis=len(new_class_probs_list[0].shape))
 
     print(type(box_class_probs), box_class_probs.shape)
     boxes = yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape)
     boxes = K.reshape(boxes, [-1, 4])
-    box_scores = box_confidence * new_class_probs
-    box_scores = K.reshape(box_scores, [-1, new_num_classes])
-    return boxes, box_scores, new_num_classes
+    box_scores = box_confidence * box_class_probs  # new_class_probs
+    box_scores = K.reshape(box_scores, [-1, num_classes])  # new_num_classes])
+    return boxes, box_scores, num_classes  # new_num_classes
 
 
 def yolo_eval(yolo_outputs,
