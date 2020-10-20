@@ -371,9 +371,10 @@ def makeBaseList(size_step):
     person_skip = 0
     objects_per_img = np.sum(np.multiply(DATASET_OBJECT_PLACE_CHANCE, range(DATASET_MAX_OBJECTS_PER_IMG + 1)))
     for i in range(DATASET_NUM_IMAGES * 2):
-        print(".", end="")
         if (i + 1) % 100 == 0:
-            print(i)
+            print(".", end="")
+            if (i + 1) % 10000 == 0:
+                print(i)
         object_num += objects_per_img
         chosen_base = None
         while object_num >= 1:
@@ -913,7 +914,7 @@ def threadedCreateLabels():
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
     num_threads = DATASET_CREATION_THREADS
-    for size_step in range(DATASET_SIZE_STEPS):
+    for size_step in range(0, 1): # DATASET_SIZE_STEPS):
         dataset_f = DATASET_LOCATION + str(size_step)
         if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
                 or REBUILD_DATASET:
@@ -938,7 +939,7 @@ def threadedCreateLabels():
             pool = mp.Pool(processes=num_threads)
 
             print(params)
-            result = pool.starmap_async(threadedCreateLabels, params)
+            result = pool.starmap_async(threadCreateLabels, params)
 
             t = time.time() - 300
             while not result.ready() or not ann_q.empty():
@@ -1012,6 +1013,10 @@ def createLabels(size=None):
 
 
 def createDataset(debug=False, size=None):
+    import psutil
+    p = psutil.Process(os.getpid())
+    p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
+
     global DEBUG, DATASET_NUM_IMAGES
     if debug:
         DEBUG = True

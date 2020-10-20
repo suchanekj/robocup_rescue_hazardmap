@@ -11,8 +11,8 @@ if __name__=="__main__":
         convert.convert("yolov3.cfg", "model_data/yolov3.weights", MODEL_LOCATION)
 
     if MAKE_DATASET:
-        import dataset
-        dataset.createDataset()
+        import synthetic_dataset
+        synthetic_dataset.createDataset()
     if TRAIN or TEST:
         import train
         train.train()
