@@ -8,5 +8,5 @@ pyqrcodeng
 pandas
 google_images_download
 psutil
-tensorflow-gpu==1.13.2
+tensorflow-gpu==1.15.4
 lxml
