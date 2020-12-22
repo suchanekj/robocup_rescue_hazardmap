@@ -167,7 +167,8 @@ DATASET_FILTERING_STRENGTHS = (0.1, 0.4, 1., 1., 0.9)
 DATASET_EROSION_MAX_SIZE = (3, 5, 10, 15, 10)
 DATASET_SIZE_STEPS = len(DATASET_FILTERING_STRENGTHS)
 
-DATASET_LOCATION = "datasets/dataset_open_"
+DATASET_LOCATION = "datasets2/dataset_open_"
+# DATASET_LOCATION = "datasets/dataset_open_"
 
 DATASET_TRAINING_PART = 0.9
 DATASET_VALIDATION_PART = 0.05
@@ -191,11 +192,12 @@ MAKE_DATASET = False
 REDOWNLOAD_DATASET = False
 REFILTER_DATASET = False
 REBUILD_DATASET = False
-TRAIN = False
+TRAIN = True
 TEST = True
 TRAINING_CYCLE = 16
 
-MODEL_LOCATION = "model_data/yolo_original.h5"
+MODEL_LOCATION = "model_manually_labelled/yolo_original.h5"
+# MODEL_LOCATION = "model_data/yolo_original.h5"
 AVAILABLE_MEMORY_GB = 11
 GPU_NUM = 1
 

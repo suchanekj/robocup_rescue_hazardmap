@@ -124,13 +124,14 @@ def objectFilter(srcA, filter_strength, colour_filter_strength, blur_cut_strengt
 
     return srcA
 
-# filter_strength (0, 1): to what extent should the image be modified
-# perspective_strength (-2, 2): extent of perspective change
-# rotation_strength (0, 1): extent of rotation
-# distortion_strength (0, 1): extent of distortion
-#erosion_strength (0, 15): extent of erosion
 def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, rotation_strength, distortion_strength, erosion_strength):
-
+    """
+    filter_strength (0, 1): to what extent should the image be modified
+    perspective_strength (-2, 2): extent of perspective change
+    rotation_strength (0, 1): extent of rotation
+    distortion_strength (0, 1): extent of distortion
+    erosion_strength (0, 15): extent of erosion
+    """
     rows, cols, colors = srcA.shape
 
     corners = []
@@ -139,20 +140,23 @@ def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, r
 
     # Warp
     # Perspective
-    a = 1 / 2 - 0.3 * filter_strength * perspective_strength
-    b = a/2
-    pts1 = np.float32([[rows // 2, cols // 2], [rows // 2 + rows, cols // 2],
-                       [rows // 2, cols // 2 + cols], [rows // 2 + rows, cols // 2 + cols]])
-    pts2 = np.float32([[int(rows * (a + random.random() * (1 - 2 * a) - b)),
-                        int(cols * (a + random.random() * (1 - 2 * a) - b))],
-                       [int(rows * (a + random.random() * (1 - 2 * a) + b)) + rows,
-                        int(cols * (a + random.random() * (1 - 2 * a) - b))],
-                       [int(rows * (a + random.random() * (1 - 2 * a) - b)),
-                        int(cols * (a + random.random() * (1 - 2 * a) + b)) + cols],
-                       [int(rows * (a + random.random() * (1 - 2 * a) + b)) + rows,
-                        int(cols * (a + random.random() * (1 - 2 * a) + b)) + cols]])
+    pts1 = np.float32([
+        [0, 0],
+        [rows, 0],
+        [0, cols],
+        [rows, cols]
+    ])
+
+    def random_around_P(v):
+        dist_y = rows//4 * filter_strength * rand(-1, 1)
+        dist_x = cols//4 * filter_strength * rand(-1, 1)
+        return np.array([v[0] + dist_y, v[1] + dist_x])
+
+    pts2 = np.float32([random_around_P(x) for x in pts1])
+
     M = cv2.getPerspectiveTransform(pts1, pts2)
 
+    # img = cv2.warpPerspective(img, M, (rows, cols))
     img = cv2.warpPerspective(img, M, (cols, rows))
     for a in range(len(pointsList)):
         pointsList[a] = np.float32(cv2.perspectiveTransform(pointsList[a].reshape(1, -1, 2), M).reshape(-1, 2))
@@ -226,30 +230,22 @@ def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, r
         corners.append([points[0],
                         points[3]])
 
+    ret, imgThreshold = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
+    imgThreshold = np.int32(np.amax(imgThreshold, axis=2))
+    mask = 255 - imgThreshold
+    masks = [mask for _ in range(3)]
+    masks.append(np.zeros((rows, cols)))
+    masks = np.stack(masks, axis=2)
 
+    # blur background image
+    factor = 100
+    kernel = np.ones((factor, factor), np.float32) / (factor * factor)
+    imgOriginal = cv2.filter2D(imgOriginal, -1, kernel)
 
-    # # Add background to image
-    # ret, imgThreshold = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)
-    # mask = cv2.bitwise_not(imgThreshold)
-    #
-    # # blur background image
-    # factor = 50
-    # kernel = np.ones((factor, factor), np.float32) / (factor * factor)
-    # imgOriginal = cv2.filter2D(imgOriginal, -1, kernel)
-    #
-    # img2 = cv2.bitwise_and(imgOriginal, mask)
-    # img = img2 + img
+    img2 = np.where(masks>0, imgOriginal, 0)
+    img = img2 + img
 
     # Debugging - draws rectangles
-    # for points in pointsList:
-    #     print(np.int32(np.array(points)))
-    #     points = points.reshape((-1,1,2))
-    #     # points = np.int32(np.array(points))
-    #     # img = cv2.polylines(img, [points],True, (255,0,0), 10)
-    #
-    #     img = cv2.fillPoly(img, pts=[points[0], points[1], points[2], points[3]], color=(255, 0, 0))
-    #     img = cv2.fillPoly(img, pts=[points], color=(255, 0, 0))
-
     # for i in corners:
     #     cv2.rectangle(img, tuple(i[0]), tuple(i[1]), (255,0,0), 10)
 

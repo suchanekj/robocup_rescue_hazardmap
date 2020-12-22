@@ -1,9 +1,6 @@
 import urllib
 import os
 
-from config import *
-
-
 if __name__=="__main__":
     if not os.path.isfile(MODEL_LOCATION):
         import convert
@@ -11,7 +8,8 @@ if __name__=="__main__":
         convert.convert("yolov3.cfg", "model_data/yolov3.weights", MODEL_LOCATION)
 
     if MAKE_DATASET:
-        import synthetic_dataset
+        from robocup_rescue_hazardmap import synthetic_dataset
+
         synthetic_dataset.createDataset()
     if TRAIN or TEST:
         import train
