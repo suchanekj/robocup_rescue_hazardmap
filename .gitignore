@@ -110,5 +110,5 @@ ENV/
 
 datasets/
 temp/
-filtered_objects/
+filtered_objects*
 objects_old/
