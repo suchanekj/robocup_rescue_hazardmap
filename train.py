@@ -66,13 +66,14 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
             opt = Adam(lr=lr/10)
         model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        print("warmup with lr", lr/10)
-        model.fit_generator(data_generator_wrapper_sequence(lines[:max(num_train//100, min(10, num_train))], batch_size, input_shape, anchors, num_classes, class_tree),
-                            steps_per_epoch=max(1, num_train // batch_size // 100),
-                            epochs=1,
-                            initial_epoch=0,
-                            workers=2,
-                            max_queue_size=10)
+        if num_train // batch_size // 100 >= 1:
+            print("warmup with lr", lr/10)
+            model.fit_generator(data_generator_wrapper_sequence(lines[:max(num_train//100, min(10, num_train))], batch_size, input_shape, anchors, num_classes, class_tree),
+                                steps_per_epoch=num_train // batch_size // 100,
+                                epochs=1,
+                                initial_epoch=0,
+                                workers=2,
+                                max_queue_size=10)
 
         if GPU_NUM > 1:
             opt = Adam(lr=lr*hvd.size())

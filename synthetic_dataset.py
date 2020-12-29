@@ -24,6 +24,7 @@ import argparse
 
 from config import *
 
+# from robocup_rescue_hazardmap.config import *
 
 objectList = []
 objectImgs = []
@@ -836,8 +837,8 @@ def writeImages(prefix, index, annotations_q, base, namesPositions, size_step):
             print("DRAWING RECTANGLE!!!")
             cv2.rectangle(base, tuple(namesPositions[a][1:3]), tuple(namesPositions[a][3:]), (255, 0, 255, 255), 1)
 
-    file_name = prefix + str(index).zfill(7) + (".jpg " if is_jpg else ".png ")
-    ann_line = os.getcwd() + "/" + dataset_f + "/" + file_name
+    file_name = prefix + str(index).zfill(7) + (".jpg" if is_jpg else ".png")
+    ann_line = os.getcwd() + "/" + dataset_f + "/" + file_name + " "
     for a in range(len(namesPositions)):
         if objectNums.get(namesPositions[a][0]) is None:
             objectNums[namesPositions[a][0]] = 1
@@ -1013,8 +1014,11 @@ def createLabels(size=None):
 
 def createDataset(debug=False, size=None):
     import psutil
-    p = psutil.Process(os.getpid())
-    p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
+    if hasattr(psutil, "BELOW_NORMAL_PRIORITY_CLASS"):
+        p = psutil.Process(os.getpid())
+        p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
+    else:
+        os.nice(1)
 
     global DEBUG, DATASET_NUM_IMAGES
     if debug:
@@ -1032,8 +1036,9 @@ def createDataset(debug=False, size=None):
 
 
 if __name__=="__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('size', type=int)
-    args = parser.parse_args()
-    print(args.size)
-    createDataset(size=args.size)
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('size', type=int)
+    # args = parser.parse_args()
+    # print(args.size)
+    # createDataset(size=args.size)
+    createDataset(size=10)
