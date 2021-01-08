@@ -96,56 +96,6 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         current_epoch += epoch
     return model, current_epoch
 
-def get_iou(bb1, bb2):
-    """
-    Calculate the Intersection over Union (IoU) of two bounding boxes.
-
-    Parameters
-    ----------
-    bb1 : dict
-        Keys: {'x1', 'x2', 'y1', 'y2'}
-        The (x1, y1) position is at the top left corner,
-        the (x2, y2) position is at the bottom right corner
-    bb2 : dict
-        Keys: {'x1', 'x2', 'y1', 'y2'}
-        The (x, y) position is at the top left corner,
-        the (x2, y2) position is at the bottom right corner
-
-    Returns
-    -------
-    float
-        in [0, 1]
-    """
-    assert bb1['x1'] < bb1['x2']
-    assert bb1['y1'] < bb1['y2']
-    assert bb2['x1'] < bb2['x2']
-    assert bb2['y1'] < bb2['y2']
-
-    # determine the coordinates of the intersection rectangle
-    x_left = max(bb1['x1'], bb2['x1'])
-    y_top = max(bb1['y1'], bb2['y1'])
-    x_right = min(bb1['x2'], bb2['x2'])
-    y_bottom = min(bb1['y2'], bb2['y2'])
-
-    if x_right < x_left or y_bottom < y_top:
-        return 0.0
-
-    # The intersection of two axis-aligned bounding boxes is always an
-    # axis-aligned bounding box
-    intersection_area = (x_right - x_left) * (y_bottom - y_top)
-
-    # compute the area of both AABBs
-    bb1_area = (bb1['x2'] - bb1['x1']) * (bb1['y2'] - bb1['y1'])
-    bb2_area = (bb2['x2'] - bb2['x1']) * (bb2['y2'] - bb2['y1'])
-
-    # compute the intersection over union by taking the intersection
-    # area and dividing it by the sum of prediction + ground-truth
-    # areas - the interesection area
-    iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
-    assert iou >= 0.0
-    assert iou <= 1.0
-    return iou
-
 def train(specific=None):
     log_dir = 'logs/' + str(TRAINING_CYCLE).zfill(3) + '/'
     classes_path = DATASET_LOCATION + str(0) + '/labelNames.txt'
@@ -313,30 +263,56 @@ def train(specific=None):
 
                     yolo = YOLO(**settings)
 
+                    def area_box(box):
+                        xa, ya, xb, yb = box[0], box[1], box[2], box[3]
+                        return (yb-ya)*(xb-xa)
+
+                    def area_intersection(box1, box2):
+                        xa, ya, xb, yb = box1[0], box1[1], box1[2], box1[3]
+                        xc, yc, xd, yd = box2[0], box2[1], box2[2], box2[3]
+                        # why does yolo return top left bottom right?
+                        # for training, input was bottom left, top right
+                        # xc, yd, xd, yc = box2[0], box2[1], box2[2], box2[3]
+
+                        blx = max(xa, xc)
+                        bly = max(ya, yc)
+                        trx = min(xb, xd)
+                        tr_y = min(yb, yd)
+                        if tr_y>bly and trx>blx:
+                            return (tr_y-bly)*(trx-blx)
+                        return 0
 
                     def similarity_check(correct_list, predicted_list):
-                        # naive brute-force check for matching labels
-                        # have not implemented Intersection Over Union
-                        correct_labels = []
-                        predicted_labels=[]
-                        for curr_corr in correct_list:
-                            correct_labels.append(curr_corr[-1])
+                        ctr = 0
+                        for correct_tuple in correct_list:
 
-                        for curr_pred in predicted_list:
-                            predicted_labels.append(curr_pred[-1])
+                            idx = -1
+                            best_IOU = 0
+                            for i, predicted_tuple in enumerate(predicted_list):
+                                correct_label = correct_tuple[-1]
+                                correct_box = correct_tuple[:-1]
+                                predicted_label = predicted_tuple[-1]
+                                predicted_box = predicted_tuple[:-1]
+                                predicted_box[1], predicted_box[3] = predicted_box[3], predicted_box[1]
+                                if correct_label != predicted_label: continue # skip wrong label
 
-                        ctr=0
+                                area = area_intersection(correct_box, predicted_box)
 
-                        for corr_label in correct_labels:
-                            idx=-1
-                            for i in range(len(predicted_labels)):
-                                if corr_label == predicted_labels[i]:
+                                if area == 0: continue # skip wrong bounding box
+                                intersection_area = area_intersection(predicted_box, correct_box)
+                                intersection_over_union = intersection_area/(area_box(predicted_box)+area_box(correct_box)-intersection_area)
+                                print(intersection_area)
+                                print(intersection_over_union)
+                                print()
+                                # get best IOU value
+                                if intersection_over_union > best_IOU:
+                                    best_IOU = intersection_over_union
                                     idx = i
-                                    ctr+=1
-                                    break
-                            if not(idx==-1):
-                                del predicted_labels[idx]
-                        return ctr, len(correct_labels)
+                            # if found match and IOU>0.5: count that as match, remove match from predictions
+                            if idx != -1 and best_IOU > 0.5:
+                                del predicted_list[idx]
+                                ctr += 1
+                        return ctr
 
                     correct_predicted = 0
                     total_predicted = 0
@@ -357,7 +333,7 @@ def train(specific=None):
                         total_predicted += len(predicted_boxes)
 
                         ans = similarity_check(correct_boxes, predicted_boxes)
-                        correct_predicted += ans[0]
+                        correct_predicted += ans
 
                     with open(log_dir + "validation.txt", "a") as f:
 
