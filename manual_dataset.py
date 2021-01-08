@@ -9,6 +9,9 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
 
+from config import *
+
+
 def rand(a=0., b=1.):
     return np.random.rand() * (b - a) + a
 
@@ -201,18 +204,6 @@ def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, r
                                         (erosion_size, erosion_size))
     img[:, :, 3] = cv2.erode(img[:, :, 3], element)
 
-    # for points in pointsList:
-    #     print(points)
-    #     points = np.array(points, np.int32)
-    #     temp = points[2]
-    #     points[2] = points[1]
-    #     points[1] = temp
-    #     # points[1], points[2] = points[2], points[1]
-    #     points = points.reshape((-1,1,2))
-    #     # points = np.int32(np.array(points))
-    #     img = cv2.polylines(img, [points],True, (255,0,0), 10)
-    #     # cv2.fillPoly(img, pts=[points], color=(255, 0, 0))
-
     for points in pointsList:
         for i, point in enumerate(points):
             if i == 0:
@@ -246,7 +237,7 @@ def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, r
     img = img2 + img
 
     # Debugging - draws rectangles
-    # for i in corners:
+    # for i in corners[:-1]:
     #     cv2.rectangle(img, tuple(i[0]), tuple(i[1]), (255,0,0), 10)
 
     return img, corners[:-1]
@@ -291,14 +282,13 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
 
     #for every index, if we loop over the entire set of images, shuffle the images
     for j in range(makeImageCount):
+        # print("making " + str(j) + "th image")
         r = j % imageCount
-        # if r == 0:
-        #     random.shuffle(indexList)
+        if r == 0:
+            random.shuffle(indexList)
         i = indexList[r]
 
         image = cv2.imread(fullImagePathList[i])
-        # partialImagePath = partialImagePathList[i]
-        partialImagePath = j
 
         if image is not None:
             fullImageOutputPath = os.getcwd() + "/" + imageOutputPath + str(j) + ".png"
@@ -377,37 +367,64 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
             #['data/images/yoko.png', [194, 110, 291, 189, 32], [169, 118, 300, 417, 31]]
             content = ""
             for argIdx in range(len(label)):
+                if(not(argIdx==0)): content+=" "
                 if argIdx == 0:
-                    content += str(label[argIdx]) + " "
+                    content += str(label[argIdx])
                 else:
-                    content += str(label[argIdx])[1:-1] + " "
+                    for i, l in enumerate(label[argIdx]):
+                        if(not(i==0)): content+=','
+                        content+=str(l)
+                    # content += str(label[argIdx])[1:-1] + " "
             content += "\n"
+            # print(content)
             myfile.write(content)
 
 
 
-if __name__ == "__main__":
-    filterStrengthTuple = (0.1, 0.4, 1., 1., 0.9)
-    imageSizeTuple = ((96, 128), (192, 256), (288, 384), (480, 640), (480, 640))
+def createDataset():
 
-    imageCount = 10
+    # TODO: Add manually labeled images to the training dataset
 
-    xmlPath = "manualy_labeled/labels_1.xml"
+    # # Manually labelled dataset
+    # filterStrengthTuple = MANUAL_DATASET_FILTERING_STRENGTHS
+    # imageSizeTuple = MANUAL_DATASET_TRAINING_SHAPES
+    # imageCount = MANUAL_DATASET_SIZE
+    #
+    # xmlPath = "manualy_labeled/labels_1.xml"
+    # labelNamesPath = "labelNames.txt"
+    # imageInputPath = "manualy_labeled/labeled_1/"
+    #
+    # sharedPath = "datasets2/dataset_open_"
+    #
+    # imageOutputPathList = [sharedPath + str(i) + "/" for i in range(5)]
+    # labelsPathList = [sharedPath + str(i) + "/labels.txt" for i in range(5)]
+    # labelNamesPathList = [sharedPath + str(i) + "/labelNames.txt" for i in range(5)]
+    #
+    # for i in range(5):
+    #     print(str(i)+"th round")
+    #     filterStrength = filterStrengthTuple[i]
+    #     imageSize = imageSizeTuple[i]
+    #
+    #     imageOutputPath = imageOutputPathList[i]
+    #     labelsPath = labelsPathList[i]
+    #     outputLabelNamesPath = labelNamesPathList[i]
+    #
+    #     imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath, labelsPath, outputLabelNamesPath)
+
+
+    # validation dataset
+    imageCount = VALIDATION_DATASET_SIZE
+
+    xmlPath = "manualy_labeled/validation.xml"
     labelNamesPath = "labelNames.txt"
-    imageInputPath = "manualy_labeled/labeled_1/"
+    imageInputPath = "manualy_labeled/validation/"
 
-    sharedPath = "datasets2/dataset_open_"
+    imageOutputPath = VALIDATION_DATASET_LOCATION + "/"
+    labelsPath = VALIDATION_DATASET_LOCATION + "/labels.txt"
+    outputLabelNamesPath = VALIDATION_DATASET_LOCATION + "/labelNames.txt"
 
-    imageOutputPathList = [sharedPath + str(i) + "/" for i in range(5)]
-    labelsPathList = [sharedPath + str(i) + "/labels.txt" for i in range(5)]
-    labelNamesPathList = [sharedPath + str(i) + "/labelNames.txt" for i in range(5)]
+    filterStrength = VALIDATION_DATASET_FILTERING_STRENGTH
+    imageSize = VALIDATION_DATASET_TRAINING_SHAPE
 
-    for i in range(5):
-        filterStrength = filterStrengthTuple[i]
-        imageSize = imageSizeTuple[i]
-
-        imageOutputPath = imageOutputPathList[i]
-        labelsPath = labelsPathList[i]
-        outputLabelNamesPath = labelNamesPathList[i]
-
-        imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath, labelsPath, outputLabelNamesPath)
+    imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath,
+               labelsPath, outputLabelNamesPath)

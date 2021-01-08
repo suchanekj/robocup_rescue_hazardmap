@@ -914,7 +914,7 @@ def threadedCreateLabels():
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
     num_threads = DATASET_CREATION_THREADS
-    for size_step in range(0, 1): # DATASET_SIZE_STEPS):
+    for size_step in range(0, DATASET_SIZE_STEPS):
         dataset_f = DATASET_LOCATION + str(size_step)
         if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
                 or REBUILD_DATASET:

@@ -38,9 +38,9 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         if input_shape[0] * input_shape[1] <= 360 * 480:
             batch_size *= 2
         if input_shape[0] * input_shape[1] <= 240 * 320:
-            batch_size *= 4
+            batch_size *= 2
         if input_shape[0] * input_shape[1] <= 120 * 160:
-            batch_size *= 4
+            batch_size *= 2
     print('Train on {} samples, val on {} samples, with batch size {} for {} epochs.'
           .format(num_train, num_val, batch_size, epochs))
     for lr, epoch, split in zip(lrs, epochs, yolo_splits):
@@ -96,6 +96,55 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
         current_epoch += epoch
     return model, current_epoch
 
+def get_iou(bb1, bb2):
+    """
+    Calculate the Intersection over Union (IoU) of two bounding boxes.
+
+    Parameters
+    ----------
+    bb1 : dict
+        Keys: {'x1', 'x2', 'y1', 'y2'}
+        The (x1, y1) position is at the top left corner,
+        the (x2, y2) position is at the bottom right corner
+    bb2 : dict
+        Keys: {'x1', 'x2', 'y1', 'y2'}
+        The (x, y) position is at the top left corner,
+        the (x2, y2) position is at the bottom right corner
+
+    Returns
+    -------
+    float
+        in [0, 1]
+    """
+    assert bb1['x1'] < bb1['x2']
+    assert bb1['y1'] < bb1['y2']
+    assert bb2['x1'] < bb2['x2']
+    assert bb2['y1'] < bb2['y2']
+
+    # determine the coordinates of the intersection rectangle
+    x_left = max(bb1['x1'], bb2['x1'])
+    y_top = max(bb1['y1'], bb2['y1'])
+    x_right = min(bb1['x2'], bb2['x2'])
+    y_bottom = min(bb1['y2'], bb2['y2'])
+
+    if x_right < x_left or y_bottom < y_top:
+        return 0.0
+
+    # The intersection of two axis-aligned bounding boxes is always an
+    # axis-aligned bounding box
+    intersection_area = (x_right - x_left) * (y_bottom - y_top)
+
+    # compute the area of both AABBs
+    bb1_area = (bb1['x2'] - bb1['x1']) * (bb1['y2'] - bb1['y1'])
+    bb2_area = (bb2['x2'] - bb2['x1']) * (bb2['y2'] - bb2['y1'])
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
+    assert iou >= 0.0
+    assert iou <= 1.0
+    return iou
 
 def train(specific=None):
     log_dir = 'logs/' + str(TRAINING_CYCLE).zfill(3) + '/'
@@ -212,8 +261,7 @@ def train(specific=None):
             np.random.seed(10101)
             np.random.shuffle(lines)
             np.random.seed(None)
-            lines = lines[int(len(lines) * DATASET_TEST_PART):]
-            val_split = DATASET_VALIDATION_PART / (DATASET_TRAINING_PART + DATASET_VALIDATION_PART)
+            val_split = 1 - DATASET_TRAINING_PART
             num_val = int(len(lines) * val_split)
             num_train = len(lines) - num_val
 
@@ -223,49 +271,23 @@ def train(specific=None):
             if GPU_NUM <= 1:
                 model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
 
-    annotation_path = DATASET_LOCATION + str(len(sizes) - 1) + '/labels.txt'
-    with open(annotation_path) as f:
-        lines = f.readlines()
-    np.random.seed(10101)
-    np.random.shuffle(lines)
-    np.random.seed(None)
-    test_lines = lines[0:int(len(lines) * DATASET_TEST_PART)]
+    if TEST:
+        if TEST_EVALUATE:
+            with open(log_dir + "validation.txt", "w") as f:
+                f.write("")
 
-    # epoch = 0
-    # for i in range(len(sizes)):
-    #     if sizes[i] != sizes[-1]:
-    #         epoch += sum(epochs[i])
-    #         continue
-    #     for j in range(len(epochs[i])):
-    #         if epochs[i][j] == 0:
-    #             continue
-    #         epoch += epochs[i][j]
-    epochs_to_test_steps = [a for b in TRAINING_EPOCHS for a in b if a != 0]
-    epochs_to_test = [sum(epochs_to_test_steps[:i]) for i in range(len(epochs_to_test_steps))]
-    for epoch in epochs_to_test:
-            files = os.listdir(log_dir)
-            if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
-                print("Missing checkpoint for ep" + str(epoch).zfill(3))
-                continue
-            model_file = [f for f in files if ("ep" + str(epoch).zfill(3)) in f][0]
+        annotation_path = VALIDATION_DATASET_LOCATION + '/labels.txt'
+        with open(annotation_path) as f:
+            test_lines = f.readlines()
+        epochs_to_test_steps = [a for b in TRAINING_EPOCHS for a in b if a != 0]
+        epochs_to_test = [sum(epochs_to_test_steps[:i]) for i in range(len(epochs_to_test_steps))]
 
-            # if TEST_EVALUATE:
-            #     model = create_model(input_shape, anchors, num_classes, freeze_body=2,
-            #                          weights_path=log_dir + model_file)
-            #     batch_size = 16
-            #     model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
-            #     result = model.evaluate_generator(
-            #         data_generator_wrapper(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
-            #         steps=max(1, len(test_lines) // batch_size))
-            #     print(result)
-
-            if TEST_VISUALIZE_IMAGES or TEST_VISUALIZE_VIDEO:
-                folder = log_dir + "test" + str(epoch).zfill(3) + "/"
-                if os.path.exists(folder):
-                    shutil.rmtree(folder)
-                    time.sleep(0.2)
-                os.mkdir(folder)
-                os.mkdir(folder + "imgs/")
+        for epoch in epochs_to_test:
+                files = os.listdir(log_dir)
+                if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
+                    print("Missing checkpoint for ep" + str(epoch).zfill(3))
+                    continue
+                model_file = [f for f in files if ("ep" + str(epoch).zfill(3)) in f][0]
 
                 settings = {
                     "model_path": log_dir + model_file,
@@ -276,22 +298,112 @@ def train(specific=None):
                 }
                 K.clear_session()
 
-                if TEST_VISUALIZE_VIDEO:
-                    yolo = YOLO(**settings)
-                    detect_video(yolo, "test.mp4", folder[:-1] + ".avi")
-                    K.clear_session()
+                if TEST_EVALUATE:
+                    # model = create_model(input_shape, anchors, num_classes, freeze_body=2,
+                    #                      weights_path=log_dir + model_file)
+                    # batch_size = 16
+                    # model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+                    # result = model.evaluate_generator(
+                    #     data_generator_wrapper_sequence(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
+                    #     steps=max(1, len(test_lines) // batch_size))
 
-                if TEST_VISUALIZE_IMAGES:
+                    with open(log_dir + "validation.txt", "a") as f:
+                        f.write(f"Epoch: {str(epoch).zfill(3)}\n")
+                        # f.write(f"Epoch: {str(epoch).zfill(3)} Validation_score: {result}\n")
+
                     yolo = YOLO(**settings)
-                    for line in test_lines[:100]:
-                        line = line.split(" ")[0]
-                        # print(line)
-                        r_image = Image.open(line)
-                        r_image = yolo.detect_image(r_image)
-                        name = line.split("/")[-1]
-                        r_image.save(folder + "imgs/" + name)
+
+
+                    def similarity_check(correct_list, predicted_list):
+                        # naive brute-force check for matching labels
+                        # have not implemented Intersection Over Union
+                        correct_labels = []
+                        predicted_labels=[]
+                        for curr_corr in correct_list:
+                            correct_labels.append(curr_corr[-1])
+
+                        for curr_pred in predicted_list:
+                            predicted_labels.append(curr_pred[-1])
+
+                        ctr=0
+
+                        for corr_label in correct_labels:
+                            idx=-1
+                            for i in range(len(predicted_labels)):
+                                if corr_label == predicted_labels[i]:
+                                    idx = i
+                                    ctr+=1
+                                    break
+                            if not(idx==-1):
+                                del predicted_labels[idx]
+                        return ctr, len(correct_labels)
+
+                    correct_predicted = 0
+                    total_predicted = 0
+                    total_relevant = 0
+
+                    for line in test_lines:
+                        if line[-1] == '\n':
+                            line = line[:-1]
+                        lines = line.split(" ")
+                        path = lines[0]
+
+                        correct_boxes = [[int(x) for x in txt.split(',')] for txt in lines[1:]]
+                        total_relevant += len(correct_boxes)
+
+                        r_image = Image.open(path)
+
+                        predicted_boxes = yolo.detect_boxes(r_image)
+                        total_predicted += len(predicted_boxes)
+
+                        ans = similarity_check(correct_boxes, predicted_boxes)
+                        correct_predicted += ans[0]
+
+                    with open(log_dir + "validation.txt", "a") as f:
+
+                        f.write(f"Correct Predictions Made By Model: {correct_predicted}\n")
+                        f.write(f"Total Predictions Made By Model: {total_predicted}\n")
+                        f.write(f"Total Number of Labels: {total_relevant}\n")
+                        f.write(f"Precision: {correct_predicted/total_predicted}\n")
+                        f.write(f"Recall: {correct_predicted/total_relevant}\n")
+
                     yolo.close_session()
                     K.clear_session()
+
+                if TEST_VISUALIZE_IMAGES or TEST_VISUALIZE_VIDEO:
+                    folder = log_dir + "test" + str(epoch).zfill(3) + "/"
+                    if os.path.exists(folder):
+                        shutil.rmtree(folder)
+                        time.sleep(0.2)
+                    os.mkdir(folder)
+                    os.mkdir(folder + "imgs/")
+
+                    # settings = {
+                    #     "model_path": log_dir + model_file,
+                    #     "anchors_path": anchors_path,
+                    #     "classes_path": classes_path,
+                    #     "score": 0.05,  # 0.3
+                    #     "iou": 0.45,  # 0.45
+                    # }
+                    # K.clear_session()
+
+                    if TEST_VISUALIZE_VIDEO:
+                        yolo = YOLO(**settings)
+                        detect_video(yolo, "test.mp4", folder[:-1] + ".avi")
+                        K.clear_session()
+
+                    if TEST_VISUALIZE_IMAGES:
+                        yolo = YOLO(**settings)
+                        for line in test_lines[:100]:
+                            if line[-1] == '\n':
+                                line = line[:-1]
+                            line = line.split(" ")[0]
+                            r_image = Image.open(line)
+                            r_image = yolo.detect_image(r_image)
+                            name = line.split("/")[-1]
+                            r_image.save(folder + "imgs/" + name)
+                        yolo.close_session()
+                        K.clear_session()
 
 
 def get_classes(classes_path):
