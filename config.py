@@ -141,10 +141,10 @@ DATASET_OBJECT_DISTORT_STRENGTH = {"hazmat": 1,
                                    "fire_extinguisher_sign": 0.4,
                                    "qr_code": 1
                                    }
-DATASET_OPENIMAGES_LABEL_TO_OBJECT = {"/m/02dgv": "physical/door",
-                                      "/m/03bt1vf": "physical/person",
-                                      "/m/04yx4": "physical/person",
-                                      "/m/01g317": "physical/person"
+DATASET_OPENIMAGES_LABEL_TO_OBJECT = {"/m/02dgv": "p/door",
+                                      "/m/03bt1vf": "p/person",
+                                      "/m/04yx4": "p/person",
+                                      "/m/01g317": "p/person"
                                       }
 DATASET_OPENIMAGES_FORBIDDEN_LABELS = ["/m/0167gd",  # doll
                                        "/m/01bl7v",  # boy
@@ -156,7 +156,7 @@ DATASET_MAX_NUM_IMAGES = 100000
 DATASET_DOWNLOAD_TIME_MUL = 1
 DATASET_NUM_IMAGES = DATASET_MAX_NUM_IMAGES
 
-DATASET_OBJECT_PLACE_CHANCE = (0.03, 0.4, 0.3, 0.17, 0.07, 0.03)
+DATASET_OBJECT_PLACE_CHANCE = (0.03, 0.2, 0.2, 0.2, 0.1, 0.1, 0.1, 0.07)
 DATASET_FOURS_PART = 1 / 4
 DATASET_MAX_OBJECTS_PER_IMG = len(DATASET_OBJECT_PLACE_CHANCE) - 1
 DATASET_FOUR_MEMBER_WIGGLE = 2
@@ -164,14 +164,19 @@ DATASET_DEFAULT_SHAPE = (480, 640)
 DATASET_TRAINING_SHAPES = ((96, 128), (192, 256), (288, 384), (480, 640), (480, 640))
 DATASET_TRAINING_OBJECT_SIZES = (40, 70, 150, 200, 200)
 DATASET_FILTERING_STRENGTHS = (0.1, 0.4, 1., 1., 0.9)
+
+MANUAL_DATASET_SIZE = 10000
+MANUAL_DATASET_FILTERING_STRENGTHS = (0.1, 0.5, 1.2, 1.5, 1.0)
+
 DATASET_EROSION_MAX_SIZE = (3, 5, 10, 15, 10)
 DATASET_SIZE_STEPS = len(DATASET_FILTERING_STRENGTHS)
 
-DATASET_LOCATION = "datasets/dataset_open_"
+# DATASET_LOCATION = "datasets/dataset_"
+# VALIDATION_DATASET_LOCATION = "datasets/validation_dataset"
+DATASET_LOCATION = "datasets/dataset_mixed_"
+VALIDATION_DATASET_LOCATION = "datasets/validation_dataset_large"
 
-DATASET_TRAINING_PART = 0.9
-DATASET_VALIDATION_PART = 0.05
-DATASET_TEST_PART = 1 - DATASET_TRAINING_PART - DATASET_VALIDATION_PART
+DATASET_TRAINING_PART = 0.99
 DATASET_CREATION_THREADS = 20
 
 TRAINING_EPOCHS = ((5, 5, 0, 0), (5, 5, 10, 0), (5, 5, 5, 5), (5, 5, 5, 5), (0, 5, 5, 5))
@@ -184,19 +189,25 @@ TRAINING_RANDOM_MODIFY = False
 TRAINING_LOG_PERIOD = 100
 TRAINING_CHECKPOINT_PERIOD = 1800
 TEST_EVALUATE = True
-TEST_VISUALIZE_IMAGES = True
-TEST_VISUALIZE_VIDEO = True
+TEST_VISUALIZE_IMAGES = False
+TEST_VISUALIZE_VIDEO = False
 
-MAKE_DATASET = False
+MAKE_DATASET = True
 REDOWNLOAD_DATASET = False
 REFILTER_DATASET = False
 REBUILD_DATASET = False
-TRAIN = False
+TRAIN = True
 TEST = True
-TRAINING_CYCLE = 16
+TRAINING_CYCLE = 18
 
 MODEL_LOCATION = "model_data/yolo_original.h5"
 AVAILABLE_MEMORY_GB = 11
 GPU_NUM = 1
 
 DEBUG = False
+
+VALIDATION_DATASET_SIZE = 500
+VALIDATION_DATASET_FILTERING_STRENGTH = 0.3
+VALIDATION_DATASET_TRAINING_SHAPE = (480, 640)
+
+HYPERPARAMETER_SEARCH = False

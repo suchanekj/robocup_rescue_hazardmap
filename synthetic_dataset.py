@@ -37,7 +37,7 @@ doorBases = []
 personBases = []
 nothingBases = []
 objectNums = {}
-objectTree = None
+weightedObjectList = None
 
 # Door - /m/02dgv
 # Fire extinguisher - folder
@@ -205,47 +205,64 @@ def filterOpenImages():
     print(num)
 
 
-class ClassTree(object):
-    def __init__(self, pth):
-        while len(pth) > 0 and pth[-1] == "/":
-            pth = pth[:-1]
-        self.pth = pth
-        self.pth_l = pth.split("/")
-        if len(pth) == 0:
-            self.pth_l = []
-        self.children = []
+# class ClassTree(object):
+#     def __init__(self, pth):
+#         while len(pth) > 0 and pth[-1] == "/":
+#             pth = pth[:-1]
+#         self.pth = pth
+#         self.pth_l = pth.split("/")
+#         if len(pth) == 0:
+#             self.pth_l = []
+#         self.children = []
+#
+#     def insert(self, pth):
+#         while pth[-1] == "/":
+#             pth = pth[:-1]
+#         if self.pth not in pth:
+#             return False
+#         if self.pth == pth:
+#             return True
+#         for c in self.children:
+#             if c.insert(pth):
+#                 return True
+#         one_further = "/".join(pth.split("/")[:len(self.pth_l)+1])
+#         self.children.append(ClassTree(one_further))
+#         self.children[-1].insert(pth)
+#         return True
+#
+#     def get(self):
+#         if len(self.children) == 0:
+#             return self.pth
+#         else:
+#             return random.choice(self.children).get()
 
-    def insert(self, pth):
-        while pth[-1] == "/":
-            pth = pth[:-1]
-        if self.pth not in pth:
-            return False
-        if self.pth == pth:
-            return True
-        for c in self.children:
-            if c.insert(pth):
-                return True
-        one_further = "/".join(pth.split("/")[:len(self.pth_l)+1])
-        self.children.append(ClassTree(one_further))
-        self.children[-1].insert(pth)
-        return True
+class WeightedObjectList(object):
+    def __init__(self):
+        self.objects = []
+        self.weights = []
+
+    def insert(self, obj, weight):
+        self.objects.append(obj)
+        self.weights.append(weight)
 
     def get(self):
-        if len(self.children) == 0:
-            return self.pth
-        else:
-            return random.choice(self.children).get()
+        if not isinstance(self.weights, np.ndarray):
+            self.weights = np.clip(
+                DATASET_NUM_IMAGES / len(self.weights) - np.asarray(self.weights, np.float), 0, DATASET_NUM_IMAGES
+            )
+            self.weights /= np.sum(self.weights)
+        return np.random.choice(self.objects, p=self.weights)
 
 
-def makeObjectList(size_step):
+def makeObjectList(size_step, extend=False):
     global objectImgs
     global objectList
     global objectNames
     global objectIDs
-    global objectTree
+    global weightedObjectList
     object_fs = []
     super_object_fs = []
-    objectTree = ClassTree("")
+    weightedObjectList = WeightedObjectList()
     filtered_objects = "filtered_objects_" + str(size_step) + "/"
     for root, dirs, files in os.walk(filtered_objects, topdown=False):
         for name in files:
@@ -259,33 +276,74 @@ def makeObjectList(size_step):
             else:
                 super_object_fs.append(file)
     dataset_f = DATASET_LOCATION + str(size_step)
-    names_f = open(dataset_f + "/labelNames.txt", "w")
-    for obj in list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values())):
-        objectTree.insert(obj)
-    for obj in object_fs:
-        objectImgs.append([])
-        name = obj.split(".")[0]
-        objectTree.insert(name)
-        objectNames.append(name)
-        objectIDs[name] = len(objectNames) - 1
-        names_f.write(str(len(objectNames) - 1) + " " + name + "\n")
-        if os.path.isdir(filtered_objects + obj):
-            obj_fs = [filtered_objects + obj + "/" + f for f in os.listdir(filtered_objects + obj)]
-        else:
-            obj_fs = [filtered_objects + obj]
-        for obj_f in obj_fs:
-            img = cv2.imread(obj_f, cv2.IMREAD_UNCHANGED)
-            objectImgs[-1].append(img)
-    num_id = len(objectNames) + len(list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values())))
-    # for obj in super_object_fs:
-    #     name = obj.split(".")[0]
-    #     names_f.write(str(num_id) + " " + name + "\n")
-    #     num_id += 1
+
+    objectFromBaseNames = list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values()))
+    if extend:
+        with open(dataset_f + "/labelNames.txt", "r") as names_f:
+            names_lines = names_f.readlines()
+        for names_line in names_lines:
+            if len(names_line.split(" ")) != 2: continue
+            id = int(names_line.split(" ")[0])
+            name = names_line.split(" ")[1]
+            if name[-1] == "\n":
+                name = name[:-1]
+            objectIDs[name] = id
+            objectImgs.append([])
+        objectNames = [""] * len(objectIDs)
+        for name, id in objectIDs.items():
+            objectNames[id] = name
+
+        #read how many objects are in the already generated images
+        object_previous_numbers = [0] * len(objectIDs)
+        with open(dataset_f + "/labels.txt", "r") as old_labels_f:
+            old_labels_lines = old_labels_f.readlines()
+            for old_labels_line in old_labels_lines:
+                old_labels_line = old_labels_line.split(" ")[1:]
+                for label in old_labels_line:
+                    object_previous_numbers[int(label.split(",")[-1])] += 1
+
+        for obj in objectFromBaseNames:
+            weightedObjectList.insert(obj, 100000)
+        for obj in object_fs:
+            name = obj.split(".")[0]
+            weightedObjectList.insert(name, object_previous_numbers[objectIDs[name]])
+            if os.path.isdir(filtered_objects + obj):
+                obj_fs = [filtered_objects + obj + "/" + f for f in os.listdir(filtered_objects + obj)]
+            else:
+                obj_fs = [filtered_objects + obj]
+            for obj_f in obj_fs:
+                img = cv2.imread(obj_f, cv2.IMREAD_UNCHANGED)
+                objectImgs[objectIDs[name]].append(img)
+
+        print("!!!!!!!!!!!!!!!!!!!!!!!!", objectIDs, objectNames, list(zip(weightedObjectList.weights, weightedObjectList.objects)))
+
+    else:
+        names_f = open(dataset_f + "/labelNames.txt", "w")
+        for obj in objectFromBaseNames:
+            weightedObjectList.insert(obj, 100000)
+        for obj in object_fs:
+            objectImgs.append([])
+            name = obj.split(".")[0]
+            weightedObjectList.insert(name, 0)
+            objectNames.append(name)
+            objectIDs[name] = len(objectNames) - 1
+            names_f.write(str(len(objectNames) - 1) + " " + name + "\n")
+            if os.path.isdir(filtered_objects + obj):
+                obj_fs = [filtered_objects + obj + "/" + f for f in os.listdir(filtered_objects + obj)]
+            else:
+                obj_fs = [filtered_objects + obj]
+            for obj_f in obj_fs:
+                img = cv2.imread(obj_f, cv2.IMREAD_UNCHANGED)
+                objectImgs[-1].append(img)
+
+        for objName in objectFromBaseNames:
+            objectIDs[objName] = len(objectIDs.keys())
+            names_f.write(str(objectIDs[objName]) + " " + objName + "\n")
+        names_f.close()
+
     hazmat_skip = 0
     for i in range(int(DATASET_MAX_OBJECTS_PER_IMG * DATASET_NUM_IMAGES * 4) + 100):
-        obj = None
-        while objectIDs.get(obj) is None:
-            obj = objectTree.get()
+        obj = weightedObjectList.get()
         if "hazmat" in obj and "hazmat_other" not in obj:
             if hazmat_skip > 0:
                 hazmat_skip -= 1
@@ -294,19 +352,14 @@ def makeObjectList(size_step):
                 hazmat_skip = 3
                 obj = [objectIDs[obj]]
                 while len(obj) != 4:
-                    new_obj = objectTree.get()
-                    if objectIDs.get(new_obj) is not None and "hazmat" in new_obj:
+                    new_obj = weightedObjectList.get()
+                    if "hazmat" in new_obj:
                         obj.append(objectIDs[new_obj])
             else:
                 obj = objectIDs[obj]
         else:
             obj = objectIDs[obj]
         objectList.append(obj)
-    objectFromBaseNames = list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values()))
-    for objName in objectFromBaseNames:
-        objectIDs[objName] = len(objectIDs.keys())
-        names_f.write(str(objectIDs[objName]) + " " + objName + "\n")
-    names_f.close()
 
 
 def makeBaseList(size_step):
@@ -338,15 +391,15 @@ def makeBaseList(size_step):
                 objects_df = all_df[all_df["ImageID"] == name]
                 if len(objects_df) > 3:
                     continue
-                print(".", end="")
+                # print(".", end="")
                 sys.stdout.flush()
-                if (id + 1) % 100 == 0:
-                    print(id)
-                    if random.random() < 0.2:
-                        print("cpu", psutil.cpu_percent(interval=None, percpu=True))
+                # if (id + 1) % 100 == 0:
+                #     print(id)
+                #     if random.random() < 0.2:
+                #         print("cpu", psutil.cpu_percent(interval=None, percpu=True))
                 if len(objects_df) == 0:
                     nothingBases.append(id)
-                elif DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"].values[0]] == "physical/door":
+                elif DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"].values[0]] == "p/door":
                     doorBases.append(id)
                 else:
                     personBases.append(id)
@@ -372,26 +425,25 @@ def makeBaseList(size_step):
     person_skip = 0
     objects_per_img = np.sum(np.multiply(DATASET_OBJECT_PLACE_CHANCE, range(DATASET_MAX_OBJECTS_PER_IMG + 1)))
     for i in range(DATASET_NUM_IMAGES * 2):
-        if (i + 1) % 100 == 0:
-            print(".", end="")
-            if (i + 1) % 10000 == 0:
-                print(i)
+        # if (i + 1) % 100 == 0:
+        #     print(".", end="")
+        #     if (i + 1) % 10000 == 0:
+        #         print(i)
         object_num += objects_per_img
         chosen_base = None
         while object_num >= 1:
             object_num -= 1
-            obj = objectTree.get()
-            if "person" in obj:
+            if np.random.rand() < 1 / len(objectNames):
                 person_skip -= 1
                 if person_skip > 0:
                     continue
-                chosen_base = random.choice(doorBases)
+                chosen_base = random.choice(personBases)
                 break
-            if "door" in obj:
+            elif np.random.rand() < 1 / len(objectNames) * 1.05:
                 door_skip -= 1
                 if door_skip > 0:
                     continue
-                chosen_base = random.choice(personBases)
+                chosen_base = random.choice(doorBases)
                 break
         if chosen_base is None:
             chosen_base = random.choice(nothingBases)
@@ -874,7 +926,7 @@ def createLabel(base_num, obj_nums, size_step):
     return base_img, base_name_pos
 
 
-def threadCreateLabels(prefix, number, size_step, annotations_q):
+def threadCreateLabels(prefix, number, size_step, annotations_q, extend=False):
     print("threadedCreateLabels")
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
@@ -888,7 +940,7 @@ def threadCreateLabels(prefix, number, size_step, annotations_q):
     objectNums = {}
     objectTree = None
 
-    makeObjectList(size_step)
+    makeObjectList(size_step, extend)
     makeBaseList(size_step)
     for k in range(number):
         num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
@@ -899,7 +951,7 @@ def threadCreateLabels(prefix, number, size_step, annotations_q):
 
         base_img, base_name_pos = createLabel(base_num, obj_nums, size_step)
 
-        print(".", end="")
+        # print(".", end="")
         sys.stdout.flush()
         if random.random() < 0.01:
             print(len(os.listdir(dataset_f)) - 2)
@@ -910,19 +962,20 @@ def threadCreateLabels(prefix, number, size_step, annotations_q):
     return True
 
 
-def threadedCreateLabels():
+def threadedCreateLabels(extend=False):
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
     num_threads = DATASET_CREATION_THREADS
-    for size_step in range(0, 1): # DATASET_SIZE_STEPS):
+    for size_step in range(0, DATASET_SIZE_STEPS):
         dataset_f = DATASET_LOCATION + str(size_step)
         if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
                 or REBUILD_DATASET:
 
-            if os.path.exists(dataset_f):
-                shutil.rmtree(dataset_f)
-                time.sleep(0.2)
-            os.makedirs(dataset_f)
+            if not extend:
+                if os.path.exists(dataset_f):
+                    shutil.rmtree(dataset_f)
+                    time.sleep(0.2)
+                os.makedirs(dataset_f)
 
             print(size_step)
 
@@ -934,26 +987,26 @@ def threadedCreateLabels():
             ann_f = open(dataset_f + "/labels.txt", "a+")
 
             params = [(str(thread_i).zfill(4) + "_", DATASET_NUM_IMAGES // num_threads +
-                      (1 if DATASET_NUM_IMAGES % num_threads > thread_i else 0), size_step, ann_q)
+                      (1 if DATASET_NUM_IMAGES % num_threads > thread_i else 0), size_step, ann_q, extend)
                       for thread_i in range(num_threads)]
             pool = mp.Pool(processes=num_threads)
 
             print(params)
             result = pool.starmap_async(threadCreateLabels, params)
 
-            t = time.time() - 300
+            # t = time.time() - 300
             while not result.ready() or not ann_q.empty():
                 try:
                     ann = ann_q.get_nowait()
                     ann_f.write(ann)
                 except qEmpty:
                     pass
-                if time.time() - t > 300:
-                    t = time.time()
-                    # gives a single float value
-                    print("cpu", psutil.cpu_percent(interval=None, percpu=True))
-                    # gives an object with many fields
-                    print("memory", psutil.virtual_memory())
+                # if time.time() - t > 300:
+                #     t = time.time()
+                #     # gives a single float value
+                #     print("cpu", psutil.cpu_percent(interval=None, percpu=True))
+                #     # gives an object with many fields
+                #     print("memory", psutil.virtual_memory())
             print(result.get())
             time.sleep(0.1)
             while not ann_q.empty():
@@ -1012,7 +1065,7 @@ def createLabels(size=None):
                 writeImages("", len(os.listdir(dataset_f)) - 2, None, base_img, base_name_pos, size_step)
 
 
-def createDataset(debug=False, size=None):
+def createDataset(debug=False, size=None, extend=False):
     import psutil
     if hasattr(psutil, "BELOW_NORMAL_PRIORITY_CLASS"):
         p = psutil.Process(os.getpid())
@@ -1024,6 +1077,8 @@ def createDataset(debug=False, size=None):
     if debug:
         DEBUG = True
         DATASET_NUM_IMAGES = 50
+    if extend:
+        DATASET_NUM_IMAGES -= MANUAL_DATASET_SIZE
     print(DATASET_NUM_IMAGES)
     if not os.path.exists("openimages/test") or not os.path.exists("openimages/validation") or REDOWNLOAD_DATASET:
         newDownload()
@@ -1032,7 +1087,7 @@ def createDataset(debug=False, size=None):
     if DATASET_CREATION_THREADS == 0:
         createLabels(size)
     else:
-        threadedCreateLabels()
+        threadedCreateLabels(extend)
 
 
 if __name__=="__main__":
