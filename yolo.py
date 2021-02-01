@@ -142,7 +142,7 @@ class YOLO(object):
 
             # order is:
             # x_bl, y_bl, x_tl, y_tl, label
-            box_list.append([left, bottom, right, top, c])
+            box_list.append([left, bottom, right, top, c, score])
             # box_list.append((label, (left, top), (right, bottom)))
         return box_list
 

@@ -1,5 +1,5 @@
 from PIL import Image
-
+import keras.backend as K
 from yolo import YOLO
 
 log_dir = 'logs/016/'
@@ -15,10 +15,13 @@ settings = {
     "iou": 0.45,  # 0.45
 }
 
-line =
+line = '/datasets2/dataset_open_4/0.png'
+destination = '/test_results/test/png'
 
+K.clear_session()
 yolo = YOLO(**settings)
 r_image = Image.open(line)
 r_image = yolo.detect_image(r_image)
-r_image.save(folder + "imgs/" + name)
+r_image.save(destination)
 yolo.close_session()
+K.clear_session()

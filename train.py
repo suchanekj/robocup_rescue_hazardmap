@@ -282,17 +282,24 @@ def train(specific=None):
                             return (tr_y-bly)*(trx-blx)
                         return 0
 
-                    def similarity_check(correct_list, predicted_list):
-                        ctr = 0
+                    def similarity_check(correct_list, predicted_list, threshold):
+                        # takes out all the predictions that have confidence below the threshold
+                        predicted_list_cleaned = [x for x in predicted_list if x[5] > threshold]
+
+                        total_actual_predictions = len(correct_list)
+                        total_model_predictions = len(predicted_list_cleaned)
+                        correct_model_predictions = 0
+
                         for correct_tuple in correct_list:
 
                             idx = -1
                             best_IOU = 0
-                            for i, predicted_tuple in enumerate(predicted_list):
-                                correct_label = correct_tuple[-1]
-                                correct_box = correct_tuple[:-1]
-                                predicted_label = predicted_tuple[-1]
-                                predicted_box = predicted_tuple[:-1]
+                            for i, predicted_tuple in enumerate(predicted_list_cleaned):
+                                correct_label = correct_tuple[4]
+                                correct_box = correct_tuple[:4]
+                                predicted_label = predicted_tuple[4]
+                                predicted_box = predicted_tuple[:4]
+
                                 predicted_box[1], predicted_box[3] = predicted_box[3], predicted_box[1]
                                 if correct_label != predicted_label: continue # skip wrong label
 
@@ -301,22 +308,26 @@ def train(specific=None):
                                 if area == 0: continue # skip wrong bounding box
                                 intersection_area = area_intersection(predicted_box, correct_box)
                                 intersection_over_union = intersection_area/(area_box(predicted_box)+area_box(correct_box)-intersection_area)
-                                print(intersection_area)
-                                print(intersection_over_union)
-                                print()
                                 # get best IOU value
                                 if intersection_over_union > best_IOU:
                                     best_IOU = intersection_over_union
                                     idx = i
                             # if found match and IOU>0.5: count that as match, remove match from predictions
                             if idx != -1 and best_IOU > 0.5:
-                                del predicted_list[idx]
-                                ctr += 1
-                        return ctr
+                                del predicted_list_cleaned[idx]
+                                correct_model_predictions += 1
+                        return total_actual_predictions, total_model_predictions, correct_model_predictions
 
-                    correct_predicted = 0
-                    total_predicted = 0
-                    total_relevant = 0
+                    # correct_predicted = 0
+                    # total_predicted = 0
+                    #
+                    # total_actual = 0
+
+                    THRESHOLD_LEVELS = [i/10 for i in range(10)]
+                    correct_predicted_list = [0 for i in range(len(THRESHOLD_LEVELS))]
+                    total_predicted_list = [0 for i in range(len(THRESHOLD_LEVELS))]
+                    total_actual_list = [0 for i in range(len(THRESHOLD_LEVELS))]
+
 
                     for line in test_lines:
                         if line[-1] == '\n':
@@ -325,23 +336,38 @@ def train(specific=None):
                         path = lines[0]
 
                         correct_boxes = [[int(x) for x in txt.split(',')] for txt in lines[1:]]
-                        total_relevant += len(correct_boxes)
+                        # total_relevant += len(correct_boxes)
 
                         r_image = Image.open(path)
 
                         predicted_boxes = yolo.detect_boxes(r_image)
-                        total_predicted += len(predicted_boxes)
 
-                        ans = similarity_check(correct_boxes, predicted_boxes)
-                        correct_predicted += ans
+                        # THRESHOLD_CONFIDENCE = 0.5
+                        for i, curr_level in enumerate(THRESHOLD_LEVELS):
+                            additional_actual, additional_predicted, additional_correct = \
+                                similarity_check(correct_boxes, predicted_boxes, curr_level)
+                            correct_predicted_list[i] += additional_correct
+                            total_actual_list[i] += additional_actual
+                            total_predicted_list[i] += additional_predicted
 
+                        # correct_predicted += additional_correct
+                        # total_predicted += additional_predicted
+                        # total_actual += additional_actual
+                    # get best threshold by finding highest IOU
+                    correct_predicted_list = np.array(correct_predicted_list)
+                    total_predicted_list = np.array(total_predicted_list)
+                    total_actual_list = np.array(total_actual_list)
+                    IOU_list = correct_predicted_list / (total_actual_list + total_predicted_list - correct_predicted_list)
+                    i = np.argmax(IOU_list)
                     with open(log_dir + "validation.txt", "a") as f:
-
-                        f.write(f"Correct Predictions Made By Model: {correct_predicted}\n")
-                        f.write(f"Total Predictions Made By Model: {total_predicted}\n")
-                        f.write(f"Total Number of Labels: {total_relevant}\n")
-                        f.write(f"Precision: {correct_predicted/total_predicted}\n")
-                        f.write(f"Recall: {correct_predicted/total_relevant}\n")
+                        f.write(f"Best Confidence Level: {THRESHOLD_LEVELS[i]}\n")
+                        f.write(f"All IOU Values: {IOU_list}\n")
+                        f.write(f"Correct Predictions Made By Model: {correct_predicted_list[i]}\n")
+                        f.write(f"Total Predictions Made By Model: {total_predicted_list[i]}\n")
+                        f.write(f"Total Number of Labels: {total_actual_list[i]}\n")
+                        f.write(f"Precision: {correct_predicted_list[i]/total_predicted_list[i]}\n")
+                        f.write(f"Recall: {correct_predicted_list[i]/total_actual_list[i]}\n")
+                        f.write(f"IOU: {correct_predicted_list[i]/(total_actual_list[i] + total_predicted_list[i] - correct_predicted_list[i])}\n")
 
                     yolo.close_session()
                     K.clear_session()

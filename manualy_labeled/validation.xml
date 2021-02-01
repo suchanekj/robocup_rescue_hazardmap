@@ -17,61 +17,61 @@
 			<label>l/s/hazmat_9/other-dangerous-goods</label>
 		</box>
 	</image>
-	<image file='289092-sloane530-DMID1-5c9amhzdo-640x360.jpg'>
-		<box top='7' left='92' width='291' height='350'>
-			<label>p/fire_extinguisher!</label>
-		</box>
-		<box top='1' left='212' width='426' height='358'>
-			<label>p/person</label>
-		</box>
-		<box top='3' left='320' width='97' height='103'>
-			<label>p/valve!</label>
-		</box>
-	</image>
-	<image file='3348164554_7a1e4af379_z.jpg'>
-		<box top='116' left='457' width='107' height='256'>
-			<label>p/fire_extinguisher!</label>
-		</box>
-		<box top='109' left='489' width='65' height='58'>
-			<label>p/valve!</label>
-		</box>
-		<box top='121' left='346' width='124' height='53'>
-			<label>l/n/fire_extinguisher_sign!</label>
-		</box>
-	</image>
-	<image file='50932293-abandoned-baby-doll-in-woods.jpg'>
-		<box top='321' left='460' width='626' height='366'>
-			<label>p/baby_doll!</label>
-		</box>
-	</image>
-	<image file='51RgihyMxBL._AC_.jpg'>
-		<box top='37' left='90' width='342' height='422'>
-			<label>p/baby_doll!</label>
-		</box>
-	</image>
-	<image file='BabyDoll18e_2x.jpg'>
-		<box top='237' left='351' width='315' height='266'>
-			<label>p/baby_doll!</label>
-		</box>
-		<box top='27' left='213' width='444' height='491'>
-			<label>p/person</label>
-		</box>
-	</image>
-	<image file='75329736-transportation-paper-box-package-type-a-for-small-radioactive-material.jpg'>
-		<box top='518' left='521' width='402' height='470'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
-		</box>
-	</image>
-	<image file='51755218-creepy-doll-abandoned-in-woods.jpg'>
-		<box top='244' left='322' width='152' height='159'>
-			<label>p/baby_doll!</label>
-		</box>
-	</image>
-	<image file='AdobeStock_190592452.jpeg'>
-		<box top='83' left='217' width='368' height='362'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
-		</box>
-	</image>
+<!--	<image file='289092-sloane530-DMID1-5c9amhzdo-640x360.jpg'>-->
+<!--		<box top='7' left='92' width='291' height='350'>-->
+<!--			<label>p/fire_extinguisher!</label>-->
+<!--		</box>-->
+<!--		<box top='1' left='212' width='426' height='358'>-->
+<!--			<label>p/person</label>-->
+<!--		</box>-->
+<!--		<box top='3' left='320' width='97' height='103'>-->
+<!--			<label>p/valve!</label>-->
+<!--		</box>-->
+<!--	</image>-->
+<!--	<image file='3348164554_7a1e4af379_z.jpg'>-->
+<!--		<box top='116' left='457' width='107' height='256'>-->
+<!--			<label>p/fire_extinguisher!</label>-->
+<!--		</box>-->
+<!--		<box top='109' left='489' width='65' height='58'>-->
+<!--			<label>p/valve!</label>-->
+<!--		</box>-->
+<!--		<box top='121' left='346' width='124' height='53'>-->
+<!--			<label>l/n/fire_extinguisher_sign!</label>-->
+<!--		</box>-->
+<!--	</image>-->
+<!--	<image file='50932293-abandoned-baby-doll-in-woods.jpg'>-->
+<!--		<box top='321' left='460' width='626' height='366'>-->
+<!--			<label>p/baby_doll!</label>-->
+<!--		</box>-->
+<!--	</image>-->
+<!--	<image file='51RgihyMxBL._AC_.jpg'>-->
+<!--		<box top='37' left='90' width='342' height='422'>-->
+<!--			<label>p/baby_doll!</label>-->
+<!--		</box>-->
+<!--	</image>-->
+<!--	<image file='BabyDoll18e_2x.jpg'>-->
+<!--		<box top='237' left='351' width='315' height='266'>-->
+<!--			<label>p/baby_doll!</label>-->
+<!--		</box>-->
+<!--		<box top='27' left='213' width='444' height='491'>-->
+<!--			<label>p/person</label>-->
+<!--		</box>-->
+<!--	</image>-->
+<!--	<image file='75329736-transportation-paper-box-package-type-a-for-small-radioactive-material.jpg'>-->
+<!--		<box top='518' left='521' width='402' height='470'>-->
+<!--			<label>l/s/hazmat_7/radioactive-ii</label>-->
+<!--		</box>-->
+<!--	</image>-->
+<!--	<image file='51755218-creepy-doll-abandoned-in-woods.jpg'>-->
+<!--		<box top='244' left='322' width='152' height='159'>-->
+<!--			<label>p/baby_doll!</label>-->
+<!--		</box>-->
+<!--	</image>-->
+<!--	<image file='AdobeStock_190592452.jpeg'>-->
+<!--		<box top='83' left='217' width='368' height='362'>-->
+<!--			<label>l/s/hazmat_7/radioactive-ii</label>-->
+<!--		</box>-->
+<!--	</image>-->
 	<image file='boiler_room00091.png'>
 		<box top='473' left='1001' width='125' height='88'>
 			<label>l/s/qr_code!</label>
