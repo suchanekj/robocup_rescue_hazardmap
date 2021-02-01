@@ -1,6 +1,8 @@
 import os
 import random
 import string
+import time
+import shutil
 
 import cv2
 import xml.etree.ElementTree as ET
@@ -14,6 +16,7 @@ from config import *
 
 def rand(a=0., b=1.):
     return np.random.rand() * (b - a) + a
+
 
 # filter_strength (0, 1): extent of filter application
 # colour_filter_strength (0, 1): extent of colour changes
@@ -82,7 +85,7 @@ def objectFilter(srcA, filter_strength, colour_filter_strength, blur_cut_strengt
         size_2 = 1 + 2 * int(rand(0, strength) ** 3 * rand(0, strength) * (rows + cols) / 200)
         srcA = cv2.blur(srcA, (size_1, size_2))
 
-    """Not sure what this does..."""
+    """Add a gradient going into white and a gradient going into black"""
     if rand() < 0.3 * filter_strength * blur_cut_strength:
         strength = filter_strength * blur_cut_strength
         srcA = srcA.transpose((2, 0, 1))
@@ -93,7 +96,6 @@ def objectFilter(srcA, filter_strength, colour_filter_strength, blur_cut_strengt
         srcA[0:3] = 255 - np.multiply(255 - srcA[0:3], gradient)
         srcA = srcA.transpose((1, 2, 0))
 
-    """Not sure what this does..."""
     if rand() < 0.5 * filter_strength * blur_cut_strength:
         strength = filter_strength * blur_cut_strength
         srcA = srcA.transpose((2, 0, 1))
@@ -127,7 +129,9 @@ def objectFilter(srcA, filter_strength, colour_filter_strength, blur_cut_strengt
 
     return srcA
 
-def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, rotation_strength, distortion_strength, erosion_strength):
+
+def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, rotation_strength, distortion_strength,
+                      erosion_strength):
     """
     filter_strength (0, 1): to what extent should the image be modified
     perspective_strength (-2, 2): extent of perspective change
@@ -151,8 +155,8 @@ def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, r
     ])
 
     def random_around_P(v):
-        dist_y = rows//4 * filter_strength * rand(-1, 1)
-        dist_x = cols//4 * filter_strength * rand(-1, 1)
+        dist_y = rows // 4 * filter_strength * rand(-1, 1)
+        dist_x = cols // 4 * filter_strength * rand(-1, 1)
         return np.array([v[0] + dist_y, v[1] + dist_x])
 
     pts2 = np.float32([random_around_P(x) for x in pts1])
@@ -233,7 +237,7 @@ def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, r
     kernel = np.ones((factor, factor), np.float32) / (factor * factor)
     imgOriginal = cv2.filter2D(imgOriginal, -1, kernel)
 
-    img2 = np.where(masks>0, imgOriginal, 0)
+    img2 = np.where(masks > 0, imgOriginal, 0)
     img = img2 + img
 
     # Debugging - draws rectangles
@@ -242,7 +246,9 @@ def objectPerspective(srcA, pointsList, filter_strength, perspective_strength, r
 
     return img, corners[:-1]
 
-def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath, labelsPath, outputLabelNamesPath):
+
+def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath,
+               imageOutputPath, labelsPath, outputLabelNamesPath):
     if not os.path.exists(imageOutputPath[:-1]):
         os.makedirs(imageOutputPath[:-1])
 
@@ -258,7 +264,7 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
 
     # Reads labelNames.txt and creates a dictionary of values
     with open(labelNamesPath, 'r') as myfile:
-        with open(outputLabelNamesPath, 'a') as myfile2:
+        with open(outputLabelNamesPath, 'w') as myfile2:
             currLine = myfile.readline()
 
             # each line is like 1 l/n/fire_extinguisher_sign!
@@ -268,7 +274,7 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
                 labelValueDict[currLine[1]] = int(currLine[0])
                 currLine = myfile.readline()
 
-    #gathers list of image paths
+    # gathers list of image paths
     for imageXML in imageXMLList:
         partialImagePath = imageXML.attrib['file']
         fullImagePath = imageInputPath + partialImagePath
@@ -277,10 +283,10 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
 
     imageCount = len(fullImagePathList)
 
-    #randomise order of images
+    # randomise order of images
     indexList = [i for i in range(imageCount)]
 
-    #for every index, if we loop over the entire set of images, shuffle the images
+    # for every index, if we loop over the entire set of images, shuffle the images
     for j in range(makeImageCount):
         # print("making " + str(j) + "th image")
         r = j % imageCount
@@ -339,15 +345,16 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
 
             # adds filters to images
             image = cv2.resize(image, (cols2, rows2))
-            image = objectFilter(image, filterStrength, filterStrength/10, filterStrength/10)
+            image = objectFilter(image, filterStrength, filterStrength / 10, filterStrength / 10)
             # image, cornerPairList = objectPerspective(image, boxList, filterStrength, filterStrength, filterStrength, 0, 15*filterStrength)
-            image, cornerPairList = objectPerspective(image, boxList, filterStrength, filterStrength, 0, filterStrength, 15*filterStrength)
+            image, cornerPairList = objectPerspective(image, boxList, filterStrength, filterStrength, 0, filterStrength,
+                                                      15 * filterStrength)
             cv2.imwrite(fullImageOutputPath, image)
             image = cv2.imread(fullImageOutputPath)
-            #save image to location
+            # save image to location
             cv2.imwrite(fullImageOutputPath[:-3] + "png", image)
 
-            #append corners to each image row listing
+            # append corners to each image row listing
 
             for cornerPairIdx in range(len(cornerPairList)):
                 coordList = []
@@ -363,68 +370,77 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
 
     with open(labelsPath, 'w') as myfile:
         for label in labelList:
-            #each label is:
-            #['data/images/yoko.png', [194, 110, 291, 189, 32], [169, 118, 300, 417, 31]]
+            # each label is:
+            # ['data/images/yoko.png', [194, 110, 291, 189, 32], [169, 118, 300, 417, 31]]
             content = ""
             for argIdx in range(len(label)):
-                if(not(argIdx==0)): content+=" "
+                if (not (argIdx == 0)): content += " "
                 if argIdx == 0:
                     content += str(label[argIdx])
                 else:
                     for i, l in enumerate(label[argIdx]):
-                        if(not(i==0)): content+=','
-                        content+=str(l)
+                        if (not (i == 0)): content += ','
+                        content += str(l)
                     # content += str(label[argIdx])[1:-1] + " "
             content += "\n"
             # print(content)
             myfile.write(content)
 
 
-
 def createDataset():
-
     # TODO: Add manually labeled images to the training dataset
 
-    # # Manually labelled dataset
-    # filterStrengthTuple = MANUAL_DATASET_FILTERING_STRENGTHS
-    # imageSizeTuple = MANUAL_DATASET_TRAINING_SHAPES
-    # imageCount = MANUAL_DATASET_SIZE
-    #
-    # xmlPath = "manualy_labeled/labels_1.xml"
-    # labelNamesPath = "labelNames.txt"
-    # imageInputPath = "manualy_labeled/labeled_1/"
-    #
-    # sharedPath = "datasets2/dataset_open_"
-    #
-    # imageOutputPathList = [sharedPath + str(i) + "/" for i in range(5)]
-    # labelsPathList = [sharedPath + str(i) + "/labels.txt" for i in range(5)]
-    # labelNamesPathList = [sharedPath + str(i) + "/labelNames.txt" for i in range(5)]
-    #
-    # for i in range(5):
-    #     print(str(i)+"th round")
-    #     filterStrength = filterStrengthTuple[i]
-    #     imageSize = imageSizeTuple[i]
-    #
-    #     imageOutputPath = imageOutputPathList[i]
-    #     labelsPath = labelsPathList[i]
-    #     outputLabelNamesPath = labelNamesPathList[i]
-    #
-    #     imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath, labelsPath, outputLabelNamesPath)
+    # Manually labelled dataset
+    filterStrengthTuple = MANUAL_DATASET_FILTERING_STRENGTHS
+    imageSizeTuple = DATASET_TRAINING_SHAPES
+    imageCount = MANUAL_DATASET_SIZE
 
-
-    # validation dataset
-    imageCount = VALIDATION_DATASET_SIZE
-
-    xmlPath = "manualy_labeled/validation.xml"
+    xmlPath = "manualy_labeled/labels_1.xml"
     labelNamesPath = "labelNames.txt"
-    imageInputPath = "manualy_labeled/validation/"
+    imageInputPath = "manualy_labeled/labeled_1/"
 
-    imageOutputPath = VALIDATION_DATASET_LOCATION + "/"
-    labelsPath = VALIDATION_DATASET_LOCATION + "/labels.txt"
-    outputLabelNamesPath = VALIDATION_DATASET_LOCATION + "/labelNames.txt"
+    sharedPath = DATASET_LOCATION
 
-    filterStrength = VALIDATION_DATASET_FILTERING_STRENGTH
-    imageSize = VALIDATION_DATASET_TRAINING_SHAPE
+    imageOutputPathList = [sharedPath + str(i) + "/" for i in range(5)]
+    labelsPathList = [sharedPath + str(i) + "/labels.txt" for i in range(5)]
+    labelNamesPathList = [sharedPath + str(i) + "/labelNames.txt" for i in range(5)]
 
-    imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath,
-               labelsPath, outputLabelNamesPath)
+    for i in range(5):
+        if not os.path.exists(imageOutputPathList[i]) or \
+                len(os.listdir(imageOutputPathList[i])) < DATASET_NUM_IMAGES \
+                or REBUILD_DATASET:
+            print(str(i) + "th round")
+            filterStrength = filterStrengthTuple[i]
+            imageSize = imageSizeTuple[i]
+
+            imageOutputPath = imageOutputPathList[i]
+            labelsPath = labelsPathList[i]
+            outputLabelNamesPath = labelNamesPathList[i]
+
+            imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath,
+                       labelsPath, outputLabelNamesPath)
+
+    if not os.path.exists(VALIDATION_DATASET_LOCATION) or \
+            len(os.listdir(VALIDATION_DATASET_LOCATION)) < VALIDATION_DATASET_SIZE \
+            or REBUILD_DATASET:
+
+        if os.path.exists(VALIDATION_DATASET_LOCATION):
+            shutil.rmtree(VALIDATION_DATASET_LOCATION)
+            time.sleep(0.2)
+
+        # validation dataset
+        imageCount = VALIDATION_DATASET_SIZE
+
+        xmlPath = "manualy_labeled/validation.xml"
+        labelNamesPath = "labelNames.txt"
+        imageInputPath = "manualy_labeled/validation/"
+
+        imageOutputPath = VALIDATION_DATASET_LOCATION + "/"
+        labelsPath = VALIDATION_DATASET_LOCATION + "/labels.txt"
+        outputLabelNamesPath = VALIDATION_DATASET_LOCATION + "/labelNames.txt"
+
+        filterStrength = VALIDATION_DATASET_FILTERING_STRENGTH
+        imageSize = VALIDATION_DATASET_TRAINING_SHAPE
+
+        imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath,
+                   labelsPath, outputLabelNamesPath)
