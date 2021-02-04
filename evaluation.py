@@ -162,6 +162,8 @@ def intersection_over_union(box1, box2):
 
 def evaluate(test_lines, yolo, log_dir):
     """
+    This function is called once every training cycle.
+
     @param test_lines
         list of strings in the following format
         ['/data/programming/robocup_rescue_hazardmap/datasets/validation_dataset_large/0.png 223,201,249,233,23\n',
