@@ -1,5 +1,8 @@
 from pandas import np
 from PIL import Image
+import seaborn as sn
+import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class ConfusionMatrix:
@@ -56,7 +59,7 @@ class ConfusionMatrix:
 
     def get_iou(self) -> float:
         return self.get_num_predictions_correct() / (
-                    self.get_num_predictions() + self.get_num_actual() - self.get_num_predictions_correct())
+                self.get_num_predictions() + self.get_num_actual() - self.get_num_predictions_correct())
 
     def process(self, actual_list, predicted_list):
         """
@@ -179,8 +182,8 @@ def evaluate(test_lines, yolo, log_dir):
     @side-effect
         writes data to txt file in log_dir
     """
-
-    confusion_matrix = ConfusionMatrix(35)
+    CLASS_COUNT = 35
+    confusion_matrix = ConfusionMatrix(CLASS_COUNT)
 
     for line_num, line in enumerate(test_lines):
         if line[-1] == '\n':
@@ -196,8 +199,14 @@ def evaluate(test_lines, yolo, log_dir):
 
         confusion_matrix.process(correct_boxes, predicted_boxes)
 
-    for row in confusion_matrix.get_fraction_matrix():
-        print(row)
+    # for row in confusion_matrix.get_fraction_matrix():
+    #     print(row)
+    df_cm = pd.DataFrame(confusion_matrix.get_count_matrix(), index=[i for i in range(CLASS_COUNT)],
+                         columns=[i for i in range(CLASS_COUNT)])
+    plt.figure(figsize=(10, 7))
+    sn.heatmap(df_cm, annot=True)
+    plt.savefig(log_dir + "confusion_matrix.png")
+
     with open(log_dir + "validation.txt", "a") as f:
         f.write(f"Correct Predictions Made By Model: {confusion_matrix.get_num_predictions_correct()}\n")
         f.write(f"Total Predictions Made By Model: {confusion_matrix.get_num_predictions()}\n")
