@@ -272,22 +272,18 @@ def train(specific=None):
                 yolo = YOLO(**settings)
 
                 def area_box(box):
-                    xa, ya, xb, yb = box[0], box[1], box[2], box[3]
-                    return (yb - ya) * (xb - xa)
+                    left, top, right, bottom = box
+                    return (right - left) * (bottom - top)
 
                 def area_intersection(box1, box2):
-                    xa, ya, xb, yb = box1[0], box1[1], box1[2], box1[3]
-                    xc, yc, xd, yd = box2[0], box2[1], box2[2], box2[3]
-                    # why does yolo return top left bottom right?
-                    # for training, input was bottom left, top right
-                    # xc, yd, xd, yc = box2[0], box2[1], box2[2], box2[3]
+                    left1, top1, right1, bottom1 = box1
+                    left2, top2, right2, bottom2 = box2
 
-                    blx = max(xa, xc)
-                    bly = max(ya, yc)
-                    trx = min(xb, xd)
-                    tr_y = min(yb, yd)
-                    if tr_y > bly and trx > blx:
-                        return (tr_y - bly) * (trx - blx)
+                    left = max(left1, left2)
+                    top = max(top1, top2)
+                    bottom = min(bottom1, bottom2)
+                    right = min(right1, right2)
+                    if right > left and bottom > top: return (right - left) * (bottom - top)
                     return 0
 
                 def similarity_check(correct_list, predicted_list, threshold):
@@ -308,7 +304,6 @@ def train(specific=None):
                             predicted_label = predicted_tuple[4]
                             predicted_box = predicted_tuple[:4]
 
-                            predicted_box[1], predicted_box[3] = predicted_box[3], predicted_box[1]
                             if correct_label != predicted_label: continue  # skip wrong label
 
                             area = area_intersection(correct_box, predicted_box)
@@ -316,7 +311,7 @@ def train(specific=None):
                             if area == 0: continue  # skip wrong bounding box
                             intersection_area = area_intersection(predicted_box, correct_box)
                             intersection_over_union = intersection_area / (
-                                        area_box(predicted_box) + area_box(correct_box) - intersection_area)
+                                    area_box(predicted_box) + area_box(correct_box) - intersection_area)
                             # get best IOU value
                             if intersection_over_union > best_IOU:
                                 best_IOU = intersection_over_union
@@ -333,6 +328,7 @@ def train(specific=None):
                 # total_actual = 0
 
                 THRESHOLD_LEVELS = [0.9 ** i for i in range(0, 44)]
+                # THRESHOLD_LEVELS = [0.9 ** i for i in range(0, 44)]
                 correct_predicted_list = [0 for i in range(len(THRESHOLD_LEVELS))]
                 total_predicted_list = [0 for i in range(len(THRESHOLD_LEVELS))]
                 total_actual_list = [0 for i in range(len(THRESHOLD_LEVELS))]
@@ -348,7 +344,7 @@ def train(specific=None):
 
                     r_image = Image.open(path)
 
-                    predicted_boxes = yolo.detect_boxes(r_image)
+                    predicted_boxes = yolo.detect_boxes(r_image, True)
 
                     # THRESHOLD_CONFIDENCE = 0.5
                     for i, curr_level in enumerate(THRESHOLD_LEVELS):
@@ -409,7 +405,7 @@ def train(specific=None):
                             line = line[:-1]
                         line = line.split(" ")[0]
                         r_image = Image.open(line)
-                        r_image = yolo.detect_image(r_image)
+                        r_image = yolo.detect_image(r_image, augment=True)
                         name = line.split("/")[-1]
                         r_image.save(folder + "imgs/" + name)
                     yolo.close_session()
