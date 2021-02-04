@@ -8,70 +8,67 @@
 </comment>
 <images>	<image file='0.jpeg'>
 		<box top='245' left='491' width='95' height='93'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='188' left='115' width='117' height='110'>
-			<label>l/s/hazmat_7/radioactive-i</label>
-		</box>
-		<box top='258' left='66' width='107' height='90'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
-<!--	<image file='289092-sloane530-DMID1-5c9amhzdo-640x360.jpg'>-->
-<!--		<box top='7' left='92' width='291' height='350'>-->
-<!--			<label>p/fire_extinguisher!</label>-->
-<!--		</box>-->
-<!--		<box top='1' left='212' width='426' height='358'>-->
-<!--			<label>p/person</label>-->
-<!--		</box>-->
-<!--		<box top='3' left='320' width='97' height='103'>-->
-<!--			<label>p/valve!</label>-->
-<!--		</box>-->
-<!--	</image>-->
-<!--	<image file='3348164554_7a1e4af379_z.jpg'>-->
-<!--		<box top='116' left='457' width='107' height='256'>-->
-<!--			<label>p/fire_extinguisher!</label>-->
-<!--		</box>-->
-<!--		<box top='109' left='489' width='65' height='58'>-->
-<!--			<label>p/valve!</label>-->
-<!--		</box>-->
-<!--		<box top='121' left='346' width='124' height='53'>-->
-<!--			<label>l/n/fire_extinguisher_sign!</label>-->
-<!--		</box>-->
-<!--	</image>-->
-<!--	<image file='50932293-abandoned-baby-doll-in-woods.jpg'>-->
-<!--		<box top='321' left='460' width='626' height='366'>-->
-<!--			<label>p/baby_doll!</label>-->
-<!--		</box>-->
-<!--	</image>-->
-<!--	<image file='51RgihyMxBL._AC_.jpg'>-->
-<!--		<box top='37' left='90' width='342' height='422'>-->
-<!--			<label>p/baby_doll!</label>-->
-<!--		</box>-->
-<!--	</image>-->
-<!--	<image file='BabyDoll18e_2x.jpg'>-->
-<!--		<box top='237' left='351' width='315' height='266'>-->
-<!--			<label>p/baby_doll!</label>-->
-<!--		</box>-->
-<!--		<box top='27' left='213' width='444' height='491'>-->
-<!--			<label>p/person</label>-->
-<!--		</box>-->
-<!--	</image>-->
-<!--	<image file='75329736-transportation-paper-box-package-type-a-for-small-radioactive-material.jpg'>-->
-<!--		<box top='518' left='521' width='402' height='470'>-->
-<!--			<label>l/s/hazmat_7/radioactive-ii</label>-->
-<!--		</box>-->
-<!--	</image>-->
-<!--	<image file='51755218-creepy-doll-abandoned-in-woods.jpg'>-->
-<!--		<box top='244' left='322' width='152' height='159'>-->
-<!--			<label>p/baby_doll!</label>-->
-<!--		</box>-->
-<!--	</image>-->
-<!--	<image file='AdobeStock_190592452.jpeg'>-->
-<!--		<box top='83' left='217' width='368' height='362'>-->
-<!--			<label>l/s/hazmat_7/radioactive-ii</label>-->
-<!--		</box>-->
-<!--	</image>-->
+	<image file='289092-sloane530-DMID1-5c9amhzdo-640x360.jpg'>
+		<box top='7' left='92' width='291' height='350'>
+			<label>p/fire_extinguisher!</label>
+		</box>
+		<box top='1' left='212' width='426' height='358'>
+			<label>p/person</label>
+		</box>
+		<box top='3' left='320' width='97' height='103'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='3348164554_7a1e4af379_z.jpg'>
+		<box top='116' left='457' width='107' height='256'>
+			<label>p/fire_extinguisher!</label>
+		</box>
+		<box top='109' left='489' width='65' height='58'>
+			<label>p/valve!</label>
+		</box>
+		<box top='121' left='346' width='124' height='53'>
+			<label>l/n/fire_extinguisher_sign!</label>
+		</box>
+	</image>
+	<image file='50932293-abandoned-baby-doll-in-woods.jpg'>
+		<box top='321' left='460' width='626' height='366'>
+			<label>p/baby_doll!</label>
+		</box>
+	</image>
+	<image file='51RgihyMxBL._AC_.jpg'>
+		<box top='37' left='90' width='342' height='422'>
+			<label>p/baby_doll!</label>
+		</box>
+	</image>
+	<image file='BabyDoll18e_2x.jpg'>
+		<box top='237' left='351' width='315' height='266'>
+			<label>p/baby_doll!</label>
+		</box>
+		<box top='27' left='213' width='444' height='491'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='75329736-transportation-paper-box-package-type-a-for-small-radioactive-material.jpg'>
+		<box top='518' left='521' width='402' height='470'>
+			<label>l/s/hazmat_7/radioactive!</label>
+		</box>
+	</image>
+	<image file='51755218-creepy-doll-abandoned-in-woods.jpg'>
+		<box top='244' left='322' width='152' height='159'>
+			<label>p/baby_doll!</label>
+		</box>
+	</image>
+	<image file='AdobeStock_190592452.jpeg'>
+		<box top='83' left='217' width='368' height='362'>
+			<label>l/s/hazmat_7/radioactive!</label>
+		</box>
+	</image>
 	<image file='boiler_room00091.png'>
 		<box top='473' left='1001' width='125' height='88'>
 			<label>l/s/qr_code!</label>
@@ -86,10 +83,10 @@
 			<label>l/s/hazmat_4/flammable-solid</label>
 		</box>
 		<box top='396' left='491' width='129' height='115'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='453' left='664' width='130' height='118'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='533' left='1212' width='117' height='118'>
 			<label>l/s/hazmat_5/2-organic-peroxide</label>
@@ -115,10 +112,10 @@
 			<label>l/s/hazmat_4/flammable-solid</label>
 		</box>
 		<box top='547' left='186' width='150' height='125'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='612' left='379' width='149' height='123'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='625' left='1664' width='255' height='207'>
 			<label>p/valve!</label>
@@ -152,10 +149,10 @@
 			<label>l/s/hazmat_4/flammable-solid</label>
 		</box>
 		<box top='320' left='552' width='132' height='116'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='379' left='735' width='134' height='120'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='390' left='1086' width='143' height='94'>
 			<label>l/s/qr_code!</label>
@@ -169,7 +166,7 @@
 	</image>
 	<image file='boiler_room00851.png'>
 		<box top='778' left='3' width='339' height='254'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='735' left='922' width='229' height='96'>
 			<label>l/s/qr_code!</label>
@@ -188,11 +185,8 @@
 		<box top='171' left='671' width='364' height='198'>
 			<label>l/s/qr_code!</label>
 		</box>
-		<box top='468' left='374' width='395' height='203'>
-			<label>l/s/hazmat_7/fissile</label>
-		</box>
 		<box top='262' left='1072' width='390' height='365'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='581' left='1612' width='298' height='352'>
 			<label>l/s/hazmat_8/corrosive</label>
@@ -203,7 +197,7 @@
 			<label>l/s/hazmat_4/spontaneously-combustible</label>
 		</box>
 		<box top='89' left='1082' width='270' height='227'>
-			<label>l/s/hazmat_4/spontaneously-combustible</label>
+			<label>l/s/hazmat_4/dangerous-when-wet</label>
 		</box>
 		<box top='582' left='1116' width='257' height='169'>
 			<label>l/s/qr_code!</label>
@@ -223,10 +217,10 @@
 			<label>l/s/qr_code!</label>
 		</box>
 		<box top='434' left='498' width='142' height='119'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='377' left='310' width='137' height='117'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='268' left='109' width='168' height='102'>
 			<label>l/s/hazmat_4/flammable-solid</label>
@@ -260,7 +254,7 @@
 	</image>
 	<image file='boiler_room00381.png'>
 		<box top='857' left='61' width='542' height='229'>
-			<label>l/s/hazmat_1/1-explosive</label>
+			<label>l/s/hazmat_1/1-3!</label>
 		</box>
 	</image>
 	<image file='boiler_room00051.png'>
@@ -280,9 +274,6 @@
 		</box>
 		<box top='399' left='1252' width='509' height='414'>
 			<label> p/valve!</label>
-		</box>
-		<box top='239' left='1561' width='158' height='154'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
 		</box>
 		<box top='225' left='228' width='360' height='218'>
 			<label>l/s/hazmat_4/dangerous-when-wet</label>
@@ -319,10 +310,10 @@
 			<label>l/s/qr_code!</label>
 		</box>
 		<box top='579' left='1133' width='216' height='181'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='513' left='850' width='204' height='171'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='311' left='525' width='234' height='213'>
 			<label>l/s/hazmat_4/flammable-solid</label>
@@ -333,16 +324,10 @@
 			<label>l/s/hazmat_4/flammable-solid</label>
 		</box>
 		<box top='2' left='186' width='120' height='99'>
-			<label>l/s/hazmat_4/flammable-solid</label>
-		</box>
-		<box top='634' left='12' width='157' height='160'>
-			<label>l/s/hazmat_6/infectious-substance</label>
+			<label>l/s/qr_code!</label>
 		</box>
 		<box top='487' left='714' width='137' height='155'>
-			<label>l/s/hazmat_1/6-explosive</label>
-		</box>
-		<box top='436' left='955' width='128' height='126'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='424' left='1241' width='109' height='122'>
 			<label>l/s/hazmat_5/2-organic-peroxide</label>
@@ -353,35 +338,29 @@
 		<box top='352' left='1388' width='106' height='67'>
 			<label>l/s/hazmat_4/dangerous-when-wet</label>
 		</box>
-		<box top='535' left='384' width='167' height='167'>
-			<label>l/s/hazmat_2/poison-gas</label>
-		</box>
 		<box top='594' left='193' width='131' height='128'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
 		<box top='371' left='1121' width='113' height='98'>
-			<label>l/s/hazmat_1/5-blasting-agent</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='2' left='330' width='88' height='35'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='0' left='447' width='106' height='73'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='0' left='907' width='56' height='25'>
 			<label>l/s/hazmat_5/2-organic-peroxide</label>
 		</box>
 		<box top='890' left='998' width='146' height='119'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='857' left='1255' width='144' height='139'>
 			<label>l/s/hazmat_8/corrosive</label>
 		</box>
 		<box top='752' left='1732' width='136' height='160'>
-			<label>l/s/hazmat_1/1-explosive</label>
-		</box>
-		<box top='1029' left='821' width='117' height='56'>
-			<label>l/s/hazmat_7/fissile</label>
+			<label>l/s/hazmat_1/1-3!</label>
 		</box>
 		<box top='759' left='1519' width='139' height='118'>
 			<label>l/s/hazmat_6/poison</label>
@@ -392,7 +371,7 @@
 	</image>
 	<image file='boiler_room00401.png'>
 		<box top='668' left='1568' width='345' height='419'>
-			<label>l/s/hazmat_1/1-explosive</label>
+			<label>l/s/hazmat_1/1-3!</label>
 		</box>
 		<box top='1' left='889' width='593' height='647'>
 			<label>l/s/hazmat_6/poison</label>
@@ -400,7 +379,7 @@
 	</image>
 	<image file='boiler_room00731.png'>
 		<box top='587' left='32' width='139' height='113'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='634' left='654' width='132' height='131'>
 			<label>l/s/hazmat_5/2-organic-peroxide</label>
@@ -429,7 +408,7 @@
 	</image>
 	<image file='boiler_room00421.png'>
 		<box top='2' left='2' width='548' height='383'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='364' left='771' width='477' height='481'>
 			<label>l/s/hazmat_8/corrosive</label>
@@ -439,11 +418,8 @@
 		</box>
 	</image>
 	<image file='boiler_room00331.png'>
-		<box top='214' left='1' width='305' height='337'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
-		</box>
 		<box top='225' left='470' width='282' height='239'>
-			<label>l/s/hazmat_1/5-blasting-agent</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='478' left='578' width='279' height='171'>
 			<label>l/s/hazmat_4/spontaneously-combustible</label>
@@ -484,9 +460,6 @@
 		<box top='888' left='72' width='167' height='141'>
 			<label>l/s/hazmat_5/1-oxidizer</label>
 		</box>
-		<box top='779' left='663' width='172' height='162'>
-			<label>l/s/hazmat_7/fissile</label>
-		</box>
 		<box top='649' left='1144' width='123' height='67'>
 			<label>l/s/hazmat_8/corrosive</label>
 		</box>
@@ -503,22 +476,13 @@
 			<label>l/s/qr_code!</label>
 		</box>
 		<box top='392' left='654' width='129' height='90'>
-			<label>l/s/hazmat_1/6-explosive</label>
-		</box>
-		<box top='359' left='880' width='122' height='69'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
-		</box>
-		<box top='442' left='353' width='149' height='92'>
-			<label>l/s/hazmat_2/poison-gas</label>
-		</box>
-		<box top='494' left='9' width='140' height='95'>
-			<label>l/s/hazmat_6/infectious-substance</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='55' left='379' width='77' height='64'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='61' left='491' width='85' height='77'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='26' left='865' width='92' height='83'>
 			<label>l/s/hazmat_5/2-organic-peroxide</label>
@@ -527,16 +491,16 @@
 			<label>l/s/hazmat_4/spontaneously-combustible</label>
 		</box>
 		<box top='690' left='876' width='147' height='33'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='587' left='1428' width='113' height='53'>
 			<label>l/s/hazmat_6/poison</label>
 		</box>
 		<box top='581' left='1635' width='140' height='84'>
-			<label></label>
+			<label>l/s/hazmat_1/1-3!</label>
 		</box>
 		<box top='322' left='1051' width='100' height='41'>
-			<label>l/s/hazmat_1/5-blasting-agent</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='468' left='167' width='123' height='79'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
@@ -552,9 +516,6 @@
 		</box>
 	</image>
 	<image file='boiler_room00471.png'>
-		<box top='765' left='1329' width='462' height='222'>
-			<label>l/s/hazmat_7/fissile</label>
-		</box>
 		<box top='219' left='765' width='477' height='466'>
 			<label>l/s/qr_code!</label>
 		</box>
@@ -572,7 +533,7 @@
 	</image>
 	<image file='boiler_room00161.png'>
 		<box top='2' left='1253' width='626' height='418'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='2' left='21' width='1002' height='714'>
 			<label>l/s/qr_code!</label>
@@ -586,7 +547,7 @@
 			<label>l/s/hazmat_4/flammable-solid</label>
 		</box>
 		<box top='558' left='1233' width='499' height='434'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room00201.png'>
@@ -598,33 +559,21 @@
 		</box>
 	</image>
 	<image file='boiler_room00651.png'>
-		<box top='372' left='351' width='419' height='388'>
-			<label>l/s/hazmat_6/infectious-substance</label>
-		</box>
 		<box top='371' left='807' width='321' height='293'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
-		<box top='437' left='1284' width='362' height='320'>
-			<label>l/s/hazmat_2/poison-gas</label>
-		</box>
 	</image>
 	<image file='boiler_room00661.png'>
-		<box top='440' left='1265' width='386' height='317'>
-			<label>l/s/hazmat_2/poison-gas</label>
-		</box>
 		<box top='375' left='805' width='319' height='285'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
-		</box>
-		<box top='381' left='357' width='408' height='376'>
-			<label>l/s/hazmat_6/infectious-substance</label>
 		</box>
 	</image>
 	<image file='boiler_room00181.png'>
 		<box top='146' left='4' width='189' height='540'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='477' left='375' width='635' height='494'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='boiler_room00501.png'>
@@ -640,14 +589,8 @@
 		<box top='381' left='1787' width='130' height='164'>
 			<label>l/s/qr_code!</label>
 		</box>
-		<box top='684' left='1481' width='324' height='134'>
-			<label>l/s/hazmat_7/fissile</label>
-		</box>
 	</image>
 	<image file='boiler_room00481.png'>
-		<box top='920' left='1401' width='396' height='162'>
-			<label>l/s/hazmat_7/fissile</label>
-		</box>
 		<box top='553' left='1790' width='127' height='188'>
 			<label>l/s/qr_code!</label>
 		</box>
@@ -662,11 +605,8 @@
 		</box>
 	</image>
 	<image file='boiler_room00351.png'>
-		<box top='1' left='29' width='437' height='322'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
-		</box>
 		<box top='33' left='733' width='286' height='278'>
-			<label>l/s/hazmat_1/5-blasting-agent</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='675' left='1326' width='186' height='119'>
 			<label>l/s/qr_code!</label>
@@ -682,9 +622,6 @@
 		</box>
 	</image>
 	<image file='boiler_room00601.png'>
-		<box top='234' left='282' width='851' height='793'>
-			<label>l/s/hazmat_6/infectious-substance</label>
-		</box>
 		<box top='250' left='1189' width='608' height='579'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
@@ -764,12 +701,12 @@
 			<label>l/s/hazmat_8/corrosive</label>
 		</box>
 		<box top='0' left='-1' width='347' height='260'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00041.png'>
 		<box top='172' left='686' width='545' height='457'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='414' left='1589' width='330' height='422'>
 			<label>l/s/hazmat_8/corrosive</label>
@@ -777,13 +714,10 @@
 		<box top='196' left='26' width='543' height='171'>
 			<label>l/s/qr_code!</label>
 		</box>
-		<box top='626' left='2' width='354' height='328'>
-			<label>l/s/hazmat_7/fissile</label>
-		</box>
 	</image>
 	<image file='boiler_room_flash00061.png'>
 		<box top='135' left='2' width='956' height='794'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='497' left='1533' width='384' height='590'>
 			<label>l/s/hazmat_8/corrosive</label>
@@ -810,9 +744,6 @@
 		</box>
 	</image>
 	<image file='boiler_room_flash00171.png'>
-		<box top='4' left='724' width='1126' height='753'>
-			<label>l/s/hazmat_2/poison-gas</label>
-		</box>
 		<box top='3' left='4' width='121' height='530'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
@@ -821,35 +752,23 @@
 		<box top='556' left='636' width='520' height='462'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
-		<box top='638' left='2' width='499' height='449'>
-			<label>l/s/hazmat_6/infectious-substance</label>
-		</box>
-		<box top='545' left='1492' width='426' height='541'>
-			<label>l/s/hazmat_2/poison-gas</label>
-		</box>
 	</image>
 	<image file='boiler_room_flash00191.png'>
 		<box top='576' left='637' width='737' height='510'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
 		<box top='804' left='3' width='455' height='278'>
-			<label>l/s/hazmat_1/6-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00221.png'>
-		<box top='57' left='526' width='590' height='591'>
-			<label>l/s/hazmat_6/infectious-substance</label>
-		</box>
 		<box top='56' left='1194' width='445' height='383'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00231.png'>
 		<box top='769' left='1501' width='412' height='316'>
-			<label>l/s/hazmat_1/6-explosive</label>
-		</box>
-		<box top='790' left='470' width='574' height='296'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='653' left='1260' width='357' height='159'>
 			<label>l/s/hazmat_2/flammable-gas</label>
@@ -876,23 +795,23 @@
 	</image>
 	<image file='boiler_room_flash00301.png'>
 		<box top='294' left='0' width='303' height='611'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='439' left='720' width='804' height='646'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00311.png'>
 		<box top='237' left='979' width='557' height='529'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='81' left='55' width='599' height='412'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00331.png'>
 		<box top='452' left='765' width='719' height='616'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='877' left='0' width='331' height='210'>
 			<label>l/s/qr_code!</label>
@@ -909,7 +828,7 @@
 			<label>l/s/qr_code!</label>
 		</box>
 		<box top='798' left='1536' width='381' height='287'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00361.png'>
@@ -925,18 +844,18 @@
 			<label>l/s/qr_code!</label>
 		</box>
 		<box top='682' left='1225' width='431' height='359'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='807' left='1811' width='106' height='271'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00441.png'>
 		<box top='750' left='1155' width='394' height='333'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='662' left='515' width='409' height='369'>
-			<label>l/s/hazmat_1/4-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='340' left='4' width='302' height='414'>
 			<label>l/s/hazmat_4/flammable-solid</label>
@@ -950,7 +869,7 @@
 			<label>l/s/qr_code!</label>
 		</box>
 		<box top='558' left='1' width='185' height='386'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00551.png'>
@@ -961,16 +880,6 @@
 			<label>l/s/hazmat_5/2-organic-peroxide</label>
 		</box>
 	</image>
-	<image file='boiler_room_flash00561.png'>
-		<box top='569' left='1474' width='261' height='247'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
-		</box>
-	</image>
-	<image file='boiler_room_flash00591.png'>
-		<box top='115' left='789' width='595' height='681'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
-		</box>
-	</image>
 	<image file='boiler_room_flash00611.png'>
 		<box top='208' left='1602' width='370' height='657'>
 			<label>l/s/hazmat_4/dangerous-when-wet</label>
@@ -978,7 +887,7 @@
 	</image>
 	<image file='boiler_room_flash00641.png'>
 		<box top='208' left='601' width='687' height='719'>
-			<label>l/s/hazmat_1/5-blasting-agent</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='462' left='1726' width='192' height='350'>
 			<label>l/s/hazmat_4/dangerous-when-wet</label>
@@ -988,11 +897,8 @@
 		</box>
 	</image>
 	<image file='boiler_room_flash00661.png'>
-		<box top='414' left='566' width='787' height='671'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
-		</box>
 		<box top='142' left='1580' width='337' height='584'>
-			<label>l/s/hazmat_1/5-blasting-agent</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00681.png'>
@@ -1000,27 +906,18 @@
 			<label>l/s/hazmat_2/flammable-gas</label>
 		</box>
 		<box top='730' left='889' width='594' height='356'>
-			<label>l/s/hazmat_1/6-explosive</label>
-		</box>
-		<box top='545' left='1726' width='193' height='385'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00691.png'>
-		<box top='622' left='3' width='671' height='464'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
-		</box>
 		<box top='330' left='1220' width='594' height='335'>
 			<label>l/s/hazmat_2/flammable-gas</label>
 		</box>
 		<box top='795' left='1717' width='205' height='292'>
-			<label>l/s/hazmat_1/6-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00701.png'>
-		<box top='246' left='1401' width='516' height='698'>
-			<label>l/s/hazmat_2/poison-gas</label>
-		</box>
 		<box top='257' left='206' width='741' height='683'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
@@ -1029,22 +926,10 @@
 		<box top='237' left='902' width='505' height='485'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
 		</box>
-		<box top='341' left='81' width='742' height='683'>
-			<label>l/s/hazmat_6/infectious-substance</label>
-		</box>
-		<box top='224' left='1728' width='190' height='532'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
-		</box>
 	</image>
 	<image file='boiler_room_flash00721.png'>
-		<box top='357' left='1841' width='78' height='211'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
-		</box>
 		<box top='235' left='1200' width='404' height='367'>
 			<label>l/s/hazmat_3/flammable-liquid</label>
-		</box>
-		<box top='296' left='612' width='530' height='520'>
-			<label>l/s/hazmat_6/infectious-substance</label>
 		</box>
 	</image>
 	<image file='cannng-town-baby-2_1_orig.jpg'>
@@ -1059,13 +944,13 @@
 	</image>
 	<image file='ERS_Fantom_Takimi.jpg'>
 		<box top='154' left='55' width='63' height='67'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='114' left='207' width='53' height='50'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='70' left='71' width='47' height='15'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='fbpost5_large.jpeg'>
@@ -1117,18 +1002,15 @@
 	</image>
 	<image file='images (1).jpeg'>
 		<box top='127' left='165' width='56' height='53'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='28' left='63' width='42' height='61'>
-			<label>l/s/hazmat_7/radioactive-iii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='Ku2i1ts.jpg'>
 		<box top='408' left='90' width='279' height='283'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
-		</box>
-		<box top='554' left='395' width='272' height='226'>
-			<label>l/s/hazmat_other/label-cargo-aircraft-only</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='land-rover-fire-extinguisher-640x480.jpg'>
@@ -1141,7 +1023,7 @@
 			<label>l/s/hazmat_6/poison</label>
 		</box>
 		<box top='570' left='1144' width='360' height='435'>
-			<label>/s/hazmat_1/1-explosive</label>
+			<label>/s/hazmat_1/1-3!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00391.png'>
@@ -1149,7 +1031,7 @@
 			<label>l/s/hazmat_4/flammable-solid</label>
 		</box>
 		<box top='801' left='1513' width='402' height='280'>
-			<label>l/s/hazmat_1/6-explosive</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='boiler_room_flash00471.png'>
@@ -1181,10 +1063,7 @@
 			<label>l/s/hazmat_2/flammable-gas</label>
 		</box>
 		<box top='353' left='650' width='586' height='665'>
-			<label>l/s/hazmat_1/6-explosive</label>
-		</box>
-		<box top='345' left='1635' width='280' height='529'>
-			<label>l/s/hazmat_9/other-dangerous-goods</label>
+			<label>l/s/hazmat_1/4-6!</label>
 		</box>
 	</image>
 	<image file='maxresdefault.jpg'>
@@ -1219,39 +1098,39 @@
 	</image>
 	<image file='Picture1.png'>
 		<box top='418' left='830' width='472' height='511'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='Radiactive-contents (1).jpg'>
 		<box top='104' left='368' width='475' height='679'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='radiation-label-transport-wooden-box-type-package-truck-radioactive-material-label-transportation-158484038.jpg'>
 		<box top='363' left='758' width='104' height='115'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='Radioactive.jpg'>
 		<box top='133' left='134' width='132' height='145'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='s-l300.jpg'>
 		<box top='43' left='66' width='55' height='30'>
-			<label>l/s/hazmat_7/radioactive-iii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='23' left='169' width='47' height='15'>
-			<label>l/s/hazmat_7/radioactive-iii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='131' left='17' width='38' height='57'>
-			<label>l/s/hazmat_7/radioactive-iii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='174' left='75' width='40' height='59'>
-			<label>l/s/hazmat_7/radioactive-iii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='168' left='188' width='40' height='49'>
-			<label>l/s/hazmat_7/radioactive-iii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='stock-photo-childhood-old-dirty-baby-doll-alone-body-creepy-lonely-7a9a1191-3e12-42b2-8615-b47083df1c60.jpg'>
@@ -1266,15 +1145,12 @@
 	</image>
 	<image file='transport-crate-scaled-500x383.jpg'>
 		<box top='148' left='154' width='21' height='27'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='unnamed.jpg'>
 		<box top='247' left='209' width='55' height='46'>
-			<label>l/s/hazmat_7/radioactive-iii</label>
-		</box>
-		<box top='242' left='273' width='48' height='46'>
-			<label>l/s/hazmat_other/label-cargo-aircraft-only</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 	</image>
 	<image file='PXL_20201206_154643626.jpg'>
@@ -1282,13 +1158,10 @@
 			<label>unlabelledl/s/hazmat_2/non-flammable-gas</label>
 		</box>
 		<box top='1018' left='653' width='1032' height='892'>
-			<label>/s/hazmat_1/6-explosive</label>
+			<label>/s/hazmat_1/4-6!</label>
 		</box>
 		<box top='1156' left='1477' width='1069' height='938'>
 			<label>l/s/hazmat_2/flammable-gas</label>
-		</box>
-		<box top='1916' left='1160' width='1219' height='1076'>
-			<label>l/s/hazmat_2/poison-gas</label>
 		</box>
 	</image>
 	<image file='PXL_20201206_154705162.jpg'>
@@ -1353,25 +1226,16 @@
 		<box top='493' left='3' width='1115' height='1210'>
 			<label>l/s/hazmat_5/2-organic-peroxide</label>
 		</box>
-		<box top='329' left='824' width='1465' height='1118'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
-		</box>
 		<box top='1538' left='6' width='1535' height='1726'>
 			<label>l/s/hazmat_6/poison</label>
-		</box>
-		<box top='1234' left='1226' width='1783' height='1449'>
-			<label>l/s/hazmat_6/infectious-substance</label>
 		</box>
 	</image>
 	<image file='PXL_20201206_154804667.jpg'>
 		<box top='458' left='642' width='815' height='450'>
-			<label>l/s/hazmat_7/radioactive-i</label>
-		</box>
-		<box top='775' left='207' width='700' height='520'>
-			<label>l/s/hazmat_7/fissile</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='617' left='1260' width='769' height='426'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='893' left='746' width='857' height='566'>
 			<label>l/s/hazmat_4/flammable-solid</label>
@@ -1391,12 +1255,6 @@
 		<box top='2577' left='1260' width='1053' height='1450'>
 			<label>l/s/hazmat_6/poison</label>
 		</box>
-		<box top='3296' left='1813' width='1208' height='734'>
-			<label>l/s/hazmat_6/infectious-substance</label>
-		</box>
-		<box top='2515' left='2369' width='652' height='1218'>
-			<label>l/s/hazmat_6/poison-inhalation-hazard</label>
-		</box>
 	</image>
 	<image file='PXL_20201206_154824843.jpg'>
 		<box top='121' left='98' width='883' height='485'>
@@ -1412,16 +1270,13 @@
 			<label>l/s/hazmat_5/1-oxidizer</label>
 		</box>
 		<box top='1641' left='664' width='1015' height='731'>
-			<label>l/s/hazmat_7/radioactive-i</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='1665' left='1623' width='921' height='865'>
-			<label>l/s/hazmat_7/radioactive-ii</label>
+			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
 		<box top='2408' left='1470' width='1133' height='1224'>
 			<label>l/s/hazmat_8/corrosive</label>
-		</box>
-		<box top='2280' left='356' width='1202' height='1124'>
-			<label>l/s/hazmat_7/fissile</label>
 		</box>
 	</image>
 </images></dataset>

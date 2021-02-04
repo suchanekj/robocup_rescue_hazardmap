@@ -17,4 +17,4 @@ if __name__ == "__main__":
         synthetic_dataset.createDataset(extend=True)
     if TRAIN or TEST:
         import train
-        train.train()
+        train.train("ep021-loss42.117-val_loss40.874.h5")
