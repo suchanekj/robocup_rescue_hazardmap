@@ -163,6 +163,14 @@ def intersection_over_union(box1, box2):
             area_box(box1) + area_box(box2) - intersection_area)
 
 
+def get_labels():
+    d = []
+    with open("labelNames.txt") as f:
+        for line in f:
+            _, v = line.split()
+            d.append(v)
+    return d
+
 def evaluate(test_lines, yolo, log_dir):
     """
     This function is called once every training cycle.
@@ -201,9 +209,10 @@ def evaluate(test_lines, yolo, log_dir):
 
     # for row in confusion_matrix.get_fraction_matrix():
     #     print(row)
-    df_cm = pd.DataFrame(confusion_matrix.get_count_matrix(), index=[i for i in range(CLASS_COUNT)],
-                         columns=[i for i in range(CLASS_COUNT)])
-    plt.figure(figsize=(10, 7))
+    labels = get_labels()
+    df_cm = pd.DataFrame(confusion_matrix.get_fraction_matrix(), index=labels,
+                         columns=labels)
+    plt.figure(figsize=(20, 20))
     sn.heatmap(df_cm, annot=True)
     plt.savefig(log_dir + "confusion_matrix.png")
 
