@@ -184,7 +184,7 @@ def plot_matrix(mat, save_dir):
                          columns=labels)
     # plt.tight_layout()
 
-    fig = plt.figure(figsize=(25, 10))
+    fig = plt.figure(figsize=(30, 10))
     sn.heatmap(df_cm, annot=True)
     plt.gcf().subplots_adjust(bottom=0.35)
     # plt.xlabel('Predicted',fontsize=15)
