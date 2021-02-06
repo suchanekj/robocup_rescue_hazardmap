@@ -272,7 +272,7 @@ def train(specific=None):
 
                 yolo = YOLO(**settings)
 
-                evaluate(test_lines, yolo, log_dir)
+                evaluate(test_lines, yolo, log_dir, epoch)
 
                 yolo.close_session()
                 K.clear_session()

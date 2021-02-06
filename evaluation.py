@@ -158,12 +158,18 @@ def area_intersection(box1, box2):
 
 
 def intersection_over_union(box1, box2):
+    """
+    don't need explanation right...
+    """
     intersection_area = area_intersection(box1, box2)
     return intersection_area / (
             area_box(box1) + area_box(box2) - intersection_area)
 
 
 def get_labels():
+    """
+    don't need explanation right...
+    """
     d = []
     with open("labelNames.txt") as f:
         for line in f:
@@ -171,7 +177,23 @@ def get_labels():
             d.append(v)
     return d
 
-def evaluate(test_lines, yolo, log_dir):
+
+def plot_matrix(mat, save_dir):
+    labels = get_labels()
+    df_cm = pd.DataFrame(mat, index=labels,
+                         columns=labels)
+    # plt.tight_layout()
+
+    fig = plt.figure(figsize=(25, 10))
+    sn.heatmap(df_cm, annot=True)
+    plt.gcf().subplots_adjust(bottom=0.35)
+    # plt.xlabel('Predicted',fontsize=15)
+    # plt.ylabel('Actual', fontsize=15)
+    fig.suptitle('Actual against Predicted', fontsize=30)
+    plt.savefig(save_dir + "confusion_matrix.png")
+
+
+def evaluate(test_lines, yolo, log_dir, epoch):
     """
     This function is called once every training cycle.
 
@@ -207,14 +229,7 @@ def evaluate(test_lines, yolo, log_dir):
 
         confusion_matrix.process(correct_boxes, predicted_boxes)
 
-    # for row in confusion_matrix.get_fraction_matrix():
-    #     print(row)
-    labels = get_labels()
-    df_cm = pd.DataFrame(confusion_matrix.get_fraction_matrix(), index=labels,
-                         columns=labels)
-    plt.figure(figsize=(20, 20))
-    sn.heatmap(df_cm, annot=True)
-    plt.savefig(log_dir + "confusion_matrix.png")
+    plot_matrix(confusion_matrix.get_fraction_matrix(), log_dir + "test" + str(epoch).zfill(3) + "/")
 
     with open(log_dir + "validation.txt", "a") as f:
         f.write(f"Correct Predictions Made By Model: {confusion_matrix.get_num_predictions_correct()}\n")
