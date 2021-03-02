@@ -266,12 +266,16 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
     with open(labelNamesPath, 'r') as myfile:
         with open(outputLabelNamesPath, 'w') as myfile2:
             currLine = myfile.readline()
+            unused_labels = 0
 
             # each line is like 1 l/n/fire_extinguisher_sign!
             while currLine != "":
-                myfile2.write(currLine)
-                currLine = currLine.split()
-                labelValueDict[currLine[1]] = int(currLine[0])
+                currLineSplit = currLine.split()
+                if currLineSplit[1] not in DATASET_EXCLUDE_OBJECTS:
+                    myfile2.write(str(int(currLineSplit[0]) - unused_labels) + " " + str(currLineSplit[1]) + "\n")
+                    labelValueDict[currLineSplit[1]] = int(currLineSplit[0]) - unused_labels
+                else:
+                    unused_labels += 1
                 currLine = myfile.readline()
 
     # gathers list of image paths
@@ -334,6 +338,9 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
 
                     labelValueList.append(labelValue)
                     coordTuple += (labelValue,)
+                else:
+                    if not labelName in DATASET_EXCLUDE_OBJECTS:
+                        print("unknown label:", labelName)
 
             # adds the corners of the image so we can use the corners to make a mask
             boxList.append(np.float32([
@@ -407,9 +414,14 @@ def createDataset():
 
     for i in range(5):
         if not os.path.exists(imageOutputPathList[i]) or \
-                len(os.listdir(imageOutputPathList[i])) < DATASET_NUM_IMAGES \
+                len(os.listdir(imageOutputPathList[i])) < MANUAL_DATASET_SIZE \
                 or REBUILD_DATASET:
             print(str(i) + "th round")
+
+            if os.path.exists(imageOutputPathList[i]):
+                shutil.rmtree(imageOutputPathList[i])
+                time.sleep(0.2)
+
             filterStrength = filterStrengthTuple[i]
             imageSize = imageSizeTuple[i]
 

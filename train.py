@@ -1,7 +1,5 @@
 from config import *
-
-if GPU_NUM > 1:
-    import horovod.keras as hvd
+from evaluation import evaluate
 
 import os
 import copy
@@ -26,10 +24,7 @@ from yolo import YOLO, detect_video
 def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, input_shape, anchors, num_classes,
                 callbacks, class_tree, skip=0):
     yolo_splits = (249, 185, 65, 0)
-    if GPU_NUM > 1:
-        temp_file = 'model_data/temp{}.h5'.format(hvd.rank())
-    else:
-        temp_file = 'model_data/temp.h5'
+    temp_file = 'model_data/temp.h5'
     model.save_weights(temp_file)
     model = create_model(input_shape, anchors, num_classes, freeze_body=0, weights_path=temp_file)
 
@@ -61,11 +56,7 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                 continue
             model.layers[i].trainable = False
 
-        if GPU_NUM > 1:
-            opt = Adam(lr=lr / 10 * hvd.size())
-            opt = hvd.DistributedOptimizer(opt)
-        else:
-            opt = Adam(lr=lr / 10)
+        opt = Adam(lr=lr / 10)
         model.compile(optimizer=opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
         if num_train // batch_size // 100 >= 1:
@@ -79,21 +70,16 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
                 workers=2,
                 max_queue_size=10)
 
-        if GPU_NUM > 1:
-            opt = Adam(lr=lr * hvd.size())
-            opt = hvd.DistributedOptimizer(opt)
-        else:
-            opt = Adam(lr=lr)
+        opt = Adam(lr=lr)
         model.compile(opt, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        divider = GPU_NUM
         model.fit_generator(
             data_generator_wrapper_sequence(lines[:num_train], batch_size, input_shape, anchors, num_classes,
                                             class_tree),
-            steps_per_epoch=max(1, num_train // (batch_size * divider)),
+            steps_per_epoch=max(1, num_train // batch_size),
             validation_data=data_generator_wrapper_sequence(lines[num_train:], batch_size, input_shape, anchors,
                                                             num_classes, class_tree),
-            validation_steps=max(1, num_val // (batch_size * divider)),
+            validation_steps=max(1, num_val // batch_size),
             epochs=current_epoch + epoch - skip,
             initial_epoch=current_epoch,
             callbacks=callbacks,
@@ -103,23 +89,85 @@ def train_cycle(model, lrs, epochs, current_epoch, lines, num_train, num_val, in
     return model, current_epoch
 
 
+def test_cycle(log_dir, epochs_to_test, anchors_path, classes_path, test_lines):
+    for epoch in epochs_to_test:
+        files = os.listdir(log_dir)
+        if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
+            print("Missing checkpoint for ep" + str(epoch).zfill(3))
+            continue
+        model_file = [f for f in files if ("ep" + str(epoch).zfill(3)) in f][0]
+
+        folder = log_dir + "test" + str(epoch).zfill(3) + "/"
+        if os.path.exists(folder):
+            shutil.rmtree(folder)
+            time.sleep(0.2)
+        os.mkdir(folder)
+
+        settings = {
+            "model_path": log_dir + model_file,
+            "anchors_path": anchors_path,
+            "classes_path": classes_path,
+            "score": 0.05,  # 0.3
+            "iou": 0.45,  # 0.45
+        }
+        K.clear_session()
+
+        if TEST_EVALUATE:
+            # model = create_model(input_shape, anchors, num_classes, freeze_body=2,
+            #                      weights_path=log_dir + model_file)
+            # batch_size = 16
+            # model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+            # result = model.evaluate_generator(
+            #     data_generator_wrapper_sequence(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
+            #     steps=max(1, len(test_lines) // batch_size))
+
+            for nmx_suppresion in [False, True]:
+                with open(log_dir + "validation" + ("_unsurpressed" if not nmx_suppresion else "") + ".txt", "a") as f:
+                    f.write(f"Epoch: {str(epoch).zfill(3)}\n")
+                    # f.write(f"Epoch: {str(epoch).zfill(3)} Validation_score: {result}\n")
+
+            yolo = YOLO(**settings)
+
+            evaluate(test_lines, yolo, log_dir, epoch)
+
+            yolo.close_session()
+            K.clear_session()
+
+        if TEST_VISUALIZE_IMAGES or TEST_VISUALIZE_VIDEO:
+            folder = log_dir + "test" + str(epoch).zfill(3) + "/"
+            os.mkdir(folder + "imgs/")
+
+            if TEST_VISUALIZE_VIDEO:
+                yolo = YOLO(**settings)
+                detect_video(yolo, "test.mp4", folder + "video.avi")
+                K.clear_session()
+
+            if TEST_VISUALIZE_IMAGES:
+                yolo = YOLO(**settings)
+                for line in test_lines[:100]:
+                    if line[-1] == '\n':
+                        line = line[:-1]
+                    line = line.split(" ")[0]
+                    for nmx_suppresion in [False, True]:
+                        r_image = Image.open(line)
+                        r_image = yolo.detect_image(r_image, augment=True, nmx_suppresion=nmx_suppresion)
+                        name = line.split("/")[-1].split(".")[0] + ("_unsurpressed" if not nmx_suppresion else "") + ".png"
+                        r_image.save(folder + "imgs/" + name)
+                yolo.close_session()
+                K.clear_session()
+
+
 def train(specific=None):
     log_dir = 'logs/' + str(TRAINING_CYCLE).zfill(3) + '/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
     classes_path = DATASET_LOCATION + str(0) + '/labelNames.txt'
     anchors_path = 'model_data/yolo_anchors_custom.txt'
     class_names = get_classes(classes_path)
     class_tree = get_class_tree(class_names)
     num_classes = len(class_names)
     anchors = get_anchors(anchors_path)
-
-    if GPU_NUM > 1:
-        hvd.init()
-
-        # Horovod: pin GPU to be used to process local rank (one GPU per process)
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        config.gpu_options.visible_device_list = str(hvd.local_rank())
-        K.set_session(tf.Session(config=config))
 
     input_shape = DATASET_DEFAULT_SHAPE  # multiple of 32, hw
 
@@ -167,48 +215,43 @@ def train(specific=None):
                              weights_path=log_dir + latest)  # make sure you know what you freeze
         print(log_dir + latest)
 
-    if GPU_NUM > 1:
-        callbacks = [
-            hvd.callbacks.BroadcastGlobalVariablesCallback(0)
-        ]
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
-                                      patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
-        early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
-                                       patience=TRAINING_STOPPING_PATIENCE, verbose=1)
-
-        callbacks = callbacks + [reduce_lr, early_stopping]
-
-        if hvd.rank() == 0:
-            checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
-                                         monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
-            logging = TensorBoard(log_dir=log_dir, write_images=True)
-            callbacks.append(checkpoint)
-            callbacks.append(logging)
-    else:
-        checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
-                                     monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
-        logging = TensorBoard(log_dir=log_dir, write_images=True)
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
-                                      patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
-        early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
-                                       patience=TRAINING_STOPPING_PATIENCE, verbose=1)
-        callbacks = [logging, checkpoint, reduce_lr, early_stopping] \
-            if not HYPERPARAMETER_SEARCH else [reduce_lr, early_stopping]
+    checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+                                 monitor='val_loss', save_weights_only=True, save_best_only=False, period=1)
+    logging = TensorBoard(log_dir=log_dir, write_images=True)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                  patience=TRAINING_REDUCE_LR_PATIENCE, verbose=1)
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=TRAINING_PATIENCE_LOSS_MARGIN,
+                                   patience=TRAINING_STOPPING_PATIENCE, verbose=1)
+    callbacks = [logging, checkpoint, reduce_lr, early_stopping] \
+        if not HYPERPARAMETER_SEARCH else [reduce_lr, early_stopping]
 
     sizes = DATASET_TRAINING_SHAPES
     epochs = TRAINING_EPOCHS
     lrs = TRAINING_LRS
 
+    if TEST:
+        if TEST_EVALUATE:
+            for nmx_suppresion in [False, True]:
+                with open(log_dir + "validation" + ("_unsurpressed" if not nmx_suppresion else "") + ".txt", "w") as f:
+                    f.write("")
+
+        validation_annotation_path = VALIDATION_DATASET_LOCATION + '/labels.txt'
+        with open(validation_annotation_path) as f:
+            test_lines = f.readlines()[:VALIDATION_DATASET_SIZE]
+
     if TRAIN:
+        initial_epoch = 0
         for i in range(len(sizes)):
             if i <= latest_part:
                 current_epoch += np.sum(epochs[i])
+                initial_epoch += np.sum(epochs[i])
                 continue
             skip = 0
             for epoch in epochs[i]:
                 if skip_epochs >= epoch:
                     skip_epochs -= epoch
                     skip += epoch
+                    initial_epoch += epoch
             if skip >= np.sum(epochs[i]):
                 continue
             skip += skip_epochs
@@ -226,190 +269,31 @@ def train(specific=None):
             model, current_epoch = train_cycle(model, lrs[i], epochs[i], current_epoch, lines, num_train, num_val,
                                                sizes[i], anchors, num_classes,
                                                callbacks, class_tree, skip)
-            if GPU_NUM <= 1:
-                model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
 
-    if TEST:
-        if TEST_EVALUATE:
-            with open(log_dir + "validation.txt", "w") as f:
-                f.write("")
+            model.save_weights(log_dir + 'trained_weights_' + str(i) + '.h5')
 
-        annotation_path = VALIDATION_DATASET_LOCATION + '/labels.txt'
-        with open(annotation_path) as f:
-            test_lines = f.readlines()[:VALIDATION_DATASET_SIZE]
-        epochs_to_test_steps = [a for b in TRAINING_EPOCHS for a in b if a != 0]
-        epochs_to_test = [sum(epochs_to_test_steps[:i]) for i in range(len(epochs_to_test_steps))]
+            if TEST:
+                model = None
+                time.sleep(0.1)
+                epochs_to_test_steps = [a for a in epochs[i] if a != 0]
+                epochs_to_test = [initial_epoch + sum(epochs_to_test_steps[:i]) for i in range(len(epochs_to_test_steps))]
 
-        for epoch in epochs_to_test:
-            files = os.listdir(log_dir)
-            if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
-                print("Missing checkpoint for ep" + str(epoch).zfill(3))
-                continue
-            model_file = [f for f in files if ("ep" + str(epoch).zfill(3)) in f][0]
-
-            settings = {
-                "model_path": log_dir + model_file,
-                "anchors_path": anchors_path,
-                "classes_path": classes_path,
-                "score": 0.05,  # 0.3
-                "iou": 0.45,  # 0.45
-            }
-            K.clear_session()
-
-            if TEST_EVALUATE:
-                # model = create_model(input_shape, anchors, num_classes, freeze_body=2,
-                #                      weights_path=log_dir + model_file)
-                # batch_size = 16
-                # model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
-                # result = model.evaluate_generator(
-                #     data_generator_wrapper_sequence(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
-                #     steps=max(1, len(test_lines) // batch_size))
-
-                with open(log_dir + "validation.txt", "a") as f:
-                    f.write(f"Epoch: {str(epoch).zfill(3)}\n")
-                    # f.write(f"Epoch: {str(epoch).zfill(3)} Validation_score: {result}\n")
-
-                yolo = YOLO(**settings)
-
-                def area_box(box):
-                    left, top, right, bottom = box
-                    return (right - left) * (bottom - top)
-
-                def area_intersection(box1, box2):
-                    left1, top1, right1, bottom1 = box1
-                    left2, top2, right2, bottom2 = box2
-
-                    left = max(left1, left2)
-                    top = max(top1, top2)
-                    bottom = min(bottom1, bottom2)
-                    right = min(right1, right2)
-                    if right > left and bottom > top: return (right - left) * (bottom - top)
-                    return 0
-
-                def similarity_check(correct_list, predicted_list, threshold):
-                    # takes out all the predictions that have confidence below the threshold
-                    predicted_list_cleaned = [x for x in predicted_list if x[5] > threshold]
-
-                    total_actual_predictions = len(correct_list)
-                    total_model_predictions = len(predicted_list_cleaned)
-                    correct_model_predictions = 0
-
-                    for correct_tuple in correct_list:
-
-                        idx = -1
-                        best_IOU = 0
-                        for i, predicted_tuple in enumerate(predicted_list_cleaned):
-                            correct_label = correct_tuple[4]
-                            correct_box = correct_tuple[:4]
-                            predicted_label = predicted_tuple[4]
-                            predicted_box = predicted_tuple[:4]
-
-                            if correct_label != predicted_label: continue  # skip wrong label
-
-                            area = area_intersection(correct_box, predicted_box)
-
-                            if area == 0: continue  # skip wrong bounding box
-                            intersection_area = area_intersection(predicted_box, correct_box)
-                            intersection_over_union = intersection_area / (
-                                    area_box(predicted_box) + area_box(correct_box) - intersection_area)
-                            # get best IOU value
-                            if intersection_over_union > best_IOU:
-                                best_IOU = intersection_over_union
-                                idx = i
-                        # if found match and IOU>0.5: count that as match, remove match from predictions
-                        if idx != -1 and best_IOU > 0.5:
-                            del predicted_list_cleaned[idx]
-                            correct_model_predictions += 1
-                    return total_actual_predictions, total_model_predictions, correct_model_predictions
-
-                # correct_predicted = 0
-                # total_predicted = 0
-                #
-                # total_actual = 0
-
-                THRESHOLD_LEVELS = [0.9 ** i for i in range(0, 44)]
-                # THRESHOLD_LEVELS = [0.9 ** i for i in range(0, 44)]
-                correct_predicted_list = [0 for i in range(len(THRESHOLD_LEVELS))]
-                total_predicted_list = [0 for i in range(len(THRESHOLD_LEVELS))]
-                total_actual_list = [0 for i in range(len(THRESHOLD_LEVELS))]
-
-                for line_num, line in enumerate(test_lines):
-                    if line[-1] == '\n':
-                        line = line[:-1]
-                    lines = line.split(" ")
-                    path = lines[0]
-
-                    correct_boxes = [[int(x) for x in txt.split(',')] for txt in lines[1:]]
-                    # total_relevant += len(correct_boxes)
-
-                    r_image = Image.open(path)
-
-                    predicted_boxes = yolo.detect_boxes(r_image, True)
-
-                    # THRESHOLD_CONFIDENCE = 0.5
-                    for i, curr_level in enumerate(THRESHOLD_LEVELS):
-                        additional_actual, additional_predicted, additional_correct = \
-                            similarity_check(correct_boxes, predicted_boxes, curr_level)
-                        correct_predicted_list[i] += additional_correct
-                        total_actual_list[i] += additional_actual
-                        total_predicted_list[i] += additional_predicted
-
-                # get best threshold by finding highest IOU
-                correct_predicted_list = np.array(correct_predicted_list)
-                total_predicted_list = np.array(total_predicted_list)
-                total_actual_list = np.array(total_actual_list)
-                IOU_list = correct_predicted_list / (total_actual_list + total_predicted_list - correct_predicted_list)
-                i = np.argmax(IOU_list)
-
-                with open(log_dir + "validation.txt", "a") as f:
-                    f.write(f"Best Confidence Level: {THRESHOLD_LEVELS[i]}\n")
-                    f.write(f"All IOU Values: {IOU_list}\n")
-                    f.write(f"Correct Predictions Made By Model: {correct_predicted_list[i]}\n")
-                    f.write(f"Total Predictions Made By Model: {total_predicted_list[i]}\n")
-                    f.write(f"Total Number of Labels: {total_actual_list[i]}\n")
-                    f.write(f"Precision: {correct_predicted_list[i] / total_predicted_list[i]}\n")
-                    f.write(f"Recall: {correct_predicted_list[i] / total_actual_list[i]}\n")
-                    f.write(
-                        f"IOU: {correct_predicted_list[i] / (total_actual_list[i] + total_predicted_list[i] - correct_predicted_list[i])}\n"
-                    )
-
-                yolo.close_session()
+                test_cycle(log_dir, epochs_to_test,
+                           anchors_path, classes_path, test_lines)
                 K.clear_session()
 
-            if TEST_VISUALIZE_IMAGES or TEST_VISUALIZE_VIDEO:
-                folder = log_dir + "test" + str(epoch).zfill(3) + "/"
-                if os.path.exists(folder):
-                    shutil.rmtree(folder)
-                    time.sleep(0.2)
-                os.mkdir(folder)
-                os.mkdir(folder + "imgs/")
+                model = create_model(input_shape, anchors, num_classes, freeze_body=0,
+                                     weights_path=log_dir + 'trained_weights_' + str(i) + '.h5')
 
-                # settings = {
-                #     "model_path": log_dir + model_file,
-                #     "anchors_path": anchors_path,
-                #     "classes_path": classes_path,
-                #     "score": 0.05,  # 0.3
-                #     "iou": 0.45,  # 0.45
-                # }
-                # K.clear_session()
+            initial_epoch = current_epoch
 
-                if TEST_VISUALIZE_VIDEO:
-                    yolo = YOLO(**settings)
-                    detect_video(yolo, "test.mp4", folder[:-1] + ".avi")
-                    K.clear_session()
+    if TEST and not TRAIN:
+        epochs_to_test_steps = [a for b in TRAINING_EPOCHS for a in b if a != 0]
+        epochs_to_test = [sum(epochs_to_test_steps[:i+1]) for i in range(len(epochs_to_test_steps))]
 
-                if TEST_VISUALIZE_IMAGES:
-                    yolo = YOLO(**settings)
-                    for line in test_lines[:100]:
-                        if line[-1] == '\n':
-                            line = line[:-1]
-                        line = line.split(" ")[0]
-                        r_image = Image.open(line)
-                        r_image = yolo.detect_image(r_image, augment=True)
-                        name = line.split("/")[-1]
-                        r_image.save(folder + "imgs/" + name)
-                    yolo.close_session()
-                    K.clear_session()
+        test_cycle(log_dir, epochs_to_test,
+                   anchors_path, classes_path, test_lines)
+
 
 
 def get_classes(classes_path):
@@ -449,11 +333,6 @@ def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze
                  weights_path='model_data/yolo_weights.h5'):
     '''create the training model'''
     K.clear_session()
-    if GPU_NUM > 1:
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        config.gpu_options.visible_device_list = str(hvd.local_rank())
-        K.set_session(tf.Session(config=config))
 
     image_input = Input(shape=(None, None, 3))
     h, w = input_shape
@@ -489,11 +368,6 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
                       weights_path='model_data/tiny_yolo_weights.h5'):
     '''create the training model, for Tiny YOLOv3'''
     K.clear_session()
-    if GPU_NUM > 1:
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        config.gpu_options.visible_device_list = str(hvd.local_rank())
-        K.set_session(tf.Session(config=config))
 
     image_input = Input(shape=(None, None, 3))
     h, w = input_shape

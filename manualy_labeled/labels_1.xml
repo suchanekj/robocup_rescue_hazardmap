@@ -410,14 +410,8 @@
 		<box top='91' left='37' width='212' height='120'>
 			<label>p/valve!</label>
 		</box>
-		<box top='31' left='169' width='16' height='15'>
-			<label>unlabelled</label>
-		</box>
 		<box top='93' left='147' width='197' height='123'>
 			<label>p/valve!</label>
-		</box>
-		<box top='31' left='169' width='16' height='15'>
-			<label>unlabelled</label>
 		</box>
 		<box top='350' left='325' width='69' height='129'>
 			<label>p/door</label>
@@ -452,7 +446,7 @@
 			<label>p/fire_extinguisher!</label>
 		</box>
 		<box top='31' left='169' width='16' height='15'>
-			<label>unlabelled</label>
+			<label>p/valve!</label>
 		</box>
 		<box top='66' left='50' width='57' height='159'>
 			<label>p/fire_extinguisher!</label>

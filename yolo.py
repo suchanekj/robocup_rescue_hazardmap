@@ -147,7 +147,7 @@ class YOLO(object):
         # print(out_boxes2)
         return out_boxes2, out_scores2, out_classes2
 
-    def detect_boxes(self, image, augment=False, IOU_threshold=0.5):
+    def detect_boxes(self, image, augment=False, IOU_threshold=0.5, nmx_suppresion=True):
         if self.model_image_size != (None, None):
             assert self.model_image_size[0] % 32 == 0, 'Multiples of 32 required'
             assert self.model_image_size[1] % 32 == 0, 'Multiples of 32 required'
@@ -170,7 +170,8 @@ class YOLO(object):
             })
 
         # I added this line!!!
-        out_boxes, out_scores, out_classes = self.nonmax_suppression(out_boxes, out_scores, out_classes, augment, IOU_threshold)
+        if nmx_suppresion:
+            out_boxes, out_scores, out_classes = self.nonmax_suppression(out_boxes, out_scores, out_classes, augment, IOU_threshold)
         box_list = []
 
         for i, c in reversed(list(enumerate(out_classes))):
@@ -191,7 +192,7 @@ class YOLO(object):
             box_list.append([left, top, right, bottom, c, score])
         return box_list
 
-    def detect_image(self, image, augment=False, IOU_threshold=0.5):
+    def detect_image(self, image, augment=False, IOU_threshold=0.5, nmx_suppresion=True):
         start = timer()
 
         if self.model_image_size != (None, None):
@@ -217,7 +218,8 @@ class YOLO(object):
             })
 
         # I added this line!!!
-        out_boxes, out_scores, out_classes = self.nonmax_suppression(out_boxes, out_scores, out_classes, augment,
+        if nmx_suppresion:
+            out_boxes, out_scores, out_classes = self.nonmax_suppression(out_boxes, out_scores, out_classes, augment,
                                                                      IOU_threshold)
 
         # print('Found {} boxes for {}'.format(len(out_boxes), 'img'))

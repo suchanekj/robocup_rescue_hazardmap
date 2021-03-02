@@ -247,9 +247,10 @@ class WeightedObjectList(object):
 
     def get(self):
         if not isinstance(self.weights, np.ndarray):
-            self.weights = np.clip(
-                DATASET_NUM_IMAGES / len(self.weights) - np.asarray(self.weights, np.float), 0, DATASET_NUM_IMAGES
-            )
+            self.weights = [DATASET_NUM_IMAGES / len(self.weights) - weight for weight in self.weights]
+            self.weights = [weight if weight > 0 or weight < -50000 else 0 for weight in self.weights]
+            self.weights = [weight + DATASET_NUM_IMAGES / len(self.weights) / 10 if weight >= 0 else 0 for weight in self.weights]
+            self.weights = np.asarray(self.weights)
             self.weights /= np.sum(self.weights)
         return np.random.choice(self.objects, p=self.weights)
 
@@ -261,23 +262,28 @@ def makeObjectList(size_step, extend=False):
     global objectIDs
     global weightedObjectList
     object_fs = []
-    super_object_fs = []
+    # super_object_fs = []
     weightedObjectList = WeightedObjectList()
     filtered_objects = "filtered_objects_" + str(size_step) + "/"
     for root, dirs, files in os.walk(filtered_objects, topdown=False):
         for name in files:
             file = "/".join(os.path.join(root, name).replace('\\', '/').split("/")[1:])
             if "!" not in file:
+                if file in DATASET_EXCLUDE_OBJECTS:
+                    continue
                 object_fs.append(file)
         for name in dirs:
             file = "/".join(os.path.join(root, name).replace('\\', '/').split("/")[1:])
             if "!" in file:
+                if file in DATASET_EXCLUDE_OBJECTS:
+                    continue
                 object_fs.append(file)
-            else:
-                super_object_fs.append(file)
+            # else:
+            #     super_object_fs.append(file)
     dataset_f = DATASET_LOCATION + str(size_step)
 
-    objectFromBaseNames = list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values()))
+    objectFromBaseNames = [label for label in set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values())
+                           if label not in DATASET_EXCLUDE_OBJECTS]
     if extend:
         with open(dataset_f + "/labelNames.txt", "r") as names_f:
             names_lines = names_f.readlines()
@@ -337,6 +343,7 @@ def makeObjectList(size_step, extend=False):
                 objectImgs[-1].append(img)
 
         for objName in objectFromBaseNames:
+            objectNames.append(objName)
             objectIDs[objName] = len(objectIDs.keys())
             names_f.write(str(objectIDs[objName]) + " " + objName + "\n")
         names_f.close()
@@ -367,15 +374,11 @@ def makeBaseList(size_step):
     global baseFiles
     global baseDefaultNamesPositions
     global doorBases, personBases, nothingBases
-    dataset_f = DATASET_LOCATION + str(size_step)
 
     parts = ["validation", "test"]
     all_df = pd.read_csv("openimages/all-annotations-bbox.csv", index_col=0)
     doors = 0
     persons = 0
-
-    objectFromBaseNames = list(set(DATASET_OPENIMAGES_LABEL_TO_OBJECT.values()))
-    objectNames.extend(objectFromBaseNames)
 
     id = 0
     if len(baseDefaultNamesPositions) == 0:
@@ -408,6 +411,8 @@ def makeBaseList(size_step):
                 namesPositions = []
                 for i in objects_df.index:
                     object_name = DATASET_OPENIMAGES_LABEL_TO_OBJECT[objects_df["LabelName"][i]]
+                    if object_name in DATASET_EXCLUDE_OBJECTS:
+                        continue
                     x0 = int(cols * objects_df["XMin"][i])
                     x1 = int(cols * objects_df["XMax"][i])
                     y0 = int(rows * objects_df["YMin"][i])
@@ -475,11 +480,13 @@ def name_to_config_key(name):
     print(name, DATASET_OBJECT_CROP_STRENGTH.keys(), "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
-def objectMake(obj, size_step):
+def objectMake(obj, size_step, easy_mod):
     strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     out = [None, None]
     if isinstance(obj, Iterable):
-        crop_strength = strength_mod * DATASET_OBJECT_CROP_STRENGTH["hazmat"]
+        crop_strength = DATASET_OBJECT_CROP_STRENGTH["hazmat"] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_CROP else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_CROP else 1)
         x = []
         crop_1 = rand(0, crop_strength) if rand() < 0.34 * (0.5 + crop_strength) else 0
         crop_2 = rand(0, crop_strength) if rand() < 0.34 * (0.5 + crop_strength) else 0
@@ -512,7 +519,12 @@ def objectMake(obj, size_step):
         out[1] = name
     else:
         out[1] = objectNames[obj]
-        crop_strength = strength_mod * DATASET_OBJECT_CROP_STRENGTH[name_to_config_key(out[1])]
+        print(out)
+        print(name_to_config_key(out[1]))
+        print(DATASET_OBJECT_CROP_STRENGTH[name_to_config_key(out[1])])
+        crop_strength = DATASET_OBJECT_CROP_STRENGTH[name_to_config_key(out[1])] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_CROP else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_CROP else 1)
         crop_x = rand(0, crop_strength) if rand() < (0.5 + crop_strength) else 0
         img = random.choice(objectImgs[obj])
         img = copy.deepcopy(img)
@@ -521,18 +533,20 @@ def objectMake(obj, size_step):
     return out
 
 
-def objectFilter(srcA, name, size_step):
+def objectFilter(srcA, name, size_step, easy_mod):
     strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     rows, cols, colors = srcA.shape
     srcA = np.asarray(srcA, np.uint8)
 
     config_key = name_to_config_key(name)
 
-    if rand() < 0.9 * strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]
+    color_filter_strength = DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_COLOUR_FILTER else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_COLOUR_FILTER else 1)
+    if rand() < 0.9 * color_filter_strength:
         noise = np.zeros((rows, cols, 4))
-        m = np.array([255 * rand(), 255 * rand(), 255 * rand(), 40 * strength * rand()])
-        sigma = np.array([80 * rand(), 80 * rand(), 80 * rand(), 4 * strength * rand()])
+        m = np.array([255 * rand(), 255 * rand(), 255 * rand(), 40 * color_filter_strength * rand()])
+        sigma = np.array([80 * rand(), 80 * rand(), 80 * rand(), 4 * color_filter_strength * rand()])
         cv2.randn(noise, m, sigma)
         noise = (noise > 0) * noise - (noise > 255) * (noise - 255)
         noise = noise.transpose((2, 0, 1))
@@ -541,24 +555,24 @@ def objectFilter(srcA, name, size_step):
         srcA[3] = np.multiply(srcA[3], (1 - noise[3] / 255)) + noise[3]
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.6 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    blur_cut_strength = DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_BLUR_CUT else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_BLUR_CUT else 1)
+    if rand() < 0.6 * blur_cut_strength:
         rad = (rows + cols) / 4 * (0.25 + 0.75 * rand())
-        thickness = (rows + cols) / 4 * strength * rand()
+        thickness = (rows + cols) / 4 * blur_cut_strength * rand()
         cv2.circle(srcA, (int(rows * rand()), int(cols * rand())), int(rad + thickness/2),
                    (0, 0, 0, 0), int(thickness))
 
-    if rand() < 0.6 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
-        for j in range(int(rand() * rand() * 5 * strength) + 1):
+    if rand() < 0.6 * blur_cut_strength:
+        for j in range(int(rand() * rand() * 5 * blur_cut_strength) + 1):
             x = [(int(rows * (-0.5 + 2 * rand())), int(cols * (-0.5 + 2 * rand()))) for i in range(2)]
-            cv2.line(srcA, x[0], x[1], (0, 0, 0, 0), int(1 + rand() * (rows + cols) / 10 * strength))
+            cv2.line(srcA, x[0], x[1], (0, 0, 0, 0), int(1 + rand() * (rows + cols) / 10 * blur_cut_strength))
 
-    if rand() < 0.6 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.6 * blur_cut_strength:
         text = np.zeros((rows, cols, 4))
-        for j in range(int(1 + 5 * rand() * strength)):
-            txt = "".join([random.choice(string.ascii_letters) for i in range(int(15 * rand(0.1, strength)))])
+        for j in range(int(1 + 5 * rand() * blur_cut_strength)):
+            txt = "".join([random.choice(string.ascii_letters) for i in range(int(15 * rand(0.1, blur_cut_strength)))])
             cv2.putText(text, txt, (int(rows * rand()), int(cols *rand())),
                         cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1 + rand() * 5,
                         (int(rand() * 255), int(rand() * 255), int(rand() * 255), 255),
@@ -571,41 +585,39 @@ def objectFilter(srcA, name, size_step):
         srcA[3] = np.multiply(srcA[3], (1 - text[3] / 255)) + text[3]
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.25 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
-        srcA = cv2.medianBlur(srcA, 1 + 2 * int(rand(0, strength)**3 * rand(0, strength) * (rows + cols) / 40))
+    if rand() < 0.25 * blur_cut_strength:
+        srcA = cv2.medianBlur(srcA, 1 + 2 * int(rand(0, blur_cut_strength)**3 * rand(0, blur_cut_strength) * (rows + cols) / 40))
 
-    if rand() < 0.25 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
-        size_1 = 1 + 2 * int(rand(0, strength)**3 * rand(0, strength) * (rows + cols) / 200)
-        size_2 = 1 + 2 * int(rand(0, strength)**3 * rand(0, strength) * (rows + cols) / 200)
+    if rand() < 0.25 * blur_cut_strength:
+        size_1 = 1 + 2 * int(rand(0, blur_cut_strength)**3 * rand(0, blur_cut_strength) * (rows + cols) / 200)
+        size_2 = 1 + 2 * int(rand(0, blur_cut_strength)**3 * rand(0, blur_cut_strength) * (rows + cols) / 200)
         srcA = cv2.blur(srcA, (size_1, size_2))
 
-    if rand() < 0.3 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.3 * blur_cut_strength:
         srcA = srcA.transpose((2, 0, 1))
-        c = 1. - 0.6 * rand(0, strength)
-        a = np.linspace(c + rand(0, strength) * (1 - c), c + rand(0, strength) * (1 - c), rows)[:, None]
-        b = np.linspace(c + rand(0, strength) * (1 - c), c + rand(0, strength) * (1 - c), cols)[None, :]
+        c = 1. - 0.6 * rand(0, blur_cut_strength)
+        a = np.linspace(c + rand(0, blur_cut_strength) * (1 - c), c + rand(0, blur_cut_strength) * (1 - c), rows)[:, None]
+        b = np.linspace(c + rand(0, blur_cut_strength) * (1 - c), c + rand(0, blur_cut_strength) * (1 - c), cols)[None, :]
         gradient = np.multiply(a, b)
         srcA[0:3] = 255 - np.multiply(255 - srcA[0:3], gradient)
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.5 * strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[config_key]
+    if rand() < 0.5 * blur_cut_strength:
         srcA = srcA.transpose((2, 0, 1))
-        c = 1. - 0.6 * rand(0, strength)
-        a = np.linspace(c + rand(0, strength) * (1 - c), c + rand(0, strength) * (1 - c), rows)[:, None]
-        b = np.linspace(c + rand(0, strength) * (1 - c), c + rand(0, strength) * (1 - c), cols)[None, :]
+        c = 1. - 0.6 * rand(0, blur_cut_strength)
+        a = np.linspace(c + rand(0, blur_cut_strength) * (1 - c), c + rand(0, blur_cut_strength) * (1 - c), rows)[:, None]
+        b = np.linspace(c + rand(0, blur_cut_strength) * (1 - c), c + rand(0, blur_cut_strength) * (1 - c), cols)[None, :]
         gradient = np.multiply(a, b)
         srcA[0:3] = np.multiply(srcA[0:3], gradient)
         srcA = srcA.transpose((1, 2, 0))
 
-    if rand() < 0.95 * strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]:
-        strength = strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key]
-        hue = 0.3 * strength
-        sat = 1 + 1. * strength
-        val = 1 + 1. * strength
+    colour_strength = DATASET_OBJECT_COLOUR_FILTER_STRENGTH[config_key] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_COLOUR_FILTER else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_COLOUR_FILTER else 1)
+    if rand() < 0.95 * colour_strength:
+        hue = 0.3 * colour_strength
+        sat = 1 + 1. * colour_strength
+        val = 1 + 1. * colour_strength
         hue = rand(-hue, hue)
         sat = rand(1, sat) if rand() < .5 else 1 / rand(1, sat)
         val = rand(1, val) if rand() < .5 else 1 / rand(1, val)
@@ -624,7 +636,7 @@ def objectFilter(srcA, name, size_step):
     return srcA, name
 
 
-def objectPerspective(srcA, name, size_step):
+def objectPerspective(srcA, name, size_step, easy_mod):
     strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     config_key = name_to_config_key(name)
     names = name.split(';')
@@ -651,7 +663,10 @@ def objectPerspective(srcA, name, size_step):
     # Warp
 
     # Perspective
-    a = 1/2 - 0.3 * strength_mod * DATASET_OBJECT_PERSPECTIVE_STRENGTH[config_key]
+    perspective_strength = DATASET_OBJECT_PERSPECTIVE_STRENGTH[config_key] * \
+                          (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_PERSPECTIVE else 1) * \
+                          (easy_mod if DATASET_FILTERING_EASY_AFFECTS_PERSPECTIVE else 1)
+    a = 1/2 - 0.3 * perspective_strength
     pts1 = np.float32([[rows // 2, cols // 2], [rows // 2 + rows, cols // 2],
                        [rows // 2, cols // 2 + cols], [rows // 2 + rows, cols // 2 + cols]])
     pts2 = np.float32([[int(rows * (a + random.random() * (1 - 2 * a))),
@@ -668,22 +683,28 @@ def objectPerspective(srcA, name, size_step):
         points[a] = np.float32( cv2.perspectiveTransform(points[a].reshape(1, -1, 2), M).reshape(-1, 2))
 
     # Rotation 1 / 2
-    M = cv2.getRotationMatrix2D((cols, rows), (1 - 2 * rand()) * 180 * DATASET_OBJECT_ROTATION_STRENGTH[config_key] / 2, 1)
+    rotation_strength = DATASET_OBJECT_ROTATION_STRENGTH[config_key] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_ROTATION else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_ROTATION else 1)
+    M = cv2.getRotationMatrix2D((cols, rows), (1 - 2 * rand()) * 180 * rotation_strength / 1.4, 1)
     img = cv2.warpAffine(img, M, (rows * 2, cols * 2))
     for a in range(len(points)):
         points[a] = np.int32( cv2.transform(points[a].reshape(1, -1, 2), M).reshape(-1, 2))
 
     # Camera distortion
+    distort_strength = DATASET_OBJECT_DISTORT_STRENGTH[config_key] * \
+                       (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_DISTORT else 1) * \
+                       (easy_mod if DATASET_FILTERING_EASY_AFFECTS_DISTORT else 1)
     DIM = img.shape[:2]
     K = np.array([[img.shape[0] * rand(0.4, 0.6), 0.0, img.shape[0] * rand(0.4, 0.6)],
                   [0.0, img.shape[0] * rand(0.4, 0.6), img.shape[0] * rand(0.4, 0.6)],
                   [0.0, 0.0, 1.0]])
     if rand(-1, 1) > 0:
-        center = 3 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
-        scale = 4 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
+        center = 3 * distort_strength
+        scale = 4 * distort_strength
     else:
-        center = -0.2 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
-        scale = 0.5 * DATASET_OBJECT_DISTORT_STRENGTH[config_key] * strength_mod
+        center = -0.2 * distort_strength
+        scale = 0.5 * distort_strength
     D = np.array([[0.707107 + center + scale * rand(-1,1)], [center + scale * rand(-1,1)],
                   [0.707107 + center + scale * rand(-1,1)], [center + scale * rand(-1,1)]])
 
@@ -691,7 +712,7 @@ def objectPerspective(srcA, name, size_step):
     img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
 
     # Rotation 2 / 2
-    M = cv2.getRotationMatrix2D((cols, rows), (1 - 2 * rand()) * 180 * DATASET_OBJECT_ROTATION_STRENGTH[config_key] / 2, 1)
+    M = cv2.getRotationMatrix2D((cols, rows), (1 - 2 * rand()) * 180 * rotation_strength / 1.4, 1)
     img = cv2.warpAffine(img, M, (rows * 2, cols * 2))
     for a in range(len(points)):
         points[a] = np.int32( cv2.transform(points[a].reshape(1, -1, 2), M).reshape(-1, 2))
@@ -756,24 +777,28 @@ def makeBase(base_num, size_step):
     return base_img, final_name_pos
 
 
-def placeObject(obj, objectNamesPositions, base, baseNamesPositions, size_step):
+def placeObject(obj, objectNamesPositions, base, baseNamesPositions, size_step, easy_mod):
     strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
     for _ in range(10):
         config_key = name_to_config_key(objectNamesPositions[0][0])
-        size_max = 0.3 + 2 / (len(objectNamesPositions) + len(baseNamesPositions))
-        size = 0.02 + size_max * (1 - strength_mod * DATASET_OBJECT_ZOOM_STRENGTH[config_key]) + \
-               size_max * rand() * rand() * strength_mod * DATASET_OBJECT_ZOOM_STRENGTH[config_key]
+        zoom_strength = DATASET_OBJECT_ZOOM_STRENGTH[config_key] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_ZOOM else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_ZOOM else 1)
+        size_max = (0.3 + 2 / (len(objectNamesPositions) + len(baseNamesPositions))) / \
+                   (np.power(easy_mod, 0.3) if DATASET_FILTERING_EASY_AFFECTS_ZOOM else 1)
+        size = 0.02 + size_max * (1 - zoom_strength) + size_max * rand() * rand() * zoom_strength
         label = cv2.resize(obj, None, fx=size, fy=size, interpolation=cv2.INTER_AREA)
         lrows, lcols, lcolors = label.shape
         brows, bcols, bcolors = base.shape
 
+        crop_strength = DATASET_OBJECT_CROP_STRENGTH[config_key] * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_CROP else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_CROP else 1)
         if len(objectNamesPositions) == 4:
             position = (int(random.random() * (brows - lrows)), int(random.random() * (bcols - lcols)))
         else:
-            position = (int(random.random() * (brows - lrows * (1 - strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]))
-                            - lrows / 2 * strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]),
-                        int(random.random() * (bcols - lcols * (1 - strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]))
-                            - lcols / 2 * strength_mod * DATASET_OBJECT_CROP_STRENGTH[config_key]))
+            position = (int(random.random() * (brows - lrows * (1 - crop_strength)) - lrows / 2 * crop_strength),
+                        int(random.random() * (bcols - lcols * (1 - crop_strength)) - lcols / 2 * crop_strength))
 
         overlapped = False
         for base_name_pos in baseNamesPositions:
@@ -811,7 +836,7 @@ def placeObject(obj, objectNamesPositions, base, baseNamesPositions, size_step):
     return base, baseNamesPositions
 
 
-def filterImages(base, namesPositions, size_step):
+def filterImages(base, namesPositions, size_step, easy_mod):
     rows, cols, channels = base.shape[:3]
     base = np.asarray(base, np.uint8)
     strength_mod = DATASET_FILTERING_STRENGTHS[size_step]
@@ -825,8 +850,12 @@ def filterImages(base, namesPositions, size_step):
     keys = list(set(keys))
 
     if len(keys) > 0:
-        blur_strength = np.min([strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[key] for key in keys])
-        colour_strength = np.min([strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[key] for key in keys])
+        blur_strength = np.min([strength_mod * DATASET_OBJECT_BLUR_CUT_STRENGTH[key] for key in keys]) * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_BLUR_CUT else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_BLUR_CUT else 1)
+        colour_strength = np.min([strength_mod * DATASET_OBJECT_COLOUR_FILTER_STRENGTH[key] for key in keys]) * \
+                        (strength_mod if DATASET_FILTERING_STRENGTH_AFFECTS_COLOUR_FILTER else 1) * \
+                        (easy_mod if DATASET_FILTERING_EASY_AFFECTS_COLOUR_FILTER else 1)
     else:
         blur_strength = 1.
         colour_strength = 1.
@@ -898,7 +927,7 @@ def writeImages(prefix, index, annotations_q, base, namesPositions, size_step):
             objectNums[namesPositions[a][0]] += 1
         if (namesPositions[a][1] - namesPositions[a][3]) * (namesPositions[a][2] - namesPositions[a][4]) == 0:
             continue
-        ann_line += ','.join(map(str, namesPositions[a][1:]))
+        ann_line += ','.join(map(str, map(int, namesPositions[a][1:])))
         ann_line += ',' + str(objectIDs[namesPositions[a][0]])
         if a != len(namesPositions) - 1:
             ann_line += ' '
@@ -915,14 +944,14 @@ def writeImages(prefix, index, annotations_q, base, namesPositions, size_step):
             ann_f.write(ann_line)
 
 
-def createLabel(base_num, obj_nums, size_step):
+def createLabel(base_num, obj_nums, size_step, easy_mod):
     base_img, base_name_pos = makeBase(base_num, size_step)
     for obj_num in obj_nums:
-        obj_img, obj_name_pos = objectMake(obj_num, size_step)
-        obj_img, obj_name_pos = objectFilter(obj_img, obj_name_pos, size_step)
-        obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos, size_step)
-        base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos, size_step)
-    base_img, base_name_pos = filterImages(base_img, base_name_pos, size_step)
+        obj_img, obj_name_pos = objectMake(obj_num, size_step, easy_mod)
+        obj_img, obj_name_pos = objectFilter(obj_img, obj_name_pos, size_step, easy_mod)
+        obj_img, obj_name_pos = objectPerspective(obj_img, obj_name_pos, size_step, easy_mod)
+        base_img, base_name_pos = placeObject(obj_img, obj_name_pos, base_img, base_name_pos, size_step, easy_mod)
+    base_img, base_name_pos = filterImages(base_img, base_name_pos, size_step, easy_mod)
     return base_img, base_name_pos
 
 
@@ -945,11 +974,15 @@ def threadCreateLabels(prefix, number, size_step, annotations_q, extend=False):
     for k in range(number):
         num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
                                       p=DATASET_OBJECT_PLACE_CHANCE)
+        easy_mod = 1
+        if rand() < DATASET_FILTERING_EASY_CHANCE[size_step]:
+            easy_mod = 0.4
+            num_labels = min(num_labels, DATASET_FILTERING_EASY_MAX_OBJECTS)
 
         base_num = baseList.pop(0)
         obj_nums = [objectList.pop(0) for i in range(num_labels)]
 
-        base_img, base_name_pos = createLabel(base_num, obj_nums, size_step)
+        base_img, base_name_pos = createLabel(base_num, obj_nums, size_step, easy_mod)
 
         # print(".", end="")
         sys.stdout.flush()
@@ -965,7 +998,7 @@ def threadCreateLabels(prefix, number, size_step, annotations_q, extend=False):
 def threadedCreateLabels(extend=False):
     global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
         objectTree
-    num_threads = DATASET_CREATION_THREADS
+    num_threads = max(1, DATASET_CREATION_THREADS)
     for size_step in range(0, DATASET_SIZE_STEPS):
         dataset_f = DATASET_LOCATION + str(size_step)
         if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
@@ -1020,51 +1053,6 @@ def threadedCreateLabels(extend=False):
             ann_f.close()
 
 
-def createLabels(size=None):
-    global objectList, objectImgs, objectNames, objectIDs, baseList, baseFiles, baseDefaultNamesPositions, objectNums, \
-        objectTree
-    print(size)
-    for size_step in (range(DATASET_SIZE_STEPS) if size is None else [size]):
-        dataset_f = DATASET_LOCATION + str(size_step)
-        if not os.path.exists(dataset_f) or len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES \
-                or REBUILD_DATASET:
-
-            if os.path.exists(dataset_f):
-                shutil.rmtree(dataset_f)
-                time.sleep(0.2)
-            os.makedirs(dataset_f)
-
-            print(size_step)
-
-            filterObjects(size_step)
-
-            objectList = []
-            objectImgs = []
-            objectNames = []
-            objectIDs = {}
-            baseList = []
-            objectNums = {}
-            objectTree = None
-
-            makeObjectList(size_step)
-            makeBaseList(size_step)
-            while len(os.listdir(dataset_f)) < DATASET_NUM_IMAGES + 2:
-                num_labels = np.random.choice(list(range(len(DATASET_OBJECT_PLACE_CHANCE))),
-                                              p=DATASET_OBJECT_PLACE_CHANCE)
-
-                base_num = baseList.pop(0)
-                obj_nums = [objectList.pop(0) for i in range(num_labels)]
-
-                base_img, base_name_pos = createLabel(base_num, obj_nums, size_step)
-
-                print(".", end="")
-                sys.stdout.flush()
-                if random.random() < 0.01:
-                    print(len(os.listdir(dataset_f)) - 2)
-
-                writeImages("", len(os.listdir(dataset_f)) - 2, None, base_img, base_name_pos, size_step)
-
-
 def createDataset(debug=False, size=None, extend=False):
     import psutil
     if hasattr(psutil, "BELOW_NORMAL_PRIORITY_CLASS"):
@@ -1084,10 +1072,7 @@ def createDataset(debug=False, size=None, extend=False):
         newDownload()
     if not os.path.exists("openimages/all-annotations-bbox.csv") or REFILTER_DATASET:
         filterOpenImages()
-    if DATASET_CREATION_THREADS == 0:
-        createLabels(size)
-    else:
-        threadedCreateLabels(extend)
+    threadedCreateLabels(extend)
 
 
 if __name__=="__main__":
