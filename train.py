@@ -1,5 +1,11 @@
 from config import *
 from evaluation import evaluate
+<<<<<<< HEAD
+=======
+
+if GPU_NUM > 1:
+    import horovod.keras as hvd
+>>>>>>> b24bb23c9781a82230250544cd37380aaf0d4406
 
 import os
 import copy
@@ -287,9 +293,15 @@ def train(specific=None):
 
             initial_epoch = current_epoch
 
+<<<<<<< HEAD
     if TEST and not TRAIN:
         epochs_to_test_steps = [a for b in TRAINING_EPOCHS for a in b if a != 0]
         epochs_to_test = [sum(epochs_to_test_steps[:i+1]) for i in range(len(epochs_to_test_steps))]
+=======
+                yolo = YOLO(**settings)
+
+                evaluate(test_lines, yolo, log_dir, epoch)
+>>>>>>> b24bb23c9781a82230250544cd37380aaf0d4406
 
         test_cycle(log_dir, epochs_to_test,
                    anchors_path, classes_path, test_lines)
