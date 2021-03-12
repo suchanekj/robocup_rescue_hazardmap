@@ -318,7 +318,6 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
             # bottom left y, bottom left x, height, width
             for boxes in imageXMLList[i]:
                 labelName = boxes[0].text
-
                 if labelName in labelValueDict:
                     labelValue = labelValueDict[labelName]
                     boxCoords = boxes.attrib
@@ -349,7 +348,6 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
                 [0, rows2],
                 [cols2, rows2]
             ]))
-
             # adds filters to images
             image = cv2.resize(image, (cols2, rows2))
             image = objectFilter(image, filterStrength, filterStrength / 10, filterStrength / 10)
@@ -374,7 +372,8 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
                 coordList.append(labelValue)
                 label.append(coordList)
             labelList.append(label)
-
+    # print('label_list')
+    # print(labelList)
     with open(labelsPath, 'w') as myfile:
         for label in labelList:
             # each label is:
@@ -456,3 +455,5 @@ def createDataset():
 
         imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath,
                    labelsPath, outputLabelNamesPath)
+
+createDataset()

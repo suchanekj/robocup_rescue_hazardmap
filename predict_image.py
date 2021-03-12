@@ -1,27 +1,21 @@
-from PIL import Image
 import keras.backend as K
+
+from evaluation import *
 from yolo import YOLO
 
-log_dir = 'logs/016/'
-model_file = 'ep085-loss21.545-val_loss21.643.h5'
-anchors_path = 'model_data/yolo_anchors_custom.txt'
-classes_path = 'datasets2/dataset_open_0/labelNames.txt'
-
+test_lines = []
+for i in range(5):
+    path = f'datasets/dataset_mixed_{i}/labels.txt'
+    with open(path) as f:
+        test_lines += f.readlines()
+K.clear_session()
 settings = {
-    "model_path": log_dir + model_file,
-    "anchors_path": anchors_path,
-    "classes_path": classes_path,
-    "score": 0.05,  # 0.3
-    "iou": 0.45,  # 0.45
+    'model_path': 'logs/021/ep085-loss37.146-val_loss37.585.h5',
+    'anchors_path': 'model_data/yolo_anchors_custom.txt',
+    'classes_path': 'datasets/dataset_0/labelNames.txt',
+    'score': 0.05,
+    'iou': 0.45
 }
-
-line = '/datasets2/dataset_open_4/0.png'
-destination = '/test_results/test/png'
-
-K.clear_session()
 yolo = YOLO(**settings)
-r_image = Image.open(line)
-r_image = yolo.detect_image(r_image)
-r_image.save(destination)
-yolo.close_session()
-K.clear_session()
+test_lines = test_lines
+evaluate(test_lines, yolo, 'test_results/', 0)

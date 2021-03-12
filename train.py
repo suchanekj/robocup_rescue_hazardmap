@@ -110,6 +110,7 @@ def test_cycle(log_dir, epochs_to_test, anchors_path, classes_path, test_lines):
             "score": 0.05,  # 0.3
             "iou": 0.45,  # 0.45
         }
+        print(classes_path)
         K.clear_session()
 
         if TEST_EVALUATE:
@@ -128,6 +129,74 @@ def test_cycle(log_dir, epochs_to_test, anchors_path, classes_path, test_lines):
 
             yolo = YOLO(**settings)
 
+            evaluate(test_lines, yolo, log_dir, epoch)
+
+            yolo.close_session()
+            K.clear_session()
+
+        if TEST_VISUALIZE_IMAGES or TEST_VISUALIZE_VIDEO:
+            folder = log_dir + "test" + str(epoch).zfill(3) + "/"
+            os.mkdir(folder + "imgs/")
+
+            if TEST_VISUALIZE_VIDEO:
+                yolo = YOLO(**settings)
+                detect_video(yolo, "test.mp4", folder + "video.avi")
+                K.clear_session()
+
+            if TEST_VISUALIZE_IMAGES:
+                yolo = YOLO(**settings)
+                for line in test_lines[:100]:
+                    if line[-1] == '\n':
+                        line = line[:-1]
+                    line = line.split(" ")[0]
+                    for nmx_suppresion in [False, True]:
+                        r_image = Image.open(line)
+                        r_image = yolo.detect_image(r_image, augment=True, nmx_suppresion=nmx_suppresion)
+                        name = line.split("/")[-1].split(".")[0] + ("_unsurpressed" if not nmx_suppresion else "") + ".png"
+                        r_image.save(folder + "imgs/" + name)
+                yolo.close_session()
+                K.clear_session()
+
+
+def test_cycle(log_dir, epochs_to_test, anchors_path, classes_path, test_lines):
+    for epoch in epochs_to_test:
+        files = os.listdir(log_dir)
+        if len([f for f in files if ("ep" + str(epoch).zfill(3)) in f]) == 0:
+            print("Missing checkpoint for ep" + str(epoch).zfill(3))
+            continue
+        model_file = [f for f in files if ("ep" + str(epoch).zfill(3)) in f][0]
+
+        folder = log_dir + "test" + str(epoch).zfill(3) + "/"
+        if os.path.exists(folder):
+            shutil.rmtree(folder)
+            time.sleep(0.2)
+        os.mkdir(folder)
+
+        settings = {
+            "model_path": log_dir + model_file,
+            "anchors_path": anchors_path,
+            "classes_path": classes_path,
+            "score": 0.05,  # 0.3
+            "iou": 0.45,  # 0.45
+        }
+        K.clear_session()
+
+        if TEST_EVALUATE:
+            # model = create_model(input_shape, anchors, num_classes, freeze_body=2,
+            #                      weights_path=log_dir + model_file)
+            # batch_size = 16
+            # model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+            # result = model.evaluate_generator(
+            #     data_generator_wrapper_sequence(test_lines, batch_size, input_shape, anchors, num_classes, class_tree),
+            #     steps=max(1, len(test_lines) // batch_size))
+
+            for nmx_suppresion in [False, True]:
+                with open(log_dir + "validation" + ("_unsurpressed" if not nmx_suppresion else "") + ".txt", "a") as f:
+                    f.write(f"Epoch: {str(epoch).zfill(3)}\n")
+                    # f.write(f"Epoch: {str(epoch).zfill(3)} Validation_score: {result}\n")
+            print(settings)
+            yolo = YOLO(**settings)
+            print(test_lines)
             evaluate(test_lines, yolo, log_dir, epoch)
 
             yolo.close_session()
