@@ -152,16 +152,32 @@ DATASET_OPENIMAGES_FORBIDDEN_LABELS = ["/m/0167gd",  # doll
                                        ]
 
 # Exclude all except square labels (hazard labels and qr codes)
-DATASET_EXCLUDE_OBJECTS = ["p/baby_doll!",
-                           "p/fire_extinguisher!",
-                           "p/valve!",
-                           "p/door",
-                           "p/person",
-                           "l/n/fire_exit!",
-                           "l/n/fire_extinguisher_sign!"]
+# DATASET_EXCLUDE_OBJECTS = ["p/baby_doll!",
+#                            "p/fire_extinguisher!",
+#                            "p/valve!",
+#                            "p/door",
+#                            "p/person",
+#                            "l/n/fire_exit!",
+#                            "l/n/fire_extinguisher_sign!"]
+# Exclude square labels (hazard labels and qr codes)
+DATASET_EXCLUDE_OBJECTS = ["l/s/hazmat_1/1-3!",
+                           "l/s/hazmat_1/4-6!",
+                           "l/s/hazmat_2/flammable-gas",
+                           "l/s/hazmat_2/non-flammable-gas",
+                           "l/s/hazmat_3/flammable-liquid",
+                           "l/s/hazmat_4/dangerous-when-wet",
+                           "l/s/hazmat_4/flammable-solid",
+                           "l/s/hazmat_4/spontaneously-combustible",
+                           "l/s/hazmat_5/1-oxidizer",
+                           "l/s/hazmat_5/2-organic-peroxide",
+                           "l/s/hazmat_6/poison-inhalation-hazard",
+                           "l/s/hazmat_6/poison",
+                           "l/s/hazmat_7/radioactive!",
+                           "l/s/hazmat_8/corrosive",
+                           "l/s/qr_code!"]
 
 DATASET_DOWNLOAD_KEYWORDS = list(set(DATASET_DOWNLOAD_KEYWORDS))
-DATASET_MAX_NUM_IMAGES = 100000
+DATASET_MAX_NUM_IMAGES = 40000
 # DATASET_MAX_NUM_IMAGES = 1000
 DATASET_DOWNLOAD_TIME_MUL = 1
 DATASET_NUM_IMAGES = DATASET_MAX_NUM_IMAGES
@@ -194,7 +210,7 @@ DATASET_FILTERING_EASY_AFFECTS_COLOUR_FILTER = False
 DATASET_FILTERING_EASY_AFFECTS_PERSPECTIVE = True
 DATASET_FILTERING_EASY_AFFECTS_DISTORT = True
 
-MANUAL_DATASET_SIZE = 100
+MANUAL_DATASET_SIZE = 20000
 # MANUAL_DATASET_SIZE = 0
 MANUAL_DATASET_FILTERING_STRENGTHS = (0.1, 0.5, 1.2, 1.5, 1.0)
 
@@ -203,8 +219,8 @@ DATASET_SIZE_STEPS = len(DATASET_FILTERING_STRENGTHS)
 
 # DATASET_LOCATION = "datasets/dataset_"
 # VALIDATION_DATASET_LOCATION = "datasets/validation_dataset"
-DATASET_LOCATION = "datasets/dataset_mixed_"
-VALIDATION_DATASET_LOCATION = "datasets/validation_dataset_large"
+DATASET_LOCATION = "datasets/dataset_p_"
+VALIDATION_DATASET_LOCATION = "datasets/validation_dataset_p"
 
 DATASET_TRAINING_PART = 0.99
 DATASET_CREATION_THREADS = 20
@@ -217,17 +233,18 @@ TRAINING_PATIENCE_LOSS_MARGIN = 0.3
 TRAINING_RANDOM_MODIFY = False
 TRAINING_LOG_PERIOD = 100
 TRAINING_CHECKPOINT_PERIOD = 1800
+
 TEST_EVALUATE = True
 TEST_VISUALIZE_IMAGES = True
 TEST_VISUALIZE_VIDEO = True
 
-MAKE_DATASET = True
+MAKE_DATASET = False
 REDOWNLOAD_DATASET = False
 REFILTER_DATASET = False
-REBUILD_DATASET = True
-TRAIN = True
+REBUILD_DATASET = False
+TRAIN = False
 TEST = True
-TRAINING_CYCLE = 22
+TRAINING_CYCLE = 23
 
 MODEL_LOCATION = "model_data/yolo_original.h5"
 AVAILABLE_MEMORY_GB = 11

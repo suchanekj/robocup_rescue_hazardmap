@@ -269,14 +269,16 @@ def makeObjectList(size_step, extend=False):
         for name in files:
             file = "/".join(os.path.join(root, name).replace('\\', '/').split("/")[1:])
             if "!" not in file:
-                if file in DATASET_EXCLUDE_OBJECTS:
+                if file[:-4] in DATASET_EXCLUDE_OBJECTS:
                     continue
+                print(file)
                 object_fs.append(file)
         for name in dirs:
             file = "/".join(os.path.join(root, name).replace('\\', '/').split("/")[1:])
             if "!" in file:
                 if file in DATASET_EXCLUDE_OBJECTS:
                     continue
+                print(file)
                 object_fs.append(file)
             # else:
             #     super_object_fs.append(file)
