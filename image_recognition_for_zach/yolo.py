@@ -8,14 +8,16 @@ import os
 from timeit import default_timer as timer
 
 import numpy as np
-from PIL import Image, ImageFont, ImageDraw
 from keras import backend as K
-from keras.layers import Input
 from keras.models import load_model
+from keras.layers import Input
+from PIL import Image, ImageFont, ImageDraw
 
-from config import *
 from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from yolo3.utils import letterbox_image
+import os
+# from keras.utils import multi_gpu_model
+from config import *
 
 
 class YOLO(object):
@@ -103,8 +105,7 @@ class YOLO(object):
         return boxes, scores, classes
 
     def nonmax_suppression(self, out_boxes, out_scores, out_classes, augment, IOU_threshold):
-        if not augment or len(out_scores) == 0:
-            return out_boxes, out_scores, out_classes
+        if not augment or len(out_scores) == 0: return out_boxes, out_scores, out_classes
 
         def area_box(box):
             top, left, bottom, right = box
@@ -125,7 +126,7 @@ class YOLO(object):
             return area_intersection(box1, box2) / (area_box(box1) + area_box(box2) - area_intersection(box1, box2))
 
         z = list(zip(out_scores, out_boxes, out_classes))  # sort by decreasing out_score
-        z.sort(reverse=True, key=lambda x: x[0])
+        z.sort(reverse=True)
         out_scores, out_boxes, out_classes = list(zip(*z))
         out_scores2 = []
         out_boxes2 = []
@@ -170,8 +171,7 @@ class YOLO(object):
 
         # I added this line!!!
         if nmx_suppresion:
-            out_boxes, out_scores, out_classes = self.nonmax_suppression(out_boxes, out_scores, out_classes, augment,
-                                                                         IOU_threshold)
+            out_boxes, out_scores, out_classes = self.nonmax_suppression(out_boxes, out_scores, out_classes, augment, IOU_threshold)
         box_list = []
 
         for i, c in reversed(list(enumerate(out_classes))):
@@ -220,7 +220,7 @@ class YOLO(object):
         # I added this line!!!
         if nmx_suppresion:
             out_boxes, out_scores, out_classes = self.nonmax_suppression(out_boxes, out_scores, out_classes, augment,
-                                                                         IOU_threshold)
+                                                                     IOU_threshold)
 
         # print('Found {} boxes for {}'.format(len(out_boxes), 'img'))
 
