@@ -6,7 +6,2163 @@
     This dataset is manually crafted or adjusted using ImgLab web tool
     Check more detail on https://github.com/NaturalIntelligence/imglab
 </comment>
-<images>	<image file='0.jpeg'>
+<images>
+	<image file='5287005_7ac427f150_b.jpg'>
+		<box top='209' left='726' width='223' height='519'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='68064419-closeup-of-manometer-pipes-and-faucet-valves-of-heating-system-in-a-boiler-room.jpg'>
+		<box top='540' left='485' width='114' height='250'>
+			<label>p/valve!</label>
+		</box>
+		<box top='250' left='710' width='450' height='448'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='architecture-builder-building-construction.jpg'>
+		<box top='522' left='284' width='234' height='586'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='content-image-1553086506301.jpg'>
+		<box top='63' left='109' width='64' height='91'>
+			<label>p/valve!</label>
+		</box>
+		<box top='138' left='179' width='43' height='64'>
+			<label>p/valve!</label>
+		</box>
+		<box top='133' left='242' width='35' height='58'>
+			<label>p/valve!</label>
+		</box>
+		<box top='41' left='345' width='37' height='78'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='babies-869264_960_720.jpg'>
+		<box top='185' left='103' width='261' height='312'>
+			<label>p/baby_doll!</label>
+		</box>
+		<box top='163' left='317' width='394' height='386'>
+			<label>p/baby_doll!</label>
+		</box>
+		<box top='143' left='493' width='431' height='272'>
+			<label>p/baby_doll!</label>
+		</box>
+	</image>
+	<image file='door-handle-3633943_960_720.jpg'>
+		<box top='3' left='3' width='718' height='635'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='door-1089638_960_720.jpg'>
+		<box top='2' left='4' width='794' height='633'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='doll-4449823_960_720.jpg'>
+		<box top='238' left='596' width='251' height='176'>
+			<label>p/baby_doll!</label>
+		</box>
+	</image>
+	<image file='blue-door-2742118_960_720.jpg'>
+		<box top='83' left='149' width='298' height='545'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='door-1167519_960_720.jpg'>
+		<box top='2' left='2' width='955' height='629'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='CP113041522-scaled.jpg'>
+		<box top='842' left='550' width='92' height='229'>
+			<label>p/door</label>
+		</box>
+		<box top='458' left='560' width='76' height='216'>
+			<label>p/door</label>
+		</box>
+		<box top='897' left='734' width='1014' height='809'>
+			<label>p/person</label>
+		</box>
+		<box top='657' left='1650' width='892' height='1048'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='automotive-service-advisor.png'>
+		<box top='22' left='418' width='333' height='592'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='closeup-of-pipes-and-faucet-valves-of-heating-system-in-a-steam-train_hbmfxjulw_thumbnail-1080_01.png'>
+		<box top='3' left='597' width='403' height='386'>
+			<label>p/valve!</label>
+		</box>
+		<box top='74' left='1019' width='369' height='381'>
+			<label>p/valve!</label>
+		</box>
+		<box top='322' left='1043' width='795' height='750'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191106.jpg'>
+		<box top='859' left='1426' width='1310' height='1274'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191109.jpg'>
+		<box top='374' left='2164' width='1690' height='1585'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191041.jpg'>
+		<box top='324' left='1164' width='2020' height='1965'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191048.jpg'>
+		<box top='1249' left='2344' width='935' height='725'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190406.jpg'>
+		<box top='709' left='1044' width='1620' height='1570'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191058.jpg'>
+		<box top='574' left='1774' width='1175' height='1670'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191113.jpg'>
+		<box top='1114' left='1009' width='1250' height='1090'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191252.jpg'>
+		<box top='794' left='1179' width='1420' height='1420'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191038.jpg'>
+		<box top='944' left='1264' width='1820' height='1655'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191052.jpg'>
+		<box top='3' left='1193' width='1407' height='1360'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='2389' left='3516' width='484' height='607'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184553.jpg'>
+		<box top='549' left='1214' width='1840' height='1835'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191055.jpg'>
+		<box top='693' left='1329' width='1124' height='1117'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190531.jpg'>
+		<box top='679' left='1154' width='1810' height='1825'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190241.jpg'>
+		<box top='756' left='1213' width='1464' height='1424'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191152.jpg'>
+		<box top='789' left='1194' width='1130' height='1300'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184610.jpg'>
+		<box top='679' left='1264' width='1065' height='1210'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191028.jpg'>
+		<box top='986' left='1256' width='1104' height='1147'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190552.jpg'>
+		<box top='634' left='1264' width='1665' height='1665'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190353.jpg'>
+		<box top='634' left='1159' width='1690' height='1670'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184634.jpg'>
+		<box top='534' left='1254' width='1410' height='1465'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191248.jpg'>
+		<box top='609' left='1433' width='1104' height='1164'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184559.jpg'>
+		<box top='2799' left='3569' width='420' height='195'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='789' left='569' width='1000' height='810'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190301.jpg'>
+		<box top='659' left='1369' width='1565' height='1535'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190603.jpg'>
+		<box top='589' left='1309' width='1330' height='1324'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184628.jpg'>
+		<box top='487' left='604' width='1018' height='780'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190339.jpg'>
+		<box top='744' left='1239' width='1560' height='1570'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190519.jpg'>
+		<box top='644' left='969' width='1855' height='1690'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190510.jpg'>
+		<box top='539' left='1099' width='1780' height='1760'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191303.jpg'>
+		<box top='1499' left='849' width='1020' height='835'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190325.jpg'>
+		<box top='629' left='1389' width='1480' height='1510'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191158.jpg'>
+		<box top='1049' left='1559' width='925' height='855'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_123740.jpg'>
+		<box top='1324' left='719' width='1405' height='1485'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_123738.jpg'>
+		<box top='664' left='1019' width='1635' height='1590'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191012.jpg'>
+		<box top='954' left='1654' width='1220' height='860'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184649.jpg'>
+		<box top='879' left='1759' width='685' height='1400'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190423.jpg'>
+		<box top='769' left='1164' width='1475' height='1500'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191321.jpg'>
+		<box top='809' left='1599' width='985' height='1295'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191033.jpg'>
+		<box top='1354' left='1434' width='900' height='900'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_123743.jpg'>
+		<box top='1219' left='2209' width='1680' height='1600'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191254.jpg'>
+		<box top='1659' left='649' width='1570' height='1580'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191146.jpg'>
+		<box top='1244' left='1454' width='1135' height='870'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184656.jpg'>
+		<box top='874' left='2619' width='790' height='985'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190541.jpg'>
+		<box top='789' left='1116' width='1567' height='1570'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191301.jpg'>
+		<box top='1304' left='754' width='1520' height='1490'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184643.jpg'>
+		<box top='624' left='2454' width='745' height='750'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184604.jpg'>
+		<box top='1789' left='869' width='555' height='730'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184516.jpg'>
+		<box top='1754' left='2234' width='1170' height='1150'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190456.jpg'>
+		<box top='944' left='1159' width='1410' height='1400'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184533.jpg'>
+		<box top='1229' left='849' width='975' height='1040'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184646.jpg'>
+		<box top='794' left='1269' width='1360' height='1345'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184508.jpg'>
+		<box top='269' left='656' width='1940' height='1897'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191121.jpg'>
+		<box top='694' left='1529' width='1505' height='1475'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184624.jpg'>
+		<box top='849' left='1766' width='840' height='627'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191007.jpg'>
+		<box top='1144' left='1519' width='760' height='600'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191148.jpg'>
+		<box top='1177' left='1544' width='1225' height='585'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184506.jpg'>
+		<box top='499' left='1214' width='1890' height='1840'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184539.jpg'>
+		<box top='513' left='2193' width='734' height='477'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191229.jpg'>
+		<box top='699' left='1273' width='1224' height='1237'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184608.jpg'>
+		<box top='969' left='1349' width='1240' height='1185'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191200.jpg'>
+		<box top='873' left='2013' width='780' height='707'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='9' left='9' width='3965' height='2990'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184927.jpg'>
+		<box top='1354' left='1344' width='2655' height='1650'>
+			<label>p/person</label>
+		</box>
+		<box top='4' left='2884' width='1105' height='1545'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_124154.jpg'>
+		<box top='429' left='1099' width='1925' height='1880'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191349.jpg'>
+		<box top='1609' left='934' width='895' height='880'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191102.jpg'>
+		<box top='6' left='663' width='2134' height='1897'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191233.jpg'>
+		<box top='1654' left='1274' width='965' height='845'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184615.jpg'>
+		<box top='849' left='1629' width='1077' height='644'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191237.jpg'>
+		<box top='803' left='1366' width='774' height='747'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184923.jpg'>
+		<box top='469' left='1064' width='1740' height='1690'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='494' left='3144' width='855' height='2470'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184637.jpg'>
+		<box top='349' left='1819' width='1010' height='1270'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191138.jpg'>
+		<box top='1559' left='969' width='1290' height='1130'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184619.jpg'>
+		<box top='766' left='1323' width='1060' height='937'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184527.jpg'>
+		<box top='1034' left='1314' width='1385' height='1280'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191017.jpg'>
+		<box top='819' left='1303' width='1180' height='1110'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_123533.jpg'>
+		<box top='939' left='144' width='1865' height='1745'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191240.jpg'>
+		<box top='964' left='1149' width='1465' height='1465'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191128.jpg'>
+		<box top='593' left='833' width='1550' height='1244'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_123528.jpg'>
+		<box top='1264' left='609' width='1780' height='1825'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191312.jpg'>
+		<box top='789' left='1539' width='630' height='593'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_123536.jpg'>
+		<box top='739' left='1629' width='2250' height='2200'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191243.jpg'>
+		<box top='636' left='1616' width='987' height='1160'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191125.jpg'>
+		<box top='1899' left='1129' width='1055' height='960'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_124157.jpg'>
+		<box top='159' left='1559' width='2117' height='2017'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_190448.jpg'>
+		<box top='789' left='1214' width='1485' height='1415'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191132.jpg'>
+		<box top='656' left='1329' width='1387' height='1340'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='IMG_20210324_124159.jpg'>
+		<box top='256' left='376' width='1707' height='1684'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191226.jpg'>
+		<box top='1186' left='1733' width='467' height='464'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191135.jpg'>
+		<box top='999' left='1274' width='1410' height='1160'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191354.jpg'>
+		<box top='476' left='579' width='1030' height='1047'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191315.jpg'>
+		<box top='683' left='983' width='1410' height='1380'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191204.jpg'>
+		<box top='913' left='1316' width='947' height='1210'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='9' left='9' width='3975' height='2980'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191306.jpg'>
+		<box top='1399' left='1503' width='864' height='717'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='IMG_20210323_191344.jpg'>
+		<box top='794' left='1259' width='1135' height='1145'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184933.jpg'>
+		<box top='1634' left='2249' width='1100' height='1140'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1649' left='-5' width='165' height='1140'>
+			<label>p/person</label>
+		</box>
+		<box top='9' left='1674' width='1385' height='1010'>
+			<label>p/person</label>
+		</box>
+		<box top='1069' left='3304' width='685' height='1550'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184959.jpg'>
+		<box top='599' left='909' width='1925' height='1880'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185038.jpg'>
+		<box top='529' left='1359' width='1715' height='1580'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184948.jpg'>
+		<box top='629' left='864' width='1860' height='1875'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184950.jpg'>
+		<box top='689' left='1029' width='1290' height='1015'>
+			<label>p/person</label>
+		</box>
+		<box top='4' left='2359' width='1635' height='1480'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='lost-places-2178884_960_720.jpg'>
+		<box top='148' left='58' width='165' height='158'>
+			<label>p/valve!</label>
+		</box>
+		<box top='146' left='294' width='158' height='153'>
+			<label>p/valve!</label>
+		</box>
+		<box top='142' left='517' width='162' height='157'>
+			<label>p/valve!</label>
+		</box>
+		<box top='138' left='746' width='160' height='162'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='lost-places-3035877__340.webp'>
+		<box top='0' left='110' width='276' height='333'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='newborn-5036849_960_720.jpg'>
+		<box top='130' left='245' width='368' height='354'>
+			<label>p/baby_doll!</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185002.jpg'>
+		<box top='9' left='1134' width='1605' height='1305'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_184954.jpg'>
+		<box top='2709' left='1489' width='1440' height='1280'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185006.jpg'>
+		<box top='2509' left='1419' width='1510' height='1480'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='9' left='1529' width='970' height='1520'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='NV-5.jpg'>
+		<box top='47' left='135' width='114' height='245'>
+			<label>p/person</label>
+		</box>
+		<box top='30' left='300' width='88' height='238'>
+			<label>p/person</label>
+		</box>
+		<box top='82' left='600' width='214' height='430'>
+			<label>p/person</label>
+		</box>
+	</image>
+	<image file='pipe-1821109_960_720.jpg'>
+		<box top='9' left='188' width='189' height='149'>
+			<label>p/valve!</label>
+		</box>
+		<box top='55' left='556' width='204' height='161'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124208543.jpg'>
+		<box top='1049' left='1064' width='900' height='930'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1989' left='144' width='920' height='930'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='2014' left='1964' width='870' height='850'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='2874' left='1984' width='845' height='845'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='2879' left='164' width='895' height='890'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124215831.jpg'>
+		<box top='844' left='9' width='1070' height='1350'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='2264' left='14' width='990' height='1270'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1129' left='1194' width='1040' height='1115'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1794' left='1704' width='925' height='1040'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='2904' left='374' width='1170' height='1105'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124229352.jpg'>
+		<box top='1744' left='9' width='1375' height='1430'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='2054' left='1459' width='1030' height='1245'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='469' left='274' width='1290' height='1190'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='199' left='1094' width='1025' height='1015'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1609' left='2054' width='895' height='1065'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124247673.jpg'>
+		<box top='266' left='2739' width='1204' height='964'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='6' left='1603' width='1100' height='677'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1279' left='2213' width='1217' height='950'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1573' left='1203' width='1220' height='1050'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='59' left='773' width='1080' height='870'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124345575.jpg'>
+		<box top='129' left='1709' width='955' height='910'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='154' left='2649' width='900' height='875'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1924' left='2619' width='1025' height='1035'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='884' left='779' width='1000' height='1000'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1879' left='699' width='1025' height='985'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124401587.jpg'>
+		<box top='479' left='2404' width='800' height='765'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1044' left='1589' width='785' height='780'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='509' left='3109' width='890' height='785'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1969' left='2909' width='1050' height='1045'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1774' left='1419' width='810' height='825'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124415370.jpg'>
+		<box top='579' left='889' width='840' height='725'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='2029' left='414' width='1035' height='985'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='2224' left='2259' width='1030' height='785'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1354' left='2309' width='965' height='970'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124511002.jpg'>
+		<box top='49' left='884' width='855' height='860'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='34' left='2619' width='875' height='890'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1789' left='2619' width='860' height='835'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1759' left='1729' width='865' height='835'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='934' left='894' width='865' height='855'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124556166.jpg'>
+		<box top='534' left='1409' width='990' height='1220'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='929' left='2359' width='660' height='785'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='2484' left='4' width='1100' height='1370'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1104' left='-5' width='1405' height='1490'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='3074' left='1884' width='845' height='860'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124639689.jpg'>
+		<box top='579' left='-5' width='1080' height='995'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='644' left='1964' width='1040' height='940'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='2609' left='764' width='1145' height='1145'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124647199.jpg'>
+		<box top='84' left='954' width='1310' height='1395'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1649' left='-5' width='1185' height='1395'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='2134' left='1899' width='1100' height='1170'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124711764.jpg'>
+		<box top='2534' left='1269' width='1225' height='1310'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='249' left='469' width='1455' height='1460'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124823822.jpg'>
+		<box top='2254' left='1339' width='950' height='1040'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='179' left='519' width='995' height='1065'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='594' left='2214' width='790' height='805'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='2244' left='2279' width='740' height='1000'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124904071.jpg'>
+		<box top='4' left='704' width='1365' height='1105'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='2564' left='1739' width='1200' height='1345'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='2294' left='699' width='1360' height='1295'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='869' left='2419' width='595' height='1100'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125006349.jpg'>
+		<box top='444' left='334' width='1140' height='1120'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='709' left='2144' width='870' height='920'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='2679' left='1229' width='1115' height='1235'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='2624' left='2274' width='740' height='1145'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125038983.jpg'>
+		<box top='594' left='9' width='1150' height='1140'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='34' left='1399' width='1180' height='1070'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='4' left='2309' width='1130' height='690'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='464' left='2679' width='1250' height='1125'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1294' left='3089' width='940' height='1200'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1584' left='2214' width='1260' height='1215'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='1984' left='1369' width='1340' height='1030'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125045987.jpg'>
+		<box top='279' left='629' width='810' height='740'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='329' left='1929' width='700' height='675'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='359' left='2649' width='650' height='655'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1059' left='2729' width='640' height='685'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1754' left='2739' width='690' height='710'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1719' left='2084' width='680' height='750'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='1749' left='1339' width='810' height='875'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125100387.jpg'>
+		<box top='99' left='0' width='1090' height='1490'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='149' left='1039' width='1270' height='1470'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='159' left='2199' width='820' height='1380'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='2759' left='1299' width='1190' height='1220'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1679' left='-10' width='1170' height='1270'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='2969' left='19' width='1230' height='1030'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125140505.jpg'>
+		<box top='634' left='154' width='1125' height='985'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='889' left='2219' width='1125' height='1015'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='2079' left='999' width='955' height='665'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125218445.jpg'>
+		<box top='1474' left='4' width='1840' height='1145'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='919' left='2804' width='1220' height='565'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='504' left='799' width='765' height='365'>
+			<label>l/s/qr_code!</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125633010.jpg'>
+		<box top='544' left='999' width='1135' height='1045'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1624' left='2084' width='1120' height='1090'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='594' left='2114' width='1090' height='975'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1594' left='929' width='1165' height='1100'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125703779.jpg'>
+		<box top='1124' left='1884' width='1050' height='985'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='869' left='919' width='935' height='965'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='449' left='1494' width='985' height='990'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1534' left='1339' width='950' height='960'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125747558.jpg'>
+		<box top='2054' left='1669' width='815' height='870'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1214' left='864' width='775' height='810'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1189' left='1664' width='840' height='840'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='2054' left='879' width='775' height='825'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125847388.jpg'>
+		<box top='759' left='2124' width='795' height='725'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='719' left='1324' width='810' height='725'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1449' left='1269' width='835' height='755'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1469' left='2129' width='825' height='785'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125859336.jpg'>
+		<box top='1376' left='2119' width='1647' height='824'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1413' left='506' width='1580' height='767'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='943' left='2133' width='1187' height='477'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='949' left='999' width='1114' height='447'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_130741610.jpg'>
+		<box top='1239' left='156' width='707' height='327'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='803' left='896' width='520' height='207'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1016' left='886' width='580' height='224'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1243' left='876' width='657' height='290'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='803' left='1419' width='577' height='220'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1013' left='1453' width='650' height='240'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1239' left='1539' width='657' height='294'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='786' left='1963' width='564' height='214'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='993' left='2066' width='657' height='247'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1229' left='2133' width='697' height='280'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='793' left='2496' width='584' height='194'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='976' left='2603' width='670' height='224'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1206' left='2743' width='704' height='264'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1209' left='3329' width='694' height='260'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='969' left='3179' width='670' height='244'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='793' left='3049' width='574' height='190'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_130753980.jpg'>
+		<box top='1219' left='2996' width='894' height='347'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='1393' left='2593' width='877' height='354'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1566' left='2076' width='954' height='440'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1376' left='1626' width='867' height='344'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1216' left='2129' width='827' height='314'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1083' left='2533' width='790' height='270'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='936' left='2079' width='757' height='277'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1079' left='1716' width='800' height='264'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1203' left='1219' width='810' height='307'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='829' left='1736' width='707' height='237'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='943' left='1336' width='724' height='247'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1046' left='856' width='804' height='280'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='909' left='539' width='750' height='260'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='816' left='1026' width='667' height='234'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='723' left='1426' width='647' height='217'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='813' left='256' width='697' height='210'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_130832633.jpg'>
+		<box top='3259' left='2139' width='810' height='700'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1219' left='1799' width='690' height='720'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1859' left='1909' width='720' height='690'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='2549' left='1999' width='780' height='710'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='604' left='1679' width='675' height='705'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='4' left='1569' width='670' height='700'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='2679' left='1414' width='680' height='715'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='2004' left='1304' width='690' height='735'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1359' left='1179' width='675' height='700'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='774' left='1099' width='595' height='695'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='174' left='1009' width='640' height='695'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='2799' left='844' width='630' height='680'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='2189' left='734' width='630' height='675'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1589' left='639' width='630' height='655'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='979' left='539' width='605' height='695'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='399' left='514' width='550' height='615'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131100297.jpg'>
+		<box top='684' left='339' width='605' height='490'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1144' left='194' width='630' height='555'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1669' left='44' width='725' height='580'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1704' left='644' width='655' height='560'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1164' left='759' width='605' height='530'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='684' left='889' width='575' height='455'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='689' left='1464' width='585' height='485'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1184' left='1339' width='590' height='530'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1719' left='1229' width='640' height='595'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1739' left='1849' width='685' height='580'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1179' left='1939' width='640' height='600'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='639' left='2034' width='615' height='575'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='679' left='2644' width='595' height='545'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1234' left='2564' width='655' height='565'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1804' left='2514' width='670' height='650'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1854' left='3154' width='725' height='680'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131657709.jpg'>
+		<box top='569' left='84' width='635' height='575'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1164' left='64' width='635' height='610'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1769' left='54' width='655' height='645'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1714' left='2004' width='635' height='640'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1719' left='1324' width='670' height='630'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='1744' left='684' width='660' height='630'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1139' left='709' width='675' height='590'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='539' left='729' width='615' height='605'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='579' left='1359' width='615' height='540'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1149' left='1359' width='625' height='565'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1134' left='1984' width='615' height='575'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='554' left='2004' width='575' height='560'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='549' left='2604' width='625' height='540'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1104' left='2614' width='620' height='580'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1689' left='2634' width='660' height='635'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1729' left='3264' width='680' height='615'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131914761.jpg'>
+		<box top='1779' left='849' width='830' height='830'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='959' left='849' width='875' height='775'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='219' left='939' width='775' height='765'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='274' left='1709' width='775' height='765'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1044' left='2494' width='785' height='810'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='319' left='2484' width='765' height='730'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1884' left='2589' width='770' height='785'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1854' left='1764' width='815' height='800'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131926377.jpg'>
+		<box top='14' left='554' width='1030' height='885'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='969' left='2439' width='850' height='845'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='94' left='2464' width='845' height='850'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1894' left='2389' width='885' height='965'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1894' left='1399' width='965' height='1015'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='1889' left='299' width='1110' height='1035'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='924' left='489' width='1030' height='930'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='74' left='1569' width='865' height='885'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131931234.jpg'>
+		<box top='869' left='2684' width='890' height='820'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1749' left='2839' width='830' height='845'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1784' left='1969' width='825' height='875'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1794' left='994' width='920' height='940'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='0' left='2614' width='865' height='890'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='9' left='1749' width='875' height='920'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='54' left='849' width='905' height='860'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131936027.jpg'>
+		<box top='2039' left='2424' width='910' height='935'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1909' left='1554' width='845' height='890'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1819' left='709' width='885' height='840'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='904' left='789' width='830' height='915'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='9' left='784' width='845' height='940'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='149' left='1639' width='895' height='890'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='299' left='2589' width='885' height='850'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1189' left='2459' width='955' height='930'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_132346222.jpg'>
+		<box top='24' left='9' width='1040' height='1040'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1089' left='49' width='955' height='935'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1049' left='1034' width='965' height='950'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='2029' left='124' width='910' height='835'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='2029' left='1049' width='845' height='865'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='2034' left='1924' width='900' height='835'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1074' left='1994' width='925' height='930'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='49' left='2049' width='930' height='1005'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_132836813.jpg'>
+		<box top='429' left='274' width='955' height='955'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='464' left='2159' width='845' height='925'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1404' left='2089' width='885' height='805'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1384' left='1179' width='910' height='855'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1354' left='294' width='855' height='900'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='2269' left='2044' width='935' height='855'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='2279' left='1179' width='845' height='855'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='2249' left='269' width='900' height='865'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_132841310.jpg'>
+		<box top='2619' left='1714' width='775' height='790'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='2639' left='924' width='780' height='760'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1034' left='934' width='825' height='745'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1054' left='1744' width='775' height='750'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1869' left='1719' width='790' height='740'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1829' left='914' width='790' height='750'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='2559' left='154' width='815' height='835'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_132855652.jpg'>
+		<box top='684' left='94' width='805' height='780'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='594' left='1699' width='770' height='795'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1409' left='1714' width='770' height='720'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='2199' left='1704' width='805' height='790'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='2234' left='939' width='705' height='790'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='2224' left='109' width='780' height='785'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1469' left='94' width='795' height='780'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1424' left='914' width='770' height='780'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='site-2342626_960_720.jpg'>
+		<box top='11' left='157' width='189' height='398'>
+			<label>p/door</label>
+		</box>
+	</image>
+	<image file='stock-photo-closeup-of-manometer-pipes-and-faucet-valves-of-heating-system-in-a-boiler-room-450w-142414150.jpg'>
+		<box top='270' left='3' width='55' height='48'>
+			<label>p/valve!</label>
+		</box>
+		<box top='193' left='281' width='97' height='96'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='wheel-2137043_960_720.jpg'>
+		<box top='126' left='135' width='203' height='198'>
+			<label>p/valve!</label>
+		</box>
+		<box top='363' left='75' width='46' height='95'>
+			<label>p/valve!</label>
+		</box>
+		<box top='262' left='304' width='206' height='202'>
+			<label>p/valve!</label>
+		</box>
+		<box top='118' left='479' width='202' height='201'>
+			<label>p/valve!</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185042.jpg'>
+		<box top='2429' left='1519' width='1460' height='1560'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185046.jpg'>
+		<box top='1779' left='709' width='910' height='1180'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185154.jpg'>
+		<box top='694' left='1414' width='1775' height='1600'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185159.jpg'>
+		<box top='1144' left='1419' width='925' height='1390'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='IMG_20210326_185204.jpg'>
+		<box top='1704' left='874' width='735' height='1510'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_124549099.jpg'>
+		<box top='2689' left='1614' width='950' height='875'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='969' left='2039' width='820' height='950'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='799' left='1109' width='935' height='870'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1419' left='94' width='1005' height='910'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='2334' left='0' width='790' height='945'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125545822.jpg'>
+		<box top='1406' left='1363' width='587' height='627'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='879' left='1923' width='547' height='517'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1409' left='1953' width='600' height='550'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='906' left='1323' width='584' height='510'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125448114.MP.jpg'>
+		<box top='449' left='794' width='1100' height='1090'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='409' left='1934' width='1135' height='1080'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1484' left='1924' width='1170' height='1145'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1499' left='824' width='1150' height='1210'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125822143.jpg'>
+		<box top='1113' left='913' width='924' height='567'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1003' left='1699' width='970' height='474'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1346' left='1899' width='1194' height='674'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1506' left='876' width='1147' height='790'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_130722873.jpg'>
+		<box top='399' left='974' width='500' height='165'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='534' left='1474' width='530' height='225'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='519' left='1994' width='590' height='225'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='744' left='1444' width='650' height='275'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='549' left='834' width='630' height='255'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='719' left='2014' width='730' height='250'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='759' left='714' width='730' height='300'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1054' left='534' width='885' height='410'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1034' left='1424' width='810' height='365'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='954' left='2144' width='825' height='360'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1324' left='2274' width='1070' height='540'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1394' left='1364' width='990' height='590'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1429' left='269' width='1100' height='650'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1969' left='1249' width='1285' height='1045'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='2039' left='4' width='1280' height='975'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1859' left='2394' width='1410' height='940'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_130729238.jpg'>
+		<box top='1859' left='2424' width='1600' height='930'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1479' left='2154' width='1215' height='485'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1604' left='1229' width='1070' height='545'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1684' left='-5' width='1235' height='630'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1419' left='304' width='915' height='265'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1294' left='1249' width='855' height='365'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1209' left='1999' width='915' height='275'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1179' left='484' width='780' height='240'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1114' left='1259' width='690' height='225'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1069' left='1859' width='705' height='210'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1049' left='659' width='590' height='155'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1004' left='1264' width='565' height='145'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='954' left='1819' width='600' height='160'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='859' left='1769' width='515' height='125'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='884' left='1294' width='500' height='130'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='924' left='789' width='505' height='130'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_130822564.jpg'>
+		<box top='9' left='214' width='700' height='690'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='0' left='934' width='705' height='655'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='0' left='1629' width='650' height='670'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='709' left='204' width='675' height='675'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='664' left='884' width='675' height='695'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='684' left='1604' width='675' height='685'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1404' left='224' width='690' height='700'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1364' left='934' width='655' height='645'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1384' left='1604' width='670' height='640'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='2114' left='249' width='675' height='625'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='2074' left='944' width='675' height='645'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='2044' left='1619' width='645' height='630'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='2739' left='264' width='675' height='675'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='2744' left='939' width='640' height='615'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='2714' left='1614' width='650' height='630'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='3344' left='1599' width='675' height='625'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131104201.jpg'>
+		<box top='554' left='884' width='495' height='445'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='704' left='1379' width='445' height='360'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='804' left='1804' width='460' height='400'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1099' left='1879' width='485' height='445'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1039' left='1399' width='495' height='410'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='929' left='844' width='550' height='380'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1254' left='804' width='605' height='515'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1364' left='1414' width='565' height='470'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1494' left='1914' width='555' height='480'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1699' left='784' width='645' height='640'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1814' left='1394' width='635' height='605'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1944' left='1989' width='570' height='545'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='2244' left='589' width='790' height='750'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='2359' left='1414' width='685' height='755'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='2454' left='2044' width='675' height='640'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='2959' left='464' width='890' height='955'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131108605.jpg'>
+		<box top='594' left='4' width='1155' height='730'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1089' left='409' width='1200' height='995'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='454' left='794' width='980' height='605'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1769' left='934' width='1255' height='1165'>
+			<label>/s/hazmat-6-poison</label>
+		</box>
+		<box top='919' left='1239' width='975' height='800'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='1444' left='1749' width='1035' height='930'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1254' left='2309' width='825' height='730'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='734' left='1784' width='860' height='630'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='384' left='1414' width='835' height='505'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='269' left='1989' width='620' height='475'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='249' left='2389' width='535' height='415'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='659' left='2309' width='710' height='555'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1084' left='2679' width='740' height='565'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='919' left='3039' width='685' height='580'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='864' left='3369' width='550' height='445'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='594' left='2719' width='645' height='400'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131652364.jpg'>
+		<box top='739' left='4' width='765' height='595'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1264' left='4' width='905' height='740'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1844' left='154' width='970' height='1000'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1634' left='934' width='925' height='900'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1134' left='814' width='835' height='685'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='629' left='654' width='795' height='555'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='594' left='1359' width='705' height='485'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1019' left='1494' width='775' height='590'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1529' left='1664' width='885' height='765'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='534' left='1904' width='695' height='435'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='944' left='2074' width='760' height='580'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1379' left='2344' width='850' height='720'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1284' left='2859' width='830' height='575'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1184' left='3374' width='650' height='575'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='849' left='2594' width='725' height='475'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='474' left='2409' width='680' height='410'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131703433.jpg'>
+		<box top='544' left='184' width='715' height='610'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='539' left='869' width='625' height='590'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='549' left='1509' width='620' height='620'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='584' left='2104' width='635' height='550'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='594' left='2739' width='660' height='565'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='1159' left='164' width='715' height='625'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1134' left='854' width='660' height='620'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1169' left='1449' width='665' height='610'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='1179' left='2114' width='650' height='600'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1159' left='2719' width='660' height='615'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='1799' left='179' width='630' height='635'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1774' left='829' width='620' height='650'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1794' left='1459' width='640' height='600'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='1774' left='2114' width='675' height='670'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1774' left='2774' width='620' height='660'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1794' left='3349' width='650' height='645'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131707327.jpg'>
+		<box top='2884' left='424' width='1090' height='1100'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='2179' left='2259' width='760' height='670'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='2114' left='1489' width='795' height='745'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='2029' left='539' width='975' height='845'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='1444' left='689' width='760' height='635'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='1519' left='1439' width='715' height='610'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='1539' left='2099' width='760' height='610'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1129' left='2044' width='595' height='425'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1009' left='1384' width='650' height='525'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='954' left='719' width='700' height='505'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='574' left='764' width='615' height='410'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='659' left='1379' width='585' height='440'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='714' left='1949' width='555' height='385'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='384' left='1839' width='530' height='365'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='274' left='1319' width='545' height='455'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='234' left='789' width='530' height='410'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131714265.jpg'>
+		<box top='433' left='1246' width='557' height='147'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='523' left='1393' width='600' height='147'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='573' left='923' width='650' height='197'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='586' left='326' width='667' height='250'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='776' left='439' width='804' height='264'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='676' left='1086' width='750' height='260'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='573' left='1646' width='660' height='244'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='746' left='2003' width='780' height='304'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='816' left='1366' width='867' height='394'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='929' left='603' width='974' height='407'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1209' left='806' width='1210' height='660'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='1076' left='1666' width='1067' height='494'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='909' left='2329' width='994' height='434'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1156' left='2869' width='1154' height='574'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1619' left='1126' width='1627' height='1054'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1306' left='2113' width='1417' height='700'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_131718371.jpg'>
+		<box top='0' left='1764' width='580' height='265'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='469' left='1089' width='515' height='535'>
+			<label>l/s/hazmat-3-fuel-oil</label>
+		</box>
+		<box top='269' left='1499' width='545' height='490'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='39' left='1929' width='605' height='450'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='234' left='2119' width='695' height='535'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+		<box top='479' left='1669' width='660' height='590'>
+			<label>l/s/hazmat-4-flammable-solid</label>
+		</box>
+		<box top='789' left='1214' width='570' height='570'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1119' left='1344' width='675' height='685'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='844' left='1874' width='705' height='645'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='574' left='2364' width='775' height='605'>
+			<label>l/s/hazmat-2-non-flammable-gas</label>
+		</box>
+		<box top='894' left='2649' width='950' height='785'>
+			<label>l/s/hazmat-1.1-explosives</label>
+		</box>
+		<box top='1239' left='2069' width='875' height='795'>
+			<label>l/s/hazmat-6-poison</label>
+		</box>
+		<box top='1559' left='1504' width='785' height='830'>
+			<label>l/s/hazmat-6-inhalation-hazard</label>
+		</box>
+		<box top='2069' left='1739' width='945' height='945'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1694' left='2394' width='1020' height='945'>
+			<label>l/s/hazmat-5.2-organic-peroxide</label>
+		</box>
+		<box top='1339' left='3009' width='1010' height='895'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_132848758.jpg'>
+		<box top='114' left='1474' width='970' height='1035'>
+			<label>l/s/hazmat-2-oxygen</label>
+		</box>
+		<box top='459' left='814' width='905' height='970'>
+			<label>l/s/hazmat-8-corrosive</label>
+		</box>
+		<box top='829' left='194' width='900' height='950'>
+			<label>l/s/hazmat-4-dangerous-when-wet</label>
+		</box>
+		<box top='1199' left='1159' width='935' height='900'>
+			<label>l/s/hazmat-7-radioactive</label>
+		</box>
+		<box top='1509' left='504' width='880' height='875'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+		<box top='2194' left='859' width='810' height='775'>
+			<label>l/s/hazmat-2-flammable-gas</label>
+		</box>
+		<box top='1914' left='1524' width='825' height='780'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='1564' left='2159' width='860' height='895'>
+			<label>l/s/hazmat-4-spontaneously-combustible</label>
+		</box>
+	</image>
+	<image file='PXL_20210327_125151918.MP.jpg'>
+		<box top='14' left='2319' width='870' height='675'>
+			<label>l/s/hazmat-5.1-oxidizer</label>
+		</box>
+		<box top='1374' left='2634' width='1115' height='960'>
+			<label>l/s/qr_code!</label>
+		</box>
+		<box top='844' left='704' width='920' height='805'>
+			<label>l/s/hazmat-1.5-blasting-agents</label>
+		</box>
+	</image>
+	
+	<image file='0.jpeg'>
 		<box top='245' left='491' width='95' height='93'>
 			<label>l/s/hazmat_7/radioactive!</label>
 		</box>
