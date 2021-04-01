@@ -248,7 +248,7 @@ def evaluate(test_lines, yolo, log_dir, epoch):
         writes data to txt file in log_dir
     """
     for nmx_suppresion in [False, True]:
-        CLASS_COUNT = 22 - len(DATASET_EXCLUDE_OBJECTS)
+        CLASS_COUNT = 23 - len(DATASET_EXCLUDE_OBJECTS)
         confusion_matrix = ConfusionMatrix(CLASS_COUNT)
 
         pbar = tqdm(total=len(test_lines))

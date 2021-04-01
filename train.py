@@ -110,7 +110,6 @@ def test_cycle(log_dir, epochs_to_test, anchors_path, classes_path, test_lines):
             "score": 0.05,  # 0.3
             "iou": 0.45,  # 0.45
         }
-        print(classes_path)
         K.clear_session()
 
         if TEST_EVALUATE:
@@ -145,7 +144,7 @@ def test_cycle(log_dir, epochs_to_test, anchors_path, classes_path, test_lines):
 
             if TEST_VISUALIZE_IMAGES:
                 yolo = YOLO(**settings)
-                for line in test_lines[:100]:
+                for line in test_lines[:500]:
                     if line[-1] == '\n':
                         line = line[:-1]
                     line = line.split(" ")[0]

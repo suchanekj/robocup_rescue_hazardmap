@@ -19,5 +19,5 @@
 18 p/baby_doll!
 19 p/fire_extinguisher!
 20 p/valve!
-19 p/person
-20 p/door
+21 p/door
+22 p/person

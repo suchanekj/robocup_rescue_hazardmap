@@ -313,7 +313,10 @@ def makeObjectList(size_step, extend=False):
         for obj in objectFromBaseNames:
             weightedObjectList.insert(obj, 100000)
         for obj in object_fs:
-            name = obj.split(".")[0]
+            if len(obj.split(".")) > 1:
+                name = ".".join(obj.split(".")[:-1])
+            else:
+                name = obj
             weightedObjectList.insert(name, object_previous_numbers[objectIDs[name]])
             if os.path.isdir(filtered_objects + obj):
                 obj_fs = [filtered_objects + obj + "/" + f for f in os.listdir(filtered_objects + obj)]
@@ -346,7 +349,7 @@ def makeObjectList(size_step, extend=False):
 
         for objName in objectFromBaseNames:
             objectNames.append(objName)
-            objectIDs[objName] = len(objectIDs.keys())
+            objectIDs[objName] = len(objectNames) - 1
             names_f.write(str(objectIDs[objName]) + " " + objName + "\n")
         names_f.close()
 

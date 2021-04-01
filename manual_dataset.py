@@ -290,8 +290,10 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
     # randomise order of images
     indexList = [i for i in range(imageCount)]
 
+    j = 0
     # for every index, if we loop over the entire set of images, shuffle the images
-    for j in range(makeImageCount):
+    while len(os.listdir(imageOutputPath)) < makeImageCount + 1:
+        j += 1
         # print("making " + str(j) + "th image")
         r = j % imageCount
         if r == 0:
@@ -316,8 +318,10 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
             # for every box with a detection, add a tuple with
             # 4 coordinates and the label to image row
             # bottom left y, bottom left x, height, width
+            skip = False
             for boxes in imageXMLList[i]:
                 labelName = boxes[0].text
+
                 if labelName in labelValueDict:
                     labelValue = labelValueDict[labelName]
                     boxCoords = boxes.attrib
@@ -339,7 +343,11 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
                     coordTuple += (labelValue,)
                 else:
                     if not labelName in DATASET_EXCLUDE_OBJECTS:
-                        print("unknown label:", labelName)
+                        print("unknown label:", labelName, "skipping")
+                        skip = True
+                        break
+            if skip:
+                continue
 
             # adds the corners of the image so we can use the corners to make a mask
             boxList.append(np.float32([
@@ -348,6 +356,7 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
                 [0, rows2],
                 [cols2, rows2]
             ]))
+
             # adds filters to images
             image = cv2.resize(image, (cols2, rows2))
             image = objectFilter(image, filterStrength, filterStrength / 10, filterStrength / 10)
@@ -372,8 +381,7 @@ def imageMaker(makeImageCount, imageSize, filterStrength, xmlPath, labelNamesPat
                 coordList.append(labelValue)
                 label.append(coordList)
             labelList.append(label)
-    # print('label_list')
-    # print(labelList)
+
     with open(labelsPath, 'w') as myfile:
         for label in labelList:
             # each label is:
@@ -455,5 +463,3 @@ def createDataset():
 
         imageMaker(imageCount, imageSize, filterStrength, xmlPath, labelNamesPath, imageInputPath, imageOutputPath,
                    labelsPath, outputLabelNamesPath)
-
-createDataset()
